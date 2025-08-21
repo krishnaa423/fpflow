@@ -1,0 +1,5 @@
+/build
+/dist
+fpflow.egg-info/
+/examples
+.DS_Store
