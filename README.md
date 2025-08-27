@@ -11,12 +11,12 @@ Supported software:
 Jobs:
 - relax
 - cdft
+- md
 - scf
 - dfpt
 - phbands
 - phdos
 - phmodes
-- md
 - dos
 - pdos
 - dftelbands
@@ -40,3 +40,8 @@ Jobs:
 - ste
 - esf
 - esr
+- ml-deepmd
+- ml-dft
+- ml-dfpt
+- ml-gw
+- ml-bse

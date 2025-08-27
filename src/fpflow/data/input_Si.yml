@@ -1,9 +1,13 @@
 #region: basic info 
 generator:
   mode: onestruct  # manystruct, convergence, esr. 
+  pre_steps:
+    - dryrun
   steps:
+    - esr_updater
     - relax
     - cdft
+    - md
     - scf
     - dfpt
     - phbands
@@ -30,7 +34,11 @@ generator:
     - xctpol
     - ste
     - esf
-    - esr
+    - ml_deepmd
+    - ml_dft
+    - ml_dfpt
+    - ml_gw
+    - ml_bse
 
 structures:
   - file:
@@ -80,6 +88,9 @@ commom:
   big_nkpts: &big_nkpts 8
   qgrid: &qgrid [2, 2, 2]
   epw_nodes: &epw_nodes 1
+  # max_val: &max_val 123   # Usually set by dryrun. 
+  md:
+    software: &md_software 'qe'   # lammps, abacus, siesta, pyscf, gpaw. 
   dft:
     ecut: &dftecut 20.0
     val_bands: &dft_valbands 4
@@ -119,8 +130,8 @@ commom:
       time: &big_time "00:45:00"
 
 scheduler:
-  mainrun: 'perlmutter_cpu'
-  dryrun: 'mac_mini'
+  manager: 'perlmutter_cpu'
+  generator: 'mac_mini'
   args:
 #endregion: basic info
 
@@ -165,6 +176,14 @@ cdft:
   args:
   job_info:
     <<: *para
+md:
+  software: *md_software
+  time_step: 20   # 20 a.u. a.u = 48 as. 
+  nsteps: 100
+  temp: 300
+  args:
+  job_info:
+    <<: *para
 scf:
   software: *dft_software
   kgrid: *kgrid
@@ -196,13 +215,6 @@ phmodes:
   args:
   job_info:
     <<: *single_node
-md:
-  time_step: 20   # 20 a.u. a.u = 48 as. 
-  nsteps: 100
-  temp: 300
-  args:
-  job_info:
-    <<: *para
 dos:
   kgrid: *kgrid
   cond_bands: *dft_condbands
