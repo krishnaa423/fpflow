@@ -1,0 +1,114 @@
+frontera:
+  node_info:
+    cores: 56
+    threads_per_core: 1
+    gpus:
+    cpuram: 192e9
+    gpuram:
+  header:
+    non_interactive:
+      account: 'PHY20032'
+      partition: 'development'
+      job-name: 'struct_job'
+      mail-type: 'all'
+      mail-user: 'krishnaa.vadivel@yale.edu'
+      extra_commands: 
+    interactive:
+      account: 'PHY20032'
+      partition: 'normal'
+      job-name: 'struct_job'
+      nodes: 1
+      time: '00:20:00'
+      extra_commands: 
+  launch_info:
+    non_interactive:
+      mpi_exec: 'srun'
+      batchscript_exec: 'sbatch'
+    interactive:
+      mpi_exec: 'srun'
+      interactive_exec: 'salloc'
+  is_gpu: true
+perlmutter_gpu:
+  node_info:
+    cores: 64
+    threads_per_core: 2
+    gpus: 4
+    cpuram: 256e9
+    gpuram: 160e9
+  header:
+    non_interactive:
+      account: 'm3571'
+      qos: 'debug'
+      constraint: 'gpu'
+      job-name: 'struct_job'
+      mail-type: 'all'
+      mail-user: 'krishnaa.vadivel@yale.edu'
+      extra_commands: 
+    interactive:
+      account: 'm3571'
+      qos: 'interactive'
+      constraint: 'gpu'
+      job-name: 'struct_job'
+      nodes: 4
+      time: '03:20:00'
+      extra_commands: 
+  launch_info:
+    non_interactive:
+      mpi_exec: 'srun'
+      batchscript_exec: 'sbatch'
+    interactive:
+      mpi_exec: 'srun'
+      interactive_exec: 'salloc'
+  is_gpu: false
+perlmutter_cpu:
+  node_info:
+    cores: 128
+    threads_per_core: 2
+    gpus:
+    cpuram: 512e9
+    gpuram:
+  header:
+    non_interactive:
+      account: 'm3571'
+      qos: 'debug'
+      constraint: 'cpu'
+      job-name: 'struct_job'
+      mail-type: 'all'
+      mail-user: 'krishnaa.vadivel@yale.edu'
+      extra_commands: 
+    interactive:
+      account: 'm3571'
+      qos: 'interactive'
+      constraint: 'cpu'
+      job-name: 'struct_job'
+      nodes: 4
+      time: '03:20:00'
+      extra_commands: 
+  launch_info:
+    non_interactive:
+      mpi_exec: 'srun'
+      batchscript_exec: 'sbatch'
+    interactive:
+      mpi_exec: 'srun'
+      interactive_exec: 'salloc'
+  is_gpu: false
+mac_mini:
+  node_info:
+    cores: 8
+    threads_per_core: 1
+    gpus:
+    cpuram: 8e9
+    gpuram:
+  header:
+    non_interactive:
+      extra_commands: 
+    interactive:
+      extra_commands: 
+  launch_info:
+    non_interactive:
+      mpi_exec: 'mpirun'
+      batchscript_exec: ''
+    interactive:
+      mpi_exec: 'mpirun'
+      interactive_exec: ''
+  is_gpu: false

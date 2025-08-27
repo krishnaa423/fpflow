@@ -16,7 +16,7 @@ setup(
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     include_package_data=True,
-    package_data={'fp': ['data/**/*']},
+    package_data={'fpflow': ['data/**/*']},
     requires=[
         'numpy',
         'scipy',
@@ -24,6 +24,11 @@ setup(
         'dill',
         'pyyaml',
     ],
+    entry_points={
+        'console_scripts': [
+            'fpflow=fpflow.scripts.fpflow:fpflow',
+        ],
+    },
 )
 #endregion
 
