@@ -212,7 +212,7 @@ lattice_constant: "LATTICE_CONSTANT" NEWLINE NUMBER NEWLINE
 lattice_vectors: "LATTICE_VECTORS" NEWLINE vectors_line+
 vectors_line: NUMBER NUMBER NUMBER NEWLINE
 
-atomic_positions: "ATOMIC_POSITIONS" NEWLINE "Direct" NEWLINE position_entry+ 
+atomic_positions: "ATOMIC_POSITIONS" NEWLINE ("Direct" | "Cartesian") NEWLINE position_entry+ 
 position_entry: SYMBOL NEWLINE NUMBER NEWLINE NUMBER NEWLINE position_vector+
 position_vector: NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NEWLINE
 '''

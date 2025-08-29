@@ -1,11 +1,10 @@
 #region modules
 from lark import Lark, Transformer
-import logging 
+from fpflow.io.logging import get_logger
 #endregion
 
 #region variables
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger()
 #endregion
 
 #region functions
@@ -20,7 +19,6 @@ class NamelistTransform(Transformer):
         return self.dict
 
     def namelist(self, args):
-        logger.debug(f'namelist: {args}')
         name = args[1].value
         namelist_dict = {}
         for pair in args[2:-1]:

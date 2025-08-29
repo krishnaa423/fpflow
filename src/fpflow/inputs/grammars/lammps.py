@@ -1,11 +1,10 @@
 #region modules
 from lark import Lark, Transformer, Token
-import logging
+from fpflow.io.logging import get_logger
 #endregion
 
 #region variables
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger()
 #endregion
 
 #region functions
@@ -28,8 +27,7 @@ class LammpsTransform(Transformer):
 
     def start(self, args):
         args = list(filter(lambda item: not isinstance(item, Token), args))
-        logging.debug(f'args: {args}')
-        
+
         for pair in args:
             key = pair[0]
             value = pair[1:]

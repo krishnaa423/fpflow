@@ -21,8 +21,9 @@ setup(
         'numpy',
         'scipy',
         'ase',
-        'dill',
         'pyyaml',
+        'jmespath',
+        'lxml',
     ],
     entry_points={
         'console_scripts': [
