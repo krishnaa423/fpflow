@@ -66,15 +66,15 @@ common:
   job_types:
     single:
       nodes: &single_nodes 1
-      ntasks: &single_ntasks 128
+      ntasks: &single_ntasks 64
       time: &single_time "02:45:00"
     para:
       nodes: &para_nodes 4
-      ntasks: &para_ntasks 512
+      ntasks: &para_ntasks 128
       time: &para_time "02:45:00"
     big:
       nodes: &big_nodes 4
-      ntasks: &big_ntasks 512
+      ntasks: &big_ntasks 128
       time: &big_time "02:45:00"
 
 scheduler:
