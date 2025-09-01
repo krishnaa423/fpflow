@@ -49,7 +49,7 @@ class Manager:
         inputdict: dict = InputYaml.from_yaml_file(filename).inputdict
 
         # Get data. 
-        steps_list_str: List[str] = jmespath.search('manager.steps[*]', inputdict) if jmespath.search('generator.steps[*]', inputdict)!=None else []
+        steps_list_str: List[str] = jmespath.search('manager.steps[*]', inputdict) if jmespath.search('manager.steps[*]', inputdict) is not None else []
         steps: List[Step] = cls._get_step_classes(inputdict, steps_list_str)
         dest_dir: str = jmespath.search('manager.dest_dir', inputdict)
         is_recursive: str = jmespath.search('manager.is_recursive', inputdict)
@@ -63,9 +63,9 @@ class Manager:
         )
 
     @change_dir
-    def plot(self):
+    def plot(self, **kwargs):
         for step in self.steps:
-            step.plot()
+            step.plot(**kwargs)
 
     @change_dir
     def run(self):

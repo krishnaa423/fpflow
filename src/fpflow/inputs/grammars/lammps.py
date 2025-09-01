@@ -63,7 +63,7 @@ pair: NAME VALUE+ NEWLINE
 
         for key, value in data.items():
             output += f'{key} '
-            if value!= None:
+            if value is not None:
                 for list_item in value:
                     output += f'{list_item} '
 

@@ -92,7 +92,7 @@ perlmutter_cpu:
       mpi_exec: 'srun'
       interactive_exec: 'salloc'
   is_gpu: false
-mac_mini:
+mac_mini_parallel:
   node_info:
     cores: 8
     threads_per_core: 1
@@ -110,5 +110,25 @@ mac_mini:
       batchscript_exec: ''
     interactive:
       mpi_exec: 'mpirun'
+      interactive_exec: ''
+  is_gpu: false
+mac_mini_serial:
+  node_info:
+    cores: 8
+    threads_per_core: 1
+    gpus:
+    cpuram: 8e9
+    gpuram:
+  header:
+    non_interactive:
+      extra_commands: 
+    interactive:
+      extra_commands: 
+  launch_info:
+    non_interactive:
+      mpi_exec: ''
+      batchscript_exec: ''
+    interactive:
+      mpi_exec: ''
       interactive_exec: ''
   is_gpu: false

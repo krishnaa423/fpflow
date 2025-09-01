@@ -1,4 +1,5 @@
 #region modules
+import jmespath
 #endregion
 
 #region variables
@@ -28,9 +29,11 @@ class JobInfo:
             setattr(self, key, value)
 
     @staticmethod
-    def from_job_id(id: str, input_dict: dict):
-        assert id in input_dict['job_types'], f'id: {id} is not in job_types'
+    def from_inputdict(jmespath_str: str, inputdict: dict):
+        info = jmespath.search(jmespath_str, inputdict)
 
-        return JobInfo(**input_dict['job_types'][id])
+        assert info is not None, f'The jmespath {jmespath_str} does not exist'
+
+        return JobInfo(**info)
     
 #endregion

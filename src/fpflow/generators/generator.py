@@ -57,9 +57,9 @@ class Generator:
         inputdict: dict = InputYaml.from_yaml_file(filename).inputdict
 
         # Get the steps from yaml. 
-        presteps_list_str: List[str] = jmespath.search('generator.pre_steps[*]', inputdict) if jmespath.search('generator.pre_steps[*]', inputdict)!=None else []
-        steps_list_str: List[str] = jmespath.search('generator.steps[*]', inputdict) if jmespath.search('generator.steps[*]', inputdict)!=None else []
-        poststeps_list_str: List[str] = jmespath.search('generator.post_steps[*]', inputdict) if jmespath.search('generator.post_steps[*]', inputdict)!=None else []
+        presteps_list_str: List[str] = jmespath.search('generator.pre_steps[*]', inputdict) if jmespath.search('generator.pre_steps[*]', inputdict) is not None else []
+        steps_list_str: List[str] = jmespath.search('generator.steps[*]', inputdict) if jmespath.search('generator.steps[*]', inputdict) is not None else []
+        poststeps_list_str: List[str] = jmespath.search('generator.post_steps[*]', inputdict) if jmespath.search('generator.post_steps[*]', inputdict) is not None else []
 
         # Get the step classes. 
         presteps: List[Step] = cls._get_step_classes(inputdict, presteps_list_str) 

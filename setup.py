@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 #region functions
 setup(
     name='fpflow',
-    version='0.1.0',
+    version='1.0.0',
     description='First principles workflow',
     long_description='First principles workflow',
     author='Krishnaa Vadivel',

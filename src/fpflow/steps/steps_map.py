@@ -37,6 +37,7 @@ from fpflow.steps.ml.gw import MlGwStep
 from fpflow.steps.ml.bse import MlBseStep
 from fpflow.steps.post_steps.create_script import CreateScriptStep
 from fpflow.steps.post_steps.run_script import RunScriptStep
+from fpflow.steps.post_steps.tail_script import TailScriptStep
 from fpflow.steps.post_steps.remove_script import RemoveScriptStep
 from fpflow.steps.post_steps.plot_script import PlotScriptStep
 from fpflow.steps.post_steps.interactive_script import InteractiveScriptStep
@@ -82,6 +83,7 @@ step_class_map: dict = {
     'ml_bse': MlBseStep,
     'create_script': CreateScriptStep,
     'run_script': RunScriptStep,
+    'tail_script': TailScriptStep,
     'remove_script': RemoveScriptStep,
     'plot_script': PlotScriptStep,
     'interactive_script': InteractiveScriptStep,

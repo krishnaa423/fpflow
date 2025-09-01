@@ -3,9 +3,11 @@ from __future__ import annotations
 from lark import Lark, Transformer, Token
 import re 
 from typing import Any, Dict, List
+from fpflow.io.logging import get_logger
 #endregion
 
 #region variables
+logger = get_logger()
 #endregion
 
 #region functions
@@ -245,7 +247,7 @@ kpt_line: NUMBER NUMBER NUMBER NUMBER NEWLINE
             unit = apos.get("unit")
             rows = apos.get("data", [])
             header = "ATOMIC_POSITIONS" + (f" {unit}" if unit else "")
-            lines = [header] + [" ".join(row) for row in rows]
+            lines = [header] + [" ".join(list(map(str, row))) for row in rows]
             out.append("\n".join(lines) + "\n\n")
 
         # CELL_PARAMETERS
@@ -254,7 +256,7 @@ kpt_line: NUMBER NUMBER NUMBER NUMBER NEWLINE
             unit = cellp.get("unit")
             rows = cellp.get("data", [])
             header = "CELL_PARAMETERS" + (f" {unit}" if unit else "")
-            lines = [header] + [" ".join(row) for row in rows]
+            lines = [header] + [" ".join(list(map(str, row))) for row in rows]
             out.append("\n".join(lines) + "\n\n")
 
         # K_POINTS
@@ -262,11 +264,11 @@ kpt_line: NUMBER NUMBER NUMBER NUMBER NEWLINE
         if kpts:
             if kpts.get("type") == "automatic":
                 arr = kpts.get("data", [])
-                out.append("K_POINTS automatic\n" + " ".join(arr) + "\n")
+                out.append("K_POINTS automatic\n" + " ".join(list(map(str, arr))) + "\n")
             elif kpts.get("type") == "crystal":
                 nkpt = kpts.get("nkpt")
                 rows = kpts.get("data", [])
-                lines = ["K_POINTS crystal", str(nkpt)] + [" ".join(row) for row in rows]
+                lines = ["K_POINTS crystal", str(nkpt)] + [" ".join(list(map(str, row))) for row in rows]
                 out.append("\n".join(lines) + "\n")
 
         text = "".join(out)

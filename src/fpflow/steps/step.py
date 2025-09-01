@@ -54,7 +54,7 @@ class Step:
         for inode in self.remove_inodes:
             os.system(f'rm -rf {inode}')
 
-    def plot(self):
+    def plot(self, **kwargs):
         pass
     
 #endregion

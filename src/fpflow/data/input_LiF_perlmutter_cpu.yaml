@@ -3,35 +3,34 @@ structures:
   - file:
     cell:
       unit: angstrom  # angstrom, bohr, alat. 
+      read_if_relaxed: true
       # Specify either 'vectors' or 'bravais_lattice_info'
       # vectors:
-      #   - [1.0, 0.0, 0.0]
-      #   - [0.0, 1.0, 0.0]
-      #   - [0.0, 0.0, 1.0]
+      #   - [5.45, 5.43, 0.0]
+      #   - [0.0, 5.43, 5.43]
+      #   - [5.43, 0.0, 5.43]
       bravais_lattice_info:
         ibrav: 'fcc'
-        A: 5.43
+        A: 4.02
     positions:
       unit: crystal   # angstrom, bohr, crystal, alat. 
+      read_if_relaxed: true
       coords:
-        - ['Si', 0.00, 0.00, 0.00]
-        - ['Si', 0.25, 0.25, 0.25]  
+        - ['F', 0.00, 0.00, 0.00]
+        - ['Li', 0.50, 0.50, 0.50]  
       # vca:    # Virtual crystal approximation. 
       #   - ['Si', 'Ag', 0.2]
-    # write_cell_unit: angstrom
-    # write_positions_unit: angstrom
     # supercell_size: [2, 2, 2]
-    # max_val: 123.   # Usually set after dryrun. 
 
 kpath:
   special_points:
     - 'L'
     - 'G'
     - 'X'
-    - 'W'
-    - 'L'
-    - 'K'
-    - 'G'
+    # - 'W'
+    # - 'L'
+    # - 'K'
+    # - 'G'
   npoints_segment: 20  
 
 common:
@@ -44,22 +43,22 @@ common:
   qgrid: &qgrid [2, 2, 2]
   epw_nodes: &epw_nodes 1
   dft:
-    ecut: &dft_ecut 20.0
-    val_bands: &dft_valbands 4
-    cond_bands: &dft_condbands 4
+    ecut: &dft_ecut 100.0
+    val_bands: &dft_valbands 3
+    cond_bands: &dft_condbands 7
     xc: &dft_xc 'pbe'  # pbe, lda. 
     is_spinorbit: &dft_spinorbit false
   gw:
     ecut: &gwecut 10.0
-    val_bands: &gw_valbands 4
+    val_bands: &gw_valbands 3
     plot_val_bands: &gw_plot_valbands 3    # Try to keep it one below the val_bands. 
-    cond_bands: &gw_condbands 10
+    cond_bands: &gw_condbands 7
     para_cond_bands: &gw_para_condbands 201
     conv_cond_bands: &gw_conv_condbands 200
   bse:
-    val_bands: &bse_valbands 4
-    cond_bands: &bse_condbands 4
-    nxct: &bse_nxct 10
+    val_bands: &bse_valbands 3
+    cond_bands: &bse_condbands 7
+    nxct: &bse_nxct 5
     supercell_size: &xct_supercell_size [2, 2, 2]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
     elec_position: &xct_elec_position [0.25, 0.25, 0.25]
@@ -79,7 +78,7 @@ common:
       time: &big_time "02:45:00"
 
 scheduler:
-  generator: 'mac_mini'
+  generator: 'mac_mini_serial'
   manager: 'perlmutter_cpu'
   args:
     is_interactive: true
@@ -89,27 +88,14 @@ generator:
   pre_steps:
     - pseudos_qe
   steps: &gen_steps
-    # - esr_gen
     - relax_qe
-    # - cdft_qe
-    # - md_qe
     - scf_qe
     - dfpt_qe
     - phbands_qe
-    # - phdos_qe
     - phmodes_qe
-    # - dos_qe
-    # - pdos_qe
-    - dftelbands_qe
-    # - kpdos_qe
-    # - wannier_qe 
     - wfn_qe
     - epw_qe
-    - elph
     - wfnq_qe
-    # - wfnfi_qe
-    # - wfnqfi_qe
-    - phonopy_qe
     - epsilon_bgw
     - sigma_bgw
     - kernel_bgw
@@ -117,25 +103,33 @@ generator:
     - plotxct_bgw
     - bseq_bgw
     - xctph
-    - xctpol
-    - ste
-    # - esf
-    # - ml_deepmd
-    # - ml_dft
-    # - ml_dfpt
-    # - ml_gw
-    # - ml_bse
   post_steps:
     - create_script
     - run_script
     - remove_script
     - plot_script
     - interactive_script
+    - tail_script
 
 manager:
   is_recursive: false   # non_recursive or recursive. Recursive is for many structures, or for convergence. 
   dest_dir: ./
-  steps: *gen_steps
+  steps:
+    - relax_qe
+    - scf_qe
+    - dfpt_qe
+    - phbands_qe
+    - phmodes_qe
+    - wfn_qe
+    - epw_qe
+    - wfnq_qe
+    - epsilon_bgw
+    - sigma_bgw
+    - kernel_bgw
+    - absorption_bgw
+    - plotxct_bgw
+    - bseq_bgw
+    - xctph
 #endregion: basic info
 
 job_types:
@@ -170,7 +164,7 @@ job_types:
     time: *big_time
 
 relax:
-  type: 'vcrelax'  # Options are: relax, vcrelax, cdft-relax, cdft-vcrelax.  
+  type: 'vc-relax'  # Options are: relax, vcrelax, cdft-relax, cdft-vcrelax.  
   args:
   job_info:
     <<: *para
@@ -253,13 +247,14 @@ wfn:
   parabands_cond_bands: *gw_para_condbands
   pw2bgw_args:
   parabands_args:
-    maps:
-      wfn_io_mpiio_mode: 1
   args:
   job_pw2bgw_info:
     <<: *para
   job_parabands_info:
-    <<: *big_para
+    # <<: *big_para
+    nodes: 1
+    ntasks: 1
+    time: '02:40:00'
   job_info:
     <<: *big_para
 epw:
@@ -308,7 +303,10 @@ gw:
     wfnqlink: 'WFNq_coo.h5'
     args:
     job_info:
-      <<: *big_para
+      # <<: *big_para
+      nodes: 1
+      ntasks: 1
+      time: '02:40:00'
   sigma:
     ecut: *gwecut
     conv_cond_bands: *gw_conv_condbands
@@ -328,8 +326,6 @@ gw:
 bse:
   kernel:
     args:
-      maps:
-        dont_check_norms: ''
     job_info:
       <<: *big_para
   absorption:
@@ -343,18 +339,19 @@ bse:
     wfnfi_link: 'WFN_parabands.h5'
     wfnqfi_link: 'WFN_parabands.h5'
     args:
-      maps:
-        dont_check_norms: ''
     job_info:
-      <<: *para
-plotxct:
-  hole_position: *xct_hole_position
-  supercell_size: *xct_supercell_size
-  elec_position: *xct_elec_position
-  xct_state: *xct_state
-  args:
-  job_info:
-    <<: *big_para
+      # <<: *para
+      nodes: 1
+      ntasks: 1
+      time: '02:40:00'
+  plotxct:
+    hole_position: *xct_hole_position
+    supercell_size: *xct_supercell_size
+    elec_position: *xct_elec_position
+    xct_state: *xct_state
+    args:
+    job_info:
+      <<: *big_para
 bseq:
   qgrid: *kgrid
   job_info:

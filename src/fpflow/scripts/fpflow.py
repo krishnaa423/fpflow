@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from importlib.util import find_spec
 import os 
 from fpflow.generators.generator import Generator
+from fpflow.managers.manager import Manager
 #endregion
 
 #region variables
@@ -16,12 +17,12 @@ def fpflow():
     parser.add_argument('--manager', nargs='?', const='interactive', default=None, type=str, help='Run the run.sh script or rund.sh for interactive or background manager runs.')
     args = parser.parse_args()
 
-    if args.input!=None:
+    if args.input is not None:
         pkg_dir = os.path.dirname(find_spec('fpflow').origin)
         filename = os.path.join(pkg_dir, 'data', args.input)
         os.system(f'cp {filename} ./input.yaml')
 
-    if args.generator!=None:
+    if args.generator is not None:
         match args.generator:
             case 'create':
                 generator = Generator.from_inputyaml()
@@ -32,14 +33,20 @@ def fpflow():
             case _:
                 raise ValueError('generator needs to have create or remove as arguments')
 
-    if args.manager!=None:
-        match args.run_manager:
+    if args.manager is not None:
+        match args.manager:
             case 'interactive':
                 os.system('./run.sh')
             case 'background':
                 os.system('./rund.sh')
+            case 'silent-plot':
+                manager = Manager().from_inputyaml()
+                manager.plot(show=False)
+            case 'show-plot':
+                manager = Manager().from_inputyaml()
+                manager.plot(show=True)
             case _:
-                raise ValueError('run_manager needs to have interactive or background as arguments')
+                raise ValueError('manager needs to have interactive or background as arguments')
             
 #endregion
 

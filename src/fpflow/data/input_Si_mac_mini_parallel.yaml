@@ -130,6 +130,7 @@ generator:
     - remove_script
     - plot_script
     - interactive_script
+    - tail_script
 
 manager:
   is_recursive: false   # non_recursive or recursive. Recursive is for many structures, or for convergence. 
@@ -143,7 +144,7 @@ manager:
     - wfn_qe
     - epw_qe
     - wfnq_qe
-    - phonopy_qe
+    # - phonopy_qe
     - epsilon_bgw
     - sigma_bgw
     - kernel_bgw
@@ -272,7 +273,10 @@ wfn:
   job_pw2bgw_info:
     <<: *para
   job_parabands_info:
-    <<: *big_para
+    # <<: *big_para
+    nodes: 1
+    ntasks: 1
+    time: '02:40:00'
   job_info:
     <<: *big_para
 epw:
@@ -321,7 +325,10 @@ gw:
     wfnqlink: 'WFNq_coo.h5'
     args:
     job_info:
-      <<: *big_para
+      # <<: *big_para
+      nodes: 1
+      ntasks: 1
+      time: '02:40:00'
   sigma:
     ecut: *gwecut
     conv_cond_bands: *gw_conv_condbands
@@ -355,7 +362,10 @@ bse:
     wfnqfi_link: 'WFN_parabands.h5'
     args:
     job_info:
-      <<: *para
+      # <<: *para
+      nodes: 1
+      ntasks: 1
+      time: '02:40:00'
   plotxct:
     hole_position: *xct_hole_position
     supercell_size: *xct_supercell_size

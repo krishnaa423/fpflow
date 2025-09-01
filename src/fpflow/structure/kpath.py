@@ -32,7 +32,7 @@ class Kpath:
         raise NotImplementedError()
 
     @classmethod
-    def from_yamlfile(cls, filename: str, struct_idx: int =0):
+    def from_yamlfile(cls, filename: str='./input.yaml', struct_idx: int =0):
         struct: Struct = Struct.from_yaml_file(filename)
         struct_idx: int = struct_idx
         atoms: Atoms = struct.atoms[struct_idx]
@@ -72,6 +72,19 @@ class Kpath:
         )
 
         return bandpath.get_linear_kpoint_axis()
+    
+    @property
+    def matdyn_str(self):
+        output = ''
+        special_points = get_special_points(self.atoms.cell)
+
+        output += f'{len(self.special_points)}\n'
+
+        for path_special_point in self.special_points:
+            coord = special_points[path_special_point]
+            output += f'{coord[0]:15.10f} {coord[1]:15.10f} {coord[2]:15.10f} {self.npoints_segment} !{path_special_point}\n'
+        
+        return output 
 
         
 #endregion

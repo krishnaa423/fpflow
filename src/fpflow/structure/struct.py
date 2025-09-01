@@ -27,10 +27,17 @@ class CellArray:
 
     @classmethod
     def from_structdict(cls, dict: dict):
-        assert operator.xor(jmespath.search('cell.vectors', dict) != None, jmespath.search('cell.bravais_lattice_info', dict) != None), 'vectors or bravais lattice only should be present.'
+        assert operator.xor(jmespath.search('cell.vectors', dict)  is not None, jmespath.search('cell.bravais_lattice_info', dict)  is not None), 'vectors or bravais lattice only should be present.'
+
+        read_if_relaxed: bool = False if jmespath.search('cell.read_if_relaxed', dict) is None else jmespath.search('cell.read_if_relaxed', dict)
+
+        # Read relaxed file if present. 
+        if read_if_relaxed and os.path.exists('./relaxed_cell_parameters.txt'):
+            vectors = np.loadtxt('./relaxed_cell_parameters.txt')
+            return cls(vectors)
 
         unit: str = jmespath.search('cell.unit', dict)
-        vectors: np.array = np.array(jmespath.search('cell.vectors[*]', dict))
+        vectors: np.array = None if jmespath.search('cell.vectors[*]', dict) is None else np.array(jmespath.search('cell.vectors[*]', dict))
         ibrav = jmespath.search('cell.bravais_lattice_info.ibrav', dict)
         A = jmespath.search('cell.bravais_lattice_info.A', dict)
         B = jmespath.search('cell.bravais_lattice_info.B', dict)
@@ -45,8 +52,8 @@ class CellArray:
             case 'alat':
                 factor = A
 
-        if vectors != None:
-            return CellArray(vectors)*factor
+        if vectors is not None:
+            return cls(vectors*factor)
         
         # If no cell vectors, use bravais lattice info. 
         match ibrav:
@@ -86,6 +93,12 @@ class PositionArray:
     def from_structdict(cls, dict: dict):
         cell_array = CellArray.from_structdict(dict)
         
+        # Read relaxed file if present. 
+        read_if_relaxed: bool = False if jmespath.search('positions.read_if_relaxed', dict) is None else jmespath.search('positions.read_if_relaxed', dict)
+        if read_if_relaxed and os.path.exists('./relaxed_atomic_positions.txt'):
+            vectors = np.loadtxt('./relaxed_atomic_positions.txt', usecols=(1, 2, 3))
+            return cls(vectors)
+
         unit: str = jmespath.search('positions.unit', dict)
         coords: np.ndarray = np.array(jmespath.search('positions.coords[*][1:4]', dict))
         A: float = jmespath.search('cell.bravais_lattice_info.A', dict)
@@ -100,7 +113,7 @@ class PositionArray:
             case 'crystal':
                 coords = coords @ cell_array.array
 
-        return PositionArray(coords)
+        return cls(coords)
 
 class AtomicNumberArray:
     def __init__(self, array: np.array):
@@ -139,7 +152,7 @@ class Struct:
 
         for struct_item in structures:
             # If file is present. 
-            if struct_item['file'] != None:
+            if struct_item['file']  is not None:
                 atoms.append(read(struct_item['file']))
                 continue
 
