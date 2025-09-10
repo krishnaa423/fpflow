@@ -1,0 +1,421 @@
+#region: basic info 
+structures:
+  - file:
+    cell:
+      unit: angstrom  # angstrom, bohr, alat. 
+      read_if_relaxed: true
+      # Specify either 'vectors' or 'bravais_lattice_info'
+      # vectors:
+      #   - [5.45, 5.43, 0.0]
+      #   - [0.0, 5.43, 5.43]
+      #   - [5.43, 0.0, 5.43]
+      bravais_lattice_info:
+        ibrav: 'fcc'
+        A: 4.02
+    positions:
+      unit: crystal   # angstrom, bohr, crystal, alat. 
+      read_if_relaxed: true
+      coords:
+        - ['F', 0.00, 0.00, 0.00]
+        - ['Li', 0.50, 0.50, 0.50]  
+      # vca:    # Virtual crystal approximation. 
+      #   - ['Si', 'Ag', 0.2]
+    # supercell_size: [2, 2, 2]
+
+kpath:
+  special_points:
+    - 'L'
+    - 'G'
+    - 'X'
+    # - 'W'
+    # - 'L'
+    # - 'K'
+    # - 'G'
+  npoints_segment: 20  
+
+common:
+  sym: &sym false
+  kgrid: &kgrid [2, 2, 2]
+  nkpts: &nkpts 8
+  qshift: &qshift [0.000, 0.000, 0.001]
+  big_kgrid: &big_kgrid [2, 2, 2]
+  big_nkpts: &big_nkpts 8
+  qgrid: &qgrid [2, 2, 2]
+  epw_nodes: &epw_nodes 1
+  dft:
+    ecut: &dft_ecut 40.0
+    val_bands: &dft_valbands 3
+    cond_bands: &dft_condbands 4
+    xc: &dft_xc 'pbe'  # pbe, lda. 
+    is_spinorbit: &dft_spinorbit false
+  gw:
+    ecut: &gwecut 10.0
+    val_bands: &gw_valbands 3
+    plot_val_bands: &gw_plot_valbands 3    # Try to keep it one below the val_bands. 
+    cond_bands: &gw_condbands 4
+    para_cond_bands: &gw_para_condbands 201
+    conv_cond_bands: &gw_conv_condbands 200
+  bse:
+    val_bands: &bse_valbands 3
+    cond_bands: &bse_condbands 4
+    nxct: &bse_nxct 5
+    supercell_size: &xct_supercell_size [2, 2, 2]
+    hole_position: &xct_hole_position [0.00, 0.00, 0.00]
+    elec_position: &xct_elec_position [0.25, 0.25, 0.25]
+    xct_state: &xct_state 1
+  job_types:
+    single:
+      nodes: &single_nodes 1
+      ntasks: &single_ntasks 8
+      time: &single_time "02:45:00"
+    para:
+      nodes: &para_nodes 1
+      ntasks: &para_ntasks 8
+      time: &para_time "02:45:00"
+    big:
+      nodes: &big_nodes 1
+      ntasks: &big_ntasks 8
+      time: &big_time "02:45:00"
+
+scheduler:
+  generator: 'mac_mini_serial'
+  manager: 'mac_mini_parallel'
+  args:
+    is_interactive: true
+
+generator:
+  dest_dir: ./
+  pre_steps:
+    - pseudos_qe
+  steps: &gen_steps
+    - relax_qe
+    - scf_qe
+    - dfpt_qe
+    - phbands_qe
+    - phmodes_qe
+    - wfn_qe
+    - epw_qe
+    - wfnq_qe
+    - epsilon_bgw
+    - sigma_bgw
+    - kernel_bgw
+    - absorption_bgw
+    - plotxct_bgw
+    - bseq_bgw
+    - xctph
+  post_steps:
+    - create_script
+    - run_script
+    - remove_script
+    - plot_script
+    - interactive_script
+    - tail_script
+
+manager:
+  is_recursive: false   # non_recursive or recursive. Recursive is for many structures, or for convergence. 
+  dest_dir: ./
+  steps:
+    - relax_qe
+    - scf_qe
+    - dfpt_qe
+    - phbands_qe
+    - phmodes_qe
+    - wfn_qe
+    - epw_qe
+    - wfnq_qe
+    - epsilon_bgw
+    - sigma_bgw
+    - kernel_bgw
+    - absorption_bgw
+    - plotxct_bgw
+    - bseq_bgw
+    - xctph
+#endregion: basic info
+
+job_types:
+  single_task: &single_task
+    nodes: 1
+    ntasks: 1
+    time: *single_time
+  single_node: &single_node
+    nodes: 1
+    ntasks: *single_ntasks
+    time: *single_time
+  para: &para
+    nodes: *para_nodes
+    ntasks: *para_ntasks
+    time: *para_time
+  para_k: &para_k
+    nodes: *para_nodes
+    ntasks: *para_ntasks
+    time: *para_time
+  big_para: &big_para
+    nodes: *big_nodes
+    ntasks: *big_ntasks
+    time: *big_time
+  big_para_k: &big_para_k
+    nodes: *big_nodes
+    ntasks: *big_ntasks
+    time: *big_time
+  para_epwk: &para_epwk
+    nodes: *epw_nodes
+    ntasks: *nkpts
+    nk: *nkpts
+    time: *big_time
+
+relax:
+  type: 'vc-relax'  # Options are: relax, vcrelax, cdft-relax, cdft-vcrelax.  
+  args:
+  job_info:
+    <<: *para
+cdft:
+  type: 'relax'
+  args:
+  job_info:
+    <<: *para
+md:
+  time_step: 20   # 20 a.u. a.u = 48 as. 
+  nsteps: 100
+  temp: 300
+  args:
+  job_info:
+    <<: *para
+scf:
+  kgrid: *kgrid
+  ecut: *dft_ecut
+  is_spinorbit: *dft_spinorbit
+  xc: *dft_xc
+  args:
+  job_info:
+    <<: *para
+dfpt:
+  qgrid: *qgrid
+  conv_thr: '1.0d-16'
+  args:
+  job_info:
+    <<: *big_para
+phbands:
+  q2r_args:
+  matdyn_args:
+  job_info:
+    <<: *single_node
+phdos:
+  qgrid: *qgrid
+  q2r_args:
+  matdyn_args:
+  job_info:
+    <<: *single_node
+phmodes:
+  qpt_idx: 1
+  args:
+  job_info:
+    <<: *single_node
+dos:
+  kgrid: *kgrid
+  cond_bands: *dft_condbands
+  wfn_args:
+  args:
+  job_info:
+    <<: *para
+pdos:
+  args:
+  job_info:
+    <<: *para
+dftelbands:
+  cond_bands: *dft_condbands
+  pw2bgw_args:
+  job_pw2bgw_info:
+    <<: *para
+  args:
+  job_info:
+    <<: *para
+kpdos:
+  args:
+  job_info:
+    <<: *para
+wannier:
+  kgrid: *kgrid
+  val_bands: *dft_valbands
+  cond_bands: *dft_condbands
+  args:
+  job_info:
+    <<: *single_node
+wfn:
+  kgrid: *kgrid
+  sym: *sym
+  cond_bands: *gw_condbands
+  parabands_cond_bands: *gw_para_condbands
+  pw2bgw_args:
+  parabands_args:
+  args:
+  job_pw2bgw_info:
+    <<: *para
+  job_parabands_info:
+    # <<: *big_para
+    nodes: 1
+    ntasks: 1
+    time: '02:40:00'
+  job_info:
+    <<: *big_para
+epw:
+  args:
+  job_info:
+    <<: *para_epwk
+elph:
+  job_info:
+    <<: *big_para
+wfnq:
+  qshift: *qshift
+  kgrid: *kgrid
+  sym: *sym
+  cond_bands: *gw_condbands
+  pw2bgw_args:
+  args:
+  job_pw2bgw_info:
+    <<: *big_para
+  job_info:
+    <<: *big_para
+wfnfi:
+  kgrid: *big_kgrid
+  sym: *sym
+  cond_bands: *gw_condbands
+  pw2bgw_args:
+  args:
+  job_pw2bgw_info:
+    <<: *big_para
+  job_info:
+    <<: *big_para
+wfnqfi:
+  kgrid: *big_kgrid
+  sym: *sym
+  cond_bands: *gw_condbands
+  pw2bgw_args:
+  args:
+  job_pw2bgw_info:
+    <<: *big_para
+  job_info:
+    <<: *big_para
+gw:
+  epsilon:
+    ecut: *gwecut
+    cond_bands: *gw_conv_condbands
+    wfnlink: 'WFN_parabands.h5'
+    wfnqlink: 'WFNq_coo.h5'
+    args:
+    job_info:
+      # <<: *big_para
+      nodes: 1
+      ntasks: 1
+      time: '02:40:00'
+  sigma:
+    ecut: *gwecut
+    conv_cond_bands: *gw_conv_condbands
+    cond_bands: *gw_condbands
+    val_bands: *gw_valbands
+    wfnlink: 'WFN_parabands.h5' 
+    args:
+    job_info:
+      <<: *big_para
+  inteqp:
+    val_bands: *gw_plot_valbands
+    wfnco_link: 'WFN_coo'
+    wfnfi_link: 'WFN_dftelbands'
+    args:
+    job_info:
+      <<: *para
+bse:
+  kernel:
+    args:
+    job_info:
+      <<: *big_para
+  absorption:
+    qshift: [0.0, 0.0, 0.0]
+    val_bands: *bse_valbands
+    cond_bands: *bse_condbands
+    nxct: *bse_nxct
+    pol_dir: *qshift
+    wfnco_link: 'WFN_parabands.h5'
+    wfnqco_link: 'WFN_parabands.h5'
+    wfnfi_link: 'WFN_parabands.h5'
+    wfnqfi_link: 'WFN_parabands.h5'
+    args:
+    job_info:
+      # <<: *para
+      nodes: 1
+      ntasks: 1
+      time: '02:40:00'
+  plotxct:
+    hole_position: *xct_hole_position
+    supercell_size: *xct_supercell_size
+    elec_position: *xct_elec_position
+    xct_state: *xct_state
+    args:
+    job_info:
+      <<: *big_para
+bseq:
+  qgrid: *kgrid
+  job_info:
+    <<: *big_para
+xctph:
+  nxct: *bse_nxct
+  job_info:
+    <<: *big_para
+xctpol:
+  temp: 300
+  nxct: *bse_nxct
+  max_error: 1e-1
+  max_steps: 10
+  job_info:
+    <<: *big_para
+ste:
+  temp: 300
+  nxct: *bse_nxct
+  max_error: 1e-1
+  max_steps: 10
+  job_info:
+    <<: *big_para
+esf:
+  job_info:
+    <<: *big_para
+esr:
+  max_error: 1e-3
+  max_steps: 10
+  job_info:
+    <<: *big_para
+convergence:
+  dft:
+    param_list:
+      - params:
+        copy_files:
+          from:
+          files: []
+    copy_files:
+      from:
+      files: []
+  dfpt:
+    param_list:
+      - params:
+        copy_files:
+          from:
+          files: []
+    copy_files:
+      from:
+      files: []
+  gw:
+    param_list:
+      - params:
+        copy_files:
+          from:
+          files: []
+    copy_files:
+      from:
+      files: []
+  bse:
+    param_list:
+      - params:
+        copy_files:
+          from:
+          files: []
+    copy_files:
+      from:
+      files: []

@@ -56,7 +56,10 @@ Steps:
 - Write the subclass of Step in fpflow.steps folder.
 
 ## How to work with the cli script. 
-- get template input yaml: `fpflow --input=input_Si.yaml`. Or any other stored templates. 
-- generate: `fpflow --generator=create`
-- remove: `fpflow --generator=remove`
-- run steps: `fpflow --manager=interactive|background`
+- `fpflow input --list`: List all templates
+- `fpflow input --template <template name>`: Generate input.yaml from template. 
+- `fpflow generator --create`: Generate all the input files and job scripts.
+- `fpflow generator --remove`: Remove input files and job scripts in the directory.
+- `fpflow manager --run=interactive|background`: Run the job scripts in interactive mode or in the background. 
+Only worth running it in the interactive queue either way.
+- `fpflow manager --plot=no-gui|gui`: Plot data after runs and put them in the `./plots` subfolder. 

@@ -87,7 +87,7 @@ cp ./tmp/struct.save/data-file-schema.xml ./relax.xml
 {save_final_atomic_positions_str}
 
 # Update from relax.
-fpflow --generator=create
+fpflow generator --create
 '''
         
         return file_string

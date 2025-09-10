@@ -43,21 +43,21 @@ common:
   qgrid: &qgrid [2, 2, 2]
   epw_nodes: &epw_nodes 1
   dft:
-    ecut: &dft_ecut 100.0
-    val_bands: &dft_valbands 3
-    cond_bands: &dft_condbands 7
+    ecut: &dft_ecut 80.0
+    val_bands: &dft_valbands 4
+    cond_bands: &dft_condbands 4
     xc: &dft_xc 'pbe'  # pbe, lda. 
     is_spinorbit: &dft_spinorbit false
   gw:
     ecut: &gwecut 10.0
-    val_bands: &gw_valbands 3
+    val_bands: &gw_valbands 4
     plot_val_bands: &gw_plot_valbands 3    # Try to keep it one below the val_bands. 
-    cond_bands: &gw_condbands 7
+    cond_bands: &gw_condbands 4
     para_cond_bands: &gw_para_condbands 201
     conv_cond_bands: &gw_conv_condbands 200
   bse:
-    val_bands: &bse_valbands 3
-    cond_bands: &bse_condbands 7
+    val_bands: &bse_valbands 4
+    cond_bands: &bse_condbands 4
     nxct: &bse_nxct 5
     supercell_size: &xct_supercell_size [2, 2, 2]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
