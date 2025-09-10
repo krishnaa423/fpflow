@@ -9,7 +9,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 #endregion
 
 #region variables
@@ -68,17 +67,16 @@ class QeRelaxStep(Step):
 
     @property
     def job_relax(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('relax.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'relax.job_info')
 
         save_final_cell_parameters_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /CELL_PARAMETERS/ {cell_flag=1; next} /End final coordinates/ {end_flag=0} end_flag && cell_flag {print; if (length==0) cell_flag=0 }' relax.in.out > relaxed_cell_parameters.txt"
         save_final_atomic_positions_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /ATOMIC_POSITIONS/ {pos_flag=1; next} /End final coordinates/ {end_flag=0}  end_flag && pos_flag { print $1, $2, $3, $4 }' relax.in.out > relaxed_atomic_positions.txt"
 
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}pw.x {scheduler.get_exec_infix(info)} < relax.in &> relax.in.out
+{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < relax.in &> relax.in.out
 
 cp ./tmp/struct.save/data-file-schema.xml ./relax.xml
 

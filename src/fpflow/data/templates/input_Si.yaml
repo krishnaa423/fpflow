@@ -1,6 +1,15 @@
+# Input info when iterating over input parameter values. 
+loop_info:    
+  - path: 'scf.xc'
+    values: ['pbe', 'lda']
+  - path: 'scf.is_spinorbit'
+    values: [false, true]
+
 #region: basic info 
 structures:
   - file:
+      type: 'mpapi-formula'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
+      value: 'Si'
     cell:
       unit: angstrom  # angstrom, bohr, alat. 
       read_if_relaxed: true
@@ -37,10 +46,10 @@ common:
   sym: &sym false
   kgrid: &kgrid [2, 2, 2]
   nkpts: &nkpts 8
-  qshift: &qshift [0.000, 0.000, 0.001]
   big_kgrid: &big_kgrid [2, 2, 2]
   big_nkpts: &big_nkpts 8
   qgrid: &qgrid [2, 2, 2]
+  qshift: &qshift [0.000, 0.000, 0.001]
   epw_nodes: &epw_nodes 1
   dft:
     ecut: &dft_ecut 20.0
@@ -64,66 +73,35 @@ common:
     elec_position: &xct_elec_position [0.25, 0.25, 0.25]
     xct_state: &xct_state 1
   job_types:
+    scheduler: &scheduler_dict
+      name: &scheduler_name 'mac_mini_parallel'
+      is_interactive: true
+    interactive:
+      nodes: &interactive_nodes 1
+      time: &interactive_time 03:40:00
     single:
       nodes: &single_nodes 1
       ntasks: &single_ntasks 1
       time: &single_time "02:45:00"
     para:
       nodes: &para_nodes 1
-      ntasks: &para_ntasks 8
+      ntasks: &para_ntasks 1
       time: &para_time "02:45:00"
     big:
       nodes: &big_nodes 1
-      ntasks: &big_ntasks 8
+      ntasks: &big_ntasks 1
       time: &big_time "02:45:00"
-
-scheduler:
-  generator: 'mac_mini_serial'
-  manager: 'mac_mini_parallel'
-  args:
-    is_interactive: true
 
 generator:
   dest_dir: ./
   pre_steps:
     - pseudos_qe
   steps: &gen_steps
-    # - esr_gen
     - relax_qe
-    # - cdft_qe
-    # - md_qe
     - scf_qe
     - dfpt_qe
     - phbands_qe
-    # - phdos_qe
     - phmodes_qe
-    # - dos_qe
-    # - pdos_qe
-    # - dftelbands_qe
-    # - kpdos_qe
-    # - wannier_qe 
-    - wfn_qe
-    - epw_qe
-    # - elph
-    - wfnq_qe
-    # - wfnfi_qe
-    # - wfnqfi_qe
-    - phonopy_qe
-    - epsilon_bgw
-    - sigma_bgw
-    - kernel_bgw
-    - absorption_bgw
-    - plotxct_bgw
-    - bseq_bgw
-    - xctph
-    # - xctpol
-    # - ste
-    # - esf
-    # - ml_deepmd
-    # - ml_dft
-    # - ml_dfpt
-    # - ml_gw
-    # - ml_bse
   post_steps:
     - create_script
     - run_script
@@ -140,45 +118,46 @@ manager:
     - dfpt_qe
     - phbands_qe
     - phmodes_qe
-    - wfn_qe
-    - epw_qe
-    - wfnq_qe
-    - phonopy_qe
-    - epsilon_bgw
-    - sigma_bgw
-    - kernel_bgw
-    - absorption_bgw
-    - plotxct_bgw
-    - bseq_bgw
-    - xctph
 #endregion: basic info
 
 job_types:
+  interactive:
+    name: *scheduler_name
+    is_interactive: true
+    nodes: *interactive_nodes
+    time: *interactive_time
   single_task: &single_task
+    <<: *scheduler_dict
     nodes: 1
     ntasks: 1
     time: *single_time
   single_node: &single_node
+    <<: *scheduler_dict
     nodes: 1
     ntasks: *single_ntasks
     time: *single_time
   para: &para
+    <<: *scheduler_dict
     nodes: *para_nodes
     ntasks: *para_ntasks
     time: *para_time
   para_k: &para_k
+    <<: *scheduler_dict
     nodes: *para_nodes
     ntasks: *para_ntasks
     time: *para_time
   big_para: &big_para
+    <<: *scheduler_dict
     nodes: *big_nodes
     ntasks: *big_ntasks
     time: *big_time
   big_para_k: &big_para_k
+    <<: *scheduler_dict
     nodes: *big_nodes
     ntasks: *big_ntasks
     time: *big_time
   para_epwk: &para_epwk
+    <<: *scheduler_dict
     nodes: *epw_nodes
     ntasks: *nkpts
     nk: *nkpts
@@ -398,6 +377,18 @@ convergence:
   dft:
     param_list:
       - params:
+          - path: 'scf.ecut'
+            value: 15
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+        copy_files:
+          from:
+          files: []
+      - params:
+          - path: 'scf.ecut'
+            value: 20
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
         copy_files:
           from:
           files: []
@@ -407,6 +398,18 @@ convergence:
   dfpt:
     param_list:
       - params:
+          - path: 'scf.ecut'
+            value: 15
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+        copy_files:
+          from:
+          files: []
+      - params:
+          - path: 'scf.ecut'
+            value: 20
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
         copy_files:
           from:
           files: []
@@ -416,6 +419,18 @@ convergence:
   gw:
     param_list:
       - params:
+          - path: 'scf.ecut'
+            value: 15
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+        copy_files:
+          from:
+          files: []
+      - params:
+          - path: 'scf.ecut'
+            value: 20
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
         copy_files:
           from:
           files: []
@@ -425,6 +440,18 @@ convergence:
   bse:
     param_list:
       - params:
+          - path: 'scf.ecut'
+            value: 15
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+        copy_files:
+          from:
+          files: []
+      - params:
+          - path: 'scf.ecut'
+            value: 20
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
         copy_files:
           from:
           files: []

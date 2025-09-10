@@ -16,7 +16,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.structure.kpts import Kpts
@@ -52,17 +51,16 @@ class BgwBseqStep(Step):
 
         input_kernel = BgwGrammar().write(kerneldict)
 
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('bse.kernel.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.kernel.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
 ln -sf ../../epsmat.h5 ./
 ln -sf ../../eps0mat.h5 ./
 ln -sf ../../{jmespath.search('bse.absorption.wfnco_link', self.inputdict)} ./WFN_co.h5 
 ln -sf ../../{jmespath.search('bse.absorption.wfnqco_link', self.inputdict)} ./WFNq_co.h5 
-{scheduler.get_exec_prefix(info)}kernel.cplx.x &> kernel.inp.out
+{scheduler.get_exec_prefix()}kernel.cplx.x &> kernel.inp.out
 '''
         job_kernel = file_string
         
@@ -100,11 +98,10 @@ ln -sf ../../{jmespath.search('bse.absorption.wfnqco_link', self.inputdict)} ./W
 
         input_absorption = BgwGrammar().write(absorptiondict)
 
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('bse.absorption.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.absorption.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
 ln -sf ../../epsmat.h5 ./
 ln -sf ../../eps0mat.h5 ./
@@ -114,7 +111,7 @@ ln -sf ../../{jmespath.search('bse.absorption.wfnco_link', self.inputdict)} ./WF
 ln -sf ../../{jmespath.search('bse.absorption.wfnqco_link', self.inputdict)} ./WFNq_co.h5 
 ln -sf ../../{jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 
 ln -sf ../../{jmespath.search('bse.absorption.wfnqfi_link', self.inputdict)} ./WFNq_fi.h5 
-{scheduler.get_exec_prefix(info)}absorption.cplx.x &> absorption.inp.out
+{scheduler.get_exec_prefix()}absorption.cplx.x &> absorption.inp.out
 mv bandstructure.dat bandstructure_absorption.dat
 '''
         job_absorption = file_string
@@ -137,15 +134,14 @@ mv bandstructure.dat bandstructure_absorption.dat
 
         input_plotxct = BgwGrammar().write(plotxctdict)
 
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('bse.kernel.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.kernel.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
 ln -sf ../../{jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 
 ln -sf ../../{jmespath.search('bse.absorption.wfnqfi_link', self.inputdict)} ./WFNq_fi.h5 
-{scheduler.get_exec_prefix(info)}plotxct.cplx.x &> plotxct.inp.out 
+{scheduler.get_exec_prefix()}plotxct.cplx.x &> plotxct.inp.out 
 volume.py ./scf.in espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
 rm -rf *.a3Dr
 '''
@@ -202,11 +198,10 @@ rm -rf *.a3Dr
         '''
         Idea is to create a list with start and stop indices to control execution.
         '''
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        bseq_info = JobInfo.from_inputdict('bseq.job_info', self.inputdict)
-        kernel_info = JobInfo.from_inputdict('bse.kernel.job_info', self.inputdict)
-        absorption_info = JobInfo.from_inputdict('bse.absorption.job_info', self.inputdict)
-        plotxct_info = JobInfo.from_inputdict('bse.plotxct.job_info', self.inputdict)
+        bseq_scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bseq.job_info')
+        kernel_scheduler: Scheduler  = Scheduler.from_jmespath(self.inputdict, 'bse.kernel.job_info')
+        absorption_scheduler: Scheduler  = Scheduler.from_jmespath(self.inputdict, 'bse.absorption.job_info')
+        plotxct_scheduler: Scheduler  = Scheduler.from_jmespath(self.inputdict, 'bse.plotxct.job_info')
 
         Qpts = Kpts.from_kgrid(
             kgrid = [
@@ -218,7 +213,7 @@ rm -rf *.a3Dr
         ).bseq_qpts
         Qpts = np.array(Qpts)
         job_bseq = '#!/bin/bash\n'
-        job_bseq += f'{scheduler.get_script_header(bseq_info)}\n'
+        job_bseq += f'{bseq_scheduler.get_script_header()}\n'
 
         job_bseq += "start=0\n"
         job_bseq += f"stop={Qpts.shape[0]}\n\n"
@@ -241,7 +236,7 @@ f'''    ln -sf ../../epsmat.h5 ./
     ln -sf ../../eps0mat.h5 ./
     ln -sf ../../{jmespath.search('bse.absorption.wfnco_link', self.inputdict)} ./WFN_co.h5 
     ln -sf ../../{jmespath.search('bse.absorption.wfnqco_link', self.inputdict)} ./WFNq_co.h5 
-    {scheduler.get_exec_prefix(kernel_info)}kernel.cplx.x &> kernel.inp.out
+    {kernel_scheduler.get_exec_prefix()}kernel.cplx.x &> kernel.inp.out
 '''
         
         absorption_commands = \
@@ -252,14 +247,14 @@ f'''    ln -sf ../../epsmat.h5 ./
     ln -sf ../../{jmespath.search('bse.absorption.wfnqco_link', self.inputdict)} ./WFNq_co.h5 
     ln -sf ../../{jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 
     ln -sf ../../{jmespath.search('bse.absorption.wfnqfi_link', self.inputdict)} ./WFNq_fi.h5 
-    {scheduler.get_exec_prefix(absorption_info)}absorption.cplx.x &> absorption.inp.out
+    {absorption_scheduler.get_exec_prefix()}absorption.cplx.x &> absorption.inp.out
     mv bandstructure.dat bandstructure_absorption.dat
 '''
         
         plotxct_commands = \
 f'''    ln -sf ../../{jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 
 ln -sf ../../{jmespath.search('bse.absorption.wfnqfi_link', self.inputdict)} ./WFNq_fi.h5 
-    {scheduler.get_exec_prefix(plotxct_info)}plotxct.cplx.x &> plotxct.inp.out 
+    {plotxct_scheduler.get_exec_prefix()}plotxct.cplx.x &> plotxct.inp.out 
     volume.py ../../scf.in espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
     rm -rf *.a3Dr
 '''

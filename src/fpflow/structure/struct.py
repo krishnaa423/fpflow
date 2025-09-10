@@ -11,6 +11,7 @@ import operator
 from fpflow.io.logging import get_logger
 from importlib.util import find_spec
 import os 
+from fpflow.structure.external_struct.mp import MateralsProject
 #endregion
 
 #region variables
@@ -146,6 +147,19 @@ class Struct:
         return cls(atoms=atoms, **kwargs)
     
     @classmethod
+    def _get_external_atoms(cls, struct_dict: dict) -> Atoms:
+        struct_type: str = jmespath.search('file.type', struct_dict)
+        struct_value: str = jmespath.search('file.value', struct_dict)
+
+        match struct_type:
+            case 'localfile':
+                return read(struct_value)
+            case 'mpapi-id':
+                return MateralsProject.from_id(struct_value).atoms
+            case 'mpapi-formula':
+                return MateralsProject.from_formula(struct_value).atoms
+
+    @classmethod
     def get_atoms_from_inputdict(cls, inputdict: dict) -> List[Atoms]:
         structures = jmespath.search('structures[*]', inputdict)
         atoms: List[Atoms] = []
@@ -153,16 +167,18 @@ class Struct:
         for struct_item in structures:
             # If file is present. 
             if struct_item['file']  is not None:
-                atoms.append(read(struct_item['file']))
-                continue
+                structure: Atoms = cls._get_external_atoms(struct_dict=struct_item)
+                atoms.append(structure)
+            else: #otherwise. 
+                atoms.append(Atoms(
+                    numbers=AtomicNumberArray.from_structdict(struct_item).array,
+                    positions=PositionArray.from_structdict(struct_item).array,
+                    cell=CellArray.from_structdict(struct_item).array,
+                    pbc=[True, True, True],
+                ))
 
-            #otherwise. 
-            atoms.append(Atoms(
-                numbers=AtomicNumberArray.from_structdict(struct_item).array,
-                positions=PositionArray.from_structdict(struct_item).array,
-                cell=CellArray.from_structdict(struct_item).array,
-                pbc=[True, True, True],
-            ))
+        for struct_idx, struct in enumerate(atoms):
+            write(f'atoms_{struct_idx}.xsf', struct)
 
         return atoms
     

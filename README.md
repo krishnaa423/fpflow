@@ -1,5 +1,7 @@
 # First-principles workflow
 
+Helps create input files, job scripts, manage runs, plots, and analysis. 
+
 Supported software:
 - Quantum Espresso
 - BerkeleyGW
@@ -50,6 +52,15 @@ Steps:
 - remove_script
 - plot_script
 - interactive_script
+
+## Installation. 
+
+```
+git clone 
+cd fpflow
+pip install -e .
+```
+
 
 ## Steps for adding a new step.
 - Fill out the step map in fpflow.steps.steps_map file. 

@@ -24,6 +24,8 @@ setup(
         'pyyaml',
         'jmespath',
         'lxml',
+        'mp_api',
+        
     ],
     entry_points={
         'console_scripts': [

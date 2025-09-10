@@ -4,7 +4,6 @@ from fpflow.io.read_write import str_2_f
 import os 
 from fpflow.steps.step import Step 
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from fpflow.plots.xctph import XctphPlot
 from fpflow.structure.qe.qe_struct import QeStruct
 import jmespath
@@ -59,17 +58,16 @@ main()
 
     @property
     def job_xctph(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('xctph.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'xctph.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
 rm -rf xctph.out
 touch xctph.out
 exec &> xctph.out
 
-{scheduler.get_exec_prefix(info)}python3 script_xctph.py &> script_xctph.py.out
+{scheduler.get_exec_prefix()}python3 script_xctph.py &> script_xctph.py.out
 '''
         return file_string
 

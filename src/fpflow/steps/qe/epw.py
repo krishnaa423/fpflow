@@ -8,7 +8,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.io.logging import get_logger
@@ -116,13 +115,12 @@ class QeEpwStep(Step):
 
     @property
     def job_epw(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('epw.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'epw.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}epw.x {scheduler.get_exec_infix(info)} < epw.in  &> epw.in.out 
+{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < epw.in  &> epw.in.out 
 cp ./wfn.xml ./save/wfn.xml
 cp ./tmp/*epb* ./save/
 '''

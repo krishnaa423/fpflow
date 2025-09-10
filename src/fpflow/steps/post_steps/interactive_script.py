@@ -17,7 +17,7 @@ class InteractiveScriptStep(Step):
     @property
     def file_contents(self) -> dict:
         return {
-            'interactive.sh': Scheduler.from_input_yamlfilename().get_interactive_script_str()
+            'interactive.sh': Scheduler.from_jmespath(inputdict=self.inputdict, jmspath='job_types.interactive').get_interactive_script_str()
         }
     
     @property

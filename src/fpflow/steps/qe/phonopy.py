@@ -8,7 +8,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from importlib.util import find_spec
 import glob 
 from ase.dft.kpoints import get_special_points
@@ -107,8 +106,7 @@ class QePhonopyStep(Step):
     def job_phonopy(self) -> str:
         #TODO: Copy pasted. Can refactor this. 
 
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('dfpt.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'dfpt.job_info')
 
         qdim: list = jmespath.search('dfpt.qgrid[*]', self.inputdict)
         str_2_f(self.phonopy_scf_prefix, 'phonopy_scf_prefix')
@@ -136,7 +134,7 @@ class QePhonopyStep(Step):
         file_variable = '${files[$i]}'
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
 {debug_str}
 
@@ -146,7 +144,7 @@ start={start_idx}
 stop={stop_idx-1}
 
 for (( i=$start; i<=$stop; i++ )); do
-{scheduler.get_exec_prefix(info)}pw.x < {file_variable} &> {file_variable}.out
+{scheduler.get_exec_prefix()}pw.x < {file_variable} &> {file_variable}.out
 done
 
 # Post processing. This should create FORCE_SETS and phonon bands. 

@@ -10,7 +10,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.structure.kpts import Kpts
 #endregion
@@ -86,13 +85,12 @@ class QeWfnqStep(Step):
 
     @property
     def job_wfnq(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('wfnq.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wfnq.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}pw.x {scheduler.get_exec_infix(info)} < wfnq.in &> wfnq.in.out 
+{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfnq.in &> wfnq.in.out 
 '''
         return file_string
 
@@ -122,13 +120,12 @@ class QeWfnqStep(Step):
 
     @property
     def job_wfnq_pw2bgw(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('wfnq.job_pw2bgw_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wfnq.job_pw2bgw_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}pw2bgw.x -pd .true. < wfnq_pw2bgw.in &> wfnq_pw2bgw.in.out
+{scheduler.get_exec_prefix()}pw2bgw.x -pd .true. < wfnq_pw2bgw.in &> wfnq_pw2bgw.in.out
 cp ./tmp/WFNq_coo ./
 cp ./tmp/struct.xml ./wfnq.xml
 wfn2hdf.x BIN WFNq_coo WFNq_coo.h5  

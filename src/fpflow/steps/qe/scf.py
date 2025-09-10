@@ -9,7 +9,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 #endregion
 
 #region variables
@@ -67,13 +66,12 @@ class QeScfStep(Step):
 
     @property
     def job_scf(self):
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('scf.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'scf.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}pw.x {scheduler.get_exec_infix(info)} < scf.in &> scf.in.out
+{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < scf.in &> scf.in.out
 
 cp ./tmp/struct.save/data-file-schema.xml ./scf.xml
 '''
@@ -103,5 +101,6 @@ cp ./tmp/struct.save/data-file-schema.xml ./scf.xml
             './scf.in.out',
             './scf.xml',
             './pseudos/qe',
+            './atoms_*.xsf',        # Removes structure files created by Struct object. 
         ]
 #endregion

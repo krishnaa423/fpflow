@@ -9,7 +9,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.structure.kpts import Kpts
@@ -44,15 +43,14 @@ class BgwPlotxctStep(Step):
     
     @property
     def job_plotxct(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('bse.plotxct.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.plotxct.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
 ln -sf {jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 
 ln -sf {jmespath.search('bse.absorption.wfnqfi_link', self.inputdict)} ./WFNq_fi.h5 
-{scheduler.get_exec_prefix(info)}plotxct.cplx.x &> plotxct.inp.out 
+{scheduler.get_exec_prefix()}plotxct.cplx.x &> plotxct.inp.out 
 volume.py ./scf.in espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
 rm -rf *.a3Dr
 '''

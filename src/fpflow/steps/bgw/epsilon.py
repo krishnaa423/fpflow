@@ -9,7 +9,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.structure.kpts import Kpts
@@ -61,15 +60,14 @@ class BgwEpsilonStep(Step):
     
     @property
     def job_epsilon(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('gw.epsilon.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'gw.epsilon.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
 ln -sf {jmespath.search('gw.epsilon.wfnlink', self.inputdict)} ./WFN.h5 
 ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5 
-{scheduler.get_exec_prefix(info)}epsilon.cplx.x &> epsilon.inp.out 
+{scheduler.get_exec_prefix()}epsilon.cplx.x &> epsilon.inp.out 
 '''
         return file_string
 

@@ -8,7 +8,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from importlib.util import find_spec
 #endregion
 
@@ -54,13 +53,12 @@ class QeDfptStep(Step):
     
     @property
     def job_dfpt(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('dfpt.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'dfpt.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}ph.x {scheduler.get_exec_infix(info)} < dfpt.in &> dfpt.in.out
+{scheduler.get_exec_prefix()}ph.x {scheduler.get_exec_infix()} < dfpt.in &> dfpt.in.out
 
 python3 ./create_save.py
 '''

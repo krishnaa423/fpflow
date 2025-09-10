@@ -10,7 +10,6 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
-from fpflow.schedulers.jobinfo import JobInfo
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.structure.kpts import Kpts
 import numpy as np 
@@ -82,13 +81,12 @@ class QeWfnStep(Step):
     
     @property
     def job_wfn(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('wfn.job_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wfn.job_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}pw.x {scheduler.get_exec_infix(info)} < wfn.in &> wfn.in.out 
+{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfn.in &> wfn.in.out 
 
 cp ./tmp/struct.xml ./wfn.xml
 '''
@@ -128,13 +126,12 @@ cp ./tmp/struct.xml ./wfn.xml
     
     @property
     def job_wfn_pw2bgw(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('wfn.job_pw2bgw_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wfn.job_pw2bgw_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}pw2bgw.x -pd .true. < wfn_pw2bgw.in &> wfn_pw2bgw.in.out
+{scheduler.get_exec_prefix()}pw2bgw.x -pd .true. < wfn_pw2bgw.in &> wfn_pw2bgw.in.out
 cp ./tmp/WFN_coo ./
 cp ./tmp/RHO ./
 cp ./tmp/VXC ./
@@ -167,13 +164,12 @@ cp ./tmp/VKB ./
     
     @property
     def job_parabands(self) -> str:
-        scheduler = Scheduler.from_inputdict(self.inputdict)
-        info = JobInfo.from_inputdict('wfn.job_parabands_info', self.inputdict)
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wfn.job_parabands_info')
 
         file_string = f'''#!/bin/bash
-{scheduler.get_script_header(info)}
+{scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix(info)}parabands.cplx.x &> parabands.inp.out
+{scheduler.get_exec_prefix()}parabands.cplx.x &> parabands.inp.out
 '''
         return file_string
 
