@@ -67,7 +67,7 @@ class Generator:
         step_classes = []
         for step_str in steps_list_str:
             if step_str in step_class_map.keys():
-                step_classes.append(step_class_map[step_str](inputdict=inputdict, generatorclass=Generator))
+                step_classes.append(step_class_map[step_str](inputdict=inputdict, generatorclass=Generator, stepmap=step_class_map))
             else:
                 print(f'{step_str} does not have a class map value.', flush=True)
         

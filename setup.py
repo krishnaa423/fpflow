@@ -26,7 +26,7 @@ setup(
         'lxml',
         'mp_api',
         'glom',
-        
+        'python-benedict[all]',
     ],
     entry_points={
         'console_scripts': [

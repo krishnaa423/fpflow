@@ -12,7 +12,7 @@ from fpflow.steps.step import Step
 #endregion
 
 #region classes
-class MlGwStep(Step):
+class MlQeGwStep(Step):
     @property
     def file_contents(self) -> dict:
         return {}

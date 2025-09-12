@@ -144,7 +144,8 @@ class Struct:
     @classmethod
     def from_inputdict(cls, inputdict: dict, **kwargs):
         atoms: List[Atoms] = cls.get_atoms_from_inputdict(inputdict)
-        return cls(atoms=atoms, **kwargs)
+        struct_idx: int = jmespath.search('structures.active_idx', inputdict)
+        return cls(atoms=atoms, struct_idx=struct_idx, **kwargs)
     
     @classmethod
     def _get_external_atoms(cls, struct_dict: dict) -> Atoms:
@@ -161,24 +162,31 @@ class Struct:
 
     @classmethod
     def get_atoms_from_inputdict(cls, inputdict: dict) -> List[Atoms]:
-        structures = jmespath.search('structures[*]', inputdict)
+        structures = jmespath.search('structures.list[*]', inputdict)
         atoms: List[Atoms] = []
 
-        for struct_item in structures:
+        for struct_idx, struct_item in enumerate(structures):
             # If file is present. 
             if struct_item['file']  is not None:
                 structure: Atoms = cls._get_external_atoms(struct_dict=struct_item)
-                atoms.append(structure)
             else: #otherwise. 
-                atoms.append(Atoms(
+                structure: Atoms = Atoms(
                     numbers=AtomicNumberArray.from_structdict(struct_item).array,
                     positions=PositionArray.from_structdict(struct_item).array,
                     cell=CellArray.from_structdict(struct_item).array,
                     pbc=[True, True, True],
-                ))
+                )
+            
+            # Create supercell if specified. 
+            supercell_size: list = jmespath.search(f'structures.list[{struct_idx}].supercell_size', inputdict)
+            if supercell_size is not None:
+                structure = structure * supercell_size
+            
+            # Append the structure. 
+            atoms.append(structure)
 
-        for struct_idx, struct in enumerate(atoms):
-            write(f'atoms_{struct_idx}.xsf', struct)
+            # Write structure file. 
+            write(f'atoms_{struct_idx}.xsf', structure)
 
         return atoms
     

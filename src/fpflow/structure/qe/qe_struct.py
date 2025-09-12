@@ -88,7 +88,7 @@ class QeStruct(Struct):
         return total_val_bands
     
     def get_ibrav(self, inputdict: dict) -> int:
-        struct_dict: dict = jmespath.search('structures[*]', inputdict)[self.struct_idx]
+        struct_dict: dict = jmespath.search('structures.list[*]', inputdict)[self.struct_idx]
         ibrav_str: str = 'free' if jmespath.search('cell.bravais_lattice_info.ibrav', struct_dict) is None else jmespath.search('cell.bravais_lattice_info.ibrav', struct_dict)
 
         match ibrav_str:

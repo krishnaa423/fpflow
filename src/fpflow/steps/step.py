@@ -4,6 +4,7 @@ from fpflow.io.read_write import str_2_f
 import os 
 from fpflow.managers.run import subprocess_run
 import glob 
+from abc import ABC, abstractmethod
 #endregion
 
 #region variables
@@ -41,8 +42,6 @@ class Step:
             # Set permissions for the destination file. 
             if filename[-3:]=='.sh':
                 os.system(f'chmod u+x {filename}')
-
-                
 
     def run(self, **kwargs):
         total_time: float = 0.0 if not 'total_time' in kwargs.keys() else kwargs['total_time']

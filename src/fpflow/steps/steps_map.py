@@ -23,6 +23,7 @@ from fpflow.steps.qe.wfnqfi import QeWfnqfiStep
 from fpflow.steps.qe.phonopy import QePhonopyStep
 from fpflow.steps.bgw.epsilon import BgwEpsilonStep
 from fpflow.steps.bgw.sigma import BgwSigmaStep
+from fpflow.steps.bgw.gwelbands import BgwGwelbandsStep
 from fpflow.steps.bgw.kernel import BgwKernelStep
 from fpflow.steps.bgw.absorption import BgwAbsorptionStep
 from fpflow.steps.bgw.plotxct import BgwPlotxctStep
@@ -31,11 +32,15 @@ from fpflow.steps.xctph import XctphStep
 from fpflow.steps.xctpol import XctpolStep
 from fpflow.steps.ste import SteStep
 from fpflow.steps.esf import EsfStep
+from fpflow.steps.esr import EsrStep
 from fpflow.steps.qe.convergence_scf import QeConvergenceScfStep
+from fpflow.steps.qe.convergence_dfpt import QeConvergenceDfptStep
+from fpflow.steps.bgw.convergence_gw import BgwConvergenceGwStep
+from fpflow.steps.bgw.convergence_bse import BgwConvergenceBseStep
 from fpflow.steps.ml.deepmd import MlDeepmdStep
-from fpflow.steps.ml.dft import MlDftStep
-from fpflow.steps.ml.gw import MlGwStep
-from fpflow.steps.ml.bse import MlBseStep
+from fpflow.steps.ml.qe.dft import MlQeDftStep
+from fpflow.steps.ml.qe.gw import MlQeGwStep
+from fpflow.steps.ml.qe.bse import MlQeBseStep
 from fpflow.steps.post_steps.create_script import CreateScriptStep
 from fpflow.steps.post_steps.run_script import RunScriptStep
 from fpflow.steps.post_steps.tail_script import TailScriptStep
@@ -70,6 +75,7 @@ step_class_map: dict = {
     'phonopy_qe': QePhonopyStep,
     'epsilon_bgw': BgwEpsilonStep,
     'sigma_bgw': BgwSigmaStep,
+    'gwelbands_bgw': BgwGwelbandsStep,
     'kernel_bgw': BgwKernelStep,
     'absorption_bgw': BgwAbsorptionStep,
     'plotxct_bgw': BgwPlotxctStep,
@@ -78,11 +84,15 @@ step_class_map: dict = {
     'xctpol': XctpolStep,
     'ste': SteStep,
     'esf': EsfStep,
+    'esr': EsrStep,
     'convergence_scf_qe': QeConvergenceScfStep,
-    'ml_deepmd': MlDeepmdStep,
-    'ml_dft': MlDftStep,
-    'ml_gw': MlGwStep,
-    'ml_bse': MlBseStep,
+    'convergence_dfpt_qe': QeConvergenceDfptStep,
+    'convergence_gw_qe': BgwConvergenceGwStep,
+    'convergence_bse_qe': BgwConvergenceBseStep,
+    'mldeepmd': MlDeepmdStep,
+    'mldftqe': MlQeDftStep,
+    'mlgwqe': MlQeGwStep,
+    'mlbseqe': MlQeBseStep,
     'create_script': CreateScriptStep,
     'run_script': RunScriptStep,
     'tail_script': TailScriptStep,
