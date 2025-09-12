@@ -68,7 +68,7 @@ kpath:
   npoints_segment: 10  
 
 common:
-  sym: &sym false
+  sym: &sym true
   kgrid: &kgrid [2, 2, 2]
   nkpts: &nkpts 8
   big_kgrid: &big_kgrid [2, 2, 2]
@@ -76,6 +76,7 @@ common:
   qgrid: &qgrid [2, 2, 2]
   qshift: &qshift [0.000, 0.000, 0.001]
   epw_nodes: &epw_nodes 1
+  epw_nk: &epw_nk 1
   dft:
     ecut: &dft_ecut 20.0
     val_bands: &dft_valbands 4
@@ -214,8 +215,8 @@ job_types:
   para_epwk: &para_epwk
     <<: *scheduler_dict
     nodes: *epw_nodes
-    ntasks: *nkpts
-    nk: *nkpts
+    ntasks: *epw_nk
+    nk: *epw_nk
     time: *big_time
 
 relax:

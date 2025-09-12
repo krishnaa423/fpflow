@@ -37,11 +37,6 @@ class BgwSigmaStep(Step):
                 jmespath.search('wfn.kgrid[1]', self.inputdict),
                 jmespath.search('wfn.kgrid[2]', self.inputdict),
             ],
-            qshift=[
-                jmespath.search('wfnq.qshift[0]', self.inputdict),
-                jmespath.search('wfnq.qshift[1]', self.inputdict),
-                jmespath.search('wfnq.qshift[2]', self.inputdict),
-            ],
             is_reduced=jmespath.search('wfn.sym', self.inputdict),
         )
 
