@@ -108,7 +108,7 @@ class Generator:
             poststep.run()
 
     def write_inputyaml_with_destdir_changed(self):
-        if self.dest_dir is not None:
+        if self.dest_dir is not None and os.path.abspath(self.dest_dir)!=os.getcwd():
             os.makedirs(self.dest_dir, exist_ok=True)
             updated_dict: dict = copy.deepcopy(self.inputdict)
             glom.assign(updated_dict, 'generator.dest_dir', './')
