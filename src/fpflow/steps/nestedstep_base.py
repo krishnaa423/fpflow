@@ -43,7 +43,7 @@ class NestedBaseStep(Step, ABC):
 import sys
 import glob
 import subprocess
-import fpflow.managers.run import subprocess_run
+from fpflow.managers.run import subprocess_run
 
 # Set the stdout and stderr. 
 outfile = open('script_{self.steptag}.py.out', 'w')
@@ -52,6 +52,7 @@ sys.stderr = outfile
 
 # Get the directories. 
 {self.steptag}_dirs = [inode for inode in glob.glob('./{self.steptag}/*') if os.path.isdir(inode)]
+{self.steptag}_dirs.sort()
 start: int = 0
 stop: int = len({self.steptag}_dirs)
 

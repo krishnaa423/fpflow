@@ -141,8 +141,8 @@ generator:
     # - epw_qe
     # - elph
     - wfnq_qe
-    - wfnfi_qe
-    - wfnqfi_qe
+    # - wfnfi_qe
+    # - wfnqfi_qe
     # - phonopy_qe
     - epsilon_bgw
     - sigma_bgw
@@ -151,7 +151,7 @@ generator:
     - absorption_bgw
     # - plotxct_bgw
     - bseq_bgw
-    - xctph
+    # - xctph
     # - xctpol
     # - ste
     # - esf

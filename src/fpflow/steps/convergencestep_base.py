@@ -53,6 +53,7 @@ sys.stderr = outfile
 
 # Get the directories. 
 {self.subdir1}{self.subdir2}_dirs = [inode for inode in glob.glob('./convergence/{self.subdir1}/{self.subdir2}/*') if os.path.isdir(inode)]
+{self.subdir1}{self.subdir2}_dirs.sort()
 start: int = 0
 stop: int = len({self.subdir1}{self.subdir2}_dirs)
 

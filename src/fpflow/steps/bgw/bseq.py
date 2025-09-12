@@ -40,7 +40,7 @@ class BgwBseqStep(Step):
 import sys
 import glob
 import subprocess
-import fpflow.managers.run import subprocess_run
+from fpflow.managers.run import subprocess_run
 
 # Set the stdout and stderr. 
 outfile = open('script_bseq.py.out', 'w')
@@ -49,6 +49,7 @@ sys.stderr = outfile
 
 # Get the directories. 
 bseq_dirs = [inode for inode in glob.glob('./bseq/*') if os.path.isdir(inode)]
+bseq_dirs.sort()
 start: int = 0
 stop: int = len(bseq_dirs)
 
@@ -58,10 +59,10 @@ stop: int = len(bseq_dirs)
 
 total_time: float = 0.0
 for bseq_dir in bseq_dirs[start:stop]:
-    total_time = subprocess_run('./kernel.sh', total_time=total_time, dest_dir=bseq_dir)
-    total_time = subprocess_run('./absorption.sh', total_time=total_time, dest_dir=bseq_dir)
-    total_time = subprocess_run('./plotxct.sh', total_time=total_time, dest_dir=bseq_dir)
-
+    total_time = subprocess_run('./job_kernel.sh', total_time=total_time, dest_dir=bseq_dir)
+    total_time = subprocess_run('./job_absorption.sh', total_time=total_time, dest_dir=bseq_dir)
+    total_time = subprocess_run('./job_plotxct.sh', total_time=total_time, dest_dir=bseq_dir)
+    
 print(f'Done bseq in total time: ', total_time, ' seconds.', flush=True)
 '''
 
