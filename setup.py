@@ -25,6 +25,7 @@ setup(
         'jmespath',
         'lxml',
         'mp_api',
+        'glom',
         
     ],
     entry_points={

@@ -114,6 +114,7 @@ class QePhbandsStep(Step):
             './struct.freq',
             './struct.freq.gp',
             './struct.modes',
+            'plot_phbands.h5'
         ]
     
     def plot(self, **kwargs):

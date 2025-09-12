@@ -43,6 +43,10 @@ Steps:
 - xctpol
 - ste
 - esf
+- convergence_scf
+- convergence_dfpt
+- convergence_gw
+- convergence_bse
 - ml_deepmd
 - ml_dft
 - ml_gw

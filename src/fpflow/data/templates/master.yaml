@@ -104,7 +104,7 @@ generator:
     - phmodes_qe
     - bseq_bgw
     - convergence_scf_qe
-    # - convergence_dfpt_qe
+    - convergence_dfpt_qe
     # - convergence_gw_bgw
     # - convergence_bse_bgw
   post_steps:
@@ -384,15 +384,7 @@ esr:
 convergence:
   qe:
     scf:
-      param_list:
-        - params:
-            - path: 'scf.ecut'
-              value: 15
-            - path: 'scf.kgrid'
-              value: [2, 2, 2]
-          link_inodes:
-            from:
-            files: 
+      dir_list:
         - params:
             - path: 'scf.ecut'
               value: 20
@@ -401,83 +393,61 @@ convergence:
           link_inodes:
             from:
             files: 
-        - params:
-            - path: 'scf.ecut'
-              value: 20
-            - path: 'scf.kgrid'
-              value: [3, 3, 3]
-          link_inodes:
-            from:
-            files: 
+          generator:
+            pre_steps: ['pseudos_qe']
+            steps: ['scf_qe', 'dftelbands_qe']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       link_inodes:
         from:
         files:
       job_info:
         <<: *big_para
     dfpt:
-      param_list:
+      dir_list:
         - params:
-            - path: 'dfpt.ecut'
-              value: 15
-            - path: 'scf.kgrid'
+            - path: 'dfpt.qgrid'
               value: [2, 2, 2]
           link_inodes:
-            from:
-            files: []
-        - params:
-            - path: 'scf.ecut'
-              value: 20
-            - path: 'scf.kgrid'
-              value: [2, 2, 2]
-          link_inodes:
-            from:
-            files: []
+            from: '../scf/dset_0/'
+            files: ['./pseudos', './tmp']
+          generator:
+            pre_steps:
+            steps: ['dfpt_qe']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       link_inodes:
         from:
         files: []
       job_info:
         <<: *big_para
     gw:
-      param_list:
+      dir_list:
         - params:
-            - path: 'scf.ecut'
-              value: 15
-            - path: 'scf.kgrid'
-              value: [2, 2, 2]
+            - path: 'gw.epsilon.ecut'
+              value: 10.0
           link_inodes:
-            from:
-            files: []
-        - params:
-            - path: 'scf.ecut'
-              value: 20
-            - path: 'scf.kgrid'
-              value: [2, 2, 2]
-          link_inodes:
-            from:
-            files: []
+            from: '../scf/dset_0/'
+            files: ['./pseudos', './tmp']
+          generator:
+            pre_steps:
+            steps: ['epsilon_bgw', '']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       link_inodes:
         from:
         files: []
       job_info:
         <<: *big_para
     bse:
-      param_list:
+      dir_list:
         - params:
-            - path: 'scf.ecut'
-              value: 15
-            - path: 'scf.kgrid'
+            - path: 'dfpt.qgrid'
               value: [2, 2, 2]
           link_inodes:
-            from:
-            files: []
-        - params:
-            - path: 'scf.ecut'
-              value: 20
-            - path: 'scf.kgrid'
-              value: [2, 2, 2]
-          link_inodes:
-            from:
-            files: []
+            from: '../scf/dset_0/'
+            files: ['./pseudos', './tmp']
+          generator:
+            pre_steps:
+            steps: ['dfpt_qe']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       link_inodes:
         from:
         files: []

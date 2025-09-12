@@ -44,8 +44,20 @@ class BgwPlotxctStep(Step):
     @property
     def job_plotxct(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.plotxct.job_info')
+        link_dir_prefix: str = jmespath.search('bse.absorption.link_dir_prefix', self.inputdict)
 
-        file_string = f'''#!/bin/bash
+        if link_dir_prefix is not None:
+            file_string = f'''#!/bin/bash
+{scheduler.get_script_header()}
+
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnfi_link', self.inputdict))} ./WFN_fi.h5 
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnqfi_link', self.inputdict))} ./WFNq_fi.h5 
+{scheduler.get_exec_prefix()}plotxct.cplx.x &> plotxct.inp.out 
+volume.py {os.path.join(link_dir_prefix, './scf.in')} espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
+rm -rf *.a3Dr
+'''
+        else:
+            file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
 ln -sf {jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 

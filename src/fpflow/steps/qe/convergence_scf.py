@@ -3,14 +3,13 @@ from typing import List
 from fpflow.io.read_write import str_2_f
 import os 
 from fpflow.steps.step import Step 
-import copy 
-import numpy as np 
+from fpflow.inputs.grammars.namelist import NamelistGrammar
 import jmespath
-from fpflow.structure.kpts import Kpts
-from fpflow.steps.bgw.kernel import BgwKernelStep
-from fpflow.steps.bgw.absorption import BgwAbsorptionStep
-from fpflow.steps.bgw.plotxct import BgwPlotxctStep
+from fpflow.io.update import update_dict
+from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
+from importlib.util import find_spec
+import copy 
 import glom 
 from fpflow.inputs.inputyaml import InputYaml
 from fpflow.io.change_dir import change_dir
@@ -23,7 +22,7 @@ from fpflow.io.change_dir import change_dir
 #endregion
 
 #region classes
-class BgwBseqStep(Step):
+class QeConvergenceScfStep(Step):
     def __init__(self, generatorclass=None, **kwargs):
         '''
         Problem:
@@ -35,48 +34,48 @@ class BgwBseqStep(Step):
         self.generatorclass = generatorclass
 
     @property
-    def script_bseq(self):
+    def script_convqescf(self) -> str:
         return f'''import os
 import sys
-import glob
+import glob 
 import subprocess
-import fpflow.managers.run import subprocess_run
+from fpflow.managers.run import subprocess_run
 
 # Set the stdout and stderr. 
-outfile = open('script_bseq.py.out', 'w')
+outfile = open('script_convqescf.py.out', 'w')
 sys.stdout = outfile
 sys.stderr = outfile
 
 # Get the directories. 
-bseq_dirs = [inode for inode in glob.glob('./bseq/*') if os.path.isdir(inode)]
+qescf_dirs = [inode for inode in glob.glob('./convergence/qe/scf/*') if os.path.isdir(inode)]
 start: int = 0
-stop: int = len(bseq_dirs)
+stop: int = len(qescf_dirs)
 
 # Override if needed. Comment this out and set. 
 #start = 0 
 #stop = 1
 
 total_time: float = 0.0
-for bseq_dir in bseq_dirs[start:stop]:
-    total_time = subprocess_run('./kernel.sh', total_time=total_time, dest_dir=bseq_dir)
-    total_time = subprocess_run('./absorption.sh', total_time=total_time, dest_dir=bseq_dir)
-    total_time = subprocess_run('./plotxct.sh', total_time=total_time, dest_dir=bseq_dir)
+for qescf_dir in qescf_dirs[start:stop]:
+    total_time = subprocess_run('./run.sh', total_time=total_time, dest_dir=qescf_dir)
 
-print(f'Done bseq in total time: ', total_time, ' seconds.', flush=True)
+print(f'Done convqescf in total time: ', total_time, ' seconds.', flush=True)
 '''
-
+    
     @property
-    def job_bseq(self):
-        bseq_scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bseq.job_info')
-
+    def job_convqescf(self) -> str:
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'convergence.qe.scf.job_info')
+        
         return f'''#!/bin/bash
-{bseq_scheduler.get_script_header()}
+{scheduler.get_script_header()}
 
-python ./script_bseq.py
+./link.sh
+
+python ./script_convqescf.py
 '''
 
     @change_dir
-    def _create_in_subdir(self, Qpt: list, Qpt_idx: int):
+    def _create_in_subdir(self, dir_list_idx: int):
         '''
         This function:
         - Changes to subdirectory. 
@@ -84,17 +83,16 @@ python ./script_bseq.py
         - Runs the generator to create the step files. 
         '''
         inputdict_local: dict = copy.deepcopy(self.inputdict)
+        params: list = jmespath.search(f'convergence.qe.scf.dir_list[{dir_list_idx}].params', inputdict_local)
+        link_inodes: list = jmespath.search(f'convergence.qe.scf.dir_list[{dir_list_idx}].link_inodes', inputdict_local)
+        common_link_inodes: list = jmespath.search(f'convergence.qe.scf.link_inodes', inputdict_local)
 
-        # Change parameters. 
-        glom.assign(inputdict_local, 'bse.kernel.qshift', Qpt)
-        glom.assign(inputdict_local, 'bse.kernel.link_dir_prefix', '../../')
-        glom.assign(inputdict_local, 'bse.absorption.qshift', Qpt)
-        glom.assign(inputdict_local, 'bse.absorption.link_dir_prefix', '../../')
-        glom.assign(inputdict_local, 'bse.plotxct.link_dir_prefix', '../../')
-        # Change generator and manager parameters. 
+        # Update values. 
+        for param in params:
+            glom.assign(inputdict_local, param['path'], param['value'])
         glom.assign(inputdict_local, 'generator.dest_dir', './')
-        glom.assign(inputdict_local, 'generator.pre_steps', [])
-        glom.assign(inputdict_local, 'generator.steps', ['kernel_bgw', 'absorption_bgw', 'plotxct_bgw'])
+        glom.assign(inputdict_local, 'generator.pre_steps', ['pseudos_qe'])
+        glom.assign(inputdict_local, 'generator.steps', ['scf_qe', 'dftelbands_qe'])
         glom.assign(inputdict_local, 'generator.post_steps', [
             'create_script',
             'run_script',
@@ -102,7 +100,7 @@ python ./script_bseq.py
             'plot_script',
             'interactive_script',
         ])
-        glom.assign(inputdict_local, 'manager.steps', ['kernel_bgw', 'absorption_bgw', 'plotxct_bgw'])
+        glom.assign(inputdict_local, 'manager.steps', ['scf_qe', 'dftelbands_qe'])
 
         # Write input yaml file. 
         InputYaml.to_yaml_file('./input.yaml', inputdict_local)
@@ -112,27 +110,21 @@ python ./script_bseq.py
         generator.create()
 
     def create_in_subdirs(self):
-        Qgrid: np.ndarray = jmespath.search('bseq.qgrid', self.inputdict)
-        is_reduced: bool = jmespath.search('bseq.sym', self.inputdict)
-        Qpts: list = Kpts.from_kgrid(
-            kgrid=Qgrid,
-            is_reduced=is_reduced,
-        ).bseq_qpts
+        dir_list_len = len(jmespath.search('convergence.qe.scf.dir_list', self.inputdict))
 
-        for Qpt_idx, Qpt in enumerate(Qpts):
-            self.dest_dir: str = f'./bseq/Q_{Qpt_idx}'
+        for dir_list_idx in range(dir_list_len):
+            self.dest_dir: str = f'./convergence/qe/scf/dset_{dir_list_idx}'
             self.current_dir: str = os.getcwd()
             os.makedirs(self.dest_dir, exist_ok=True)
-            self._create_in_subdir(Qpt, Qpt_idx)
-
+            self._create_in_subdir(dir_list_idx)
+                
     def create(self):
         self.create_in_subdirs()
 
         extra_filecontents: dict = {
-            'script_bseq.py': self.script_bseq,
-            'job_bseq.sh': self.job_bseq,
+            'script_convqescf.py': self.script_convqescf,
+            'job_convqescf.sh': self.job_convqescf,
         }
-
         for filename, filecontents in extra_filecontents.items():
             str_2_f(filecontents, filename)
         
@@ -141,20 +133,19 @@ python ./script_bseq.py
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_bseq.sh'
+            './job_convqescf.sh',
         ]
 
     @property
     def save_inodes(self) -> List[str]:
         return []
-
+    
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './bseq',
-            './script_bseq.py',
-            './script_bseq.py.out',
-            './job_bseq.sh',
+            './convergence',
+            './script_convqescf.py.out',
+            './script_convqescf.py',
+            './job_convqescf.sh',
         ]
-
 #endregion

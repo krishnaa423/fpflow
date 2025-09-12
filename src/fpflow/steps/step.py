@@ -3,6 +3,7 @@ from typing import List
 from fpflow.io.read_write import str_2_f
 import os 
 from fpflow.managers.run import subprocess_run
+import glob 
 #endregion
 
 #region variables
@@ -30,13 +31,18 @@ class Step:
     def remove_inodes(self) -> List[str]:
         return []
     
-    def __init__(self, inputdict: dict):
+    def __init__(self, inputdict: dict, **kwargs):
         self.inputdict: dict = inputdict 
 
     def create(self):
         for filename, filecontents in self.file_contents.items():
             str_2_f(filecontents, filename)
-        os.system('chmod u+x ./*.sh')
+
+            # Set permissions for the destination file. 
+            if filename[-3:]=='.sh':
+                os.system(f'chmod u+x {filename}')
+
+                
 
     def run(self, **kwargs):
         total_time: float = 0.0 if not 'total_time' in kwargs.keys() else kwargs['total_time']

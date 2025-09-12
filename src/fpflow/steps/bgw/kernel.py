@@ -24,7 +24,7 @@ from fpflow.structure.kpts import Kpts
 class BgwKernelStep(Step):
     @property
     def kernel(self) -> str:
-        qshift: list[int] = jmespath.search('bse.absorption.qshift[*]', self.inputdict)
+        qshift: list[int] = jmespath.search('bse.kernel.qshift[*]', self.inputdict)
 
         kerneldict: dict = {
             'exciton_Q_shift': f"2 {qshift[0]} {qshift[1]} {qshift[2]}",
@@ -39,18 +39,31 @@ class BgwKernelStep(Step):
         update_dict(kerneldict, jmespath.search('bse.kernel.args', self.inputdict))
 
         return BgwGrammar().write(kerneldict)
-    
+
     @property
     def job_kernel(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.kernel.job_info')
+        link_dir_prefix: str = jmespath.search('bse.kernel.link_dir_prefix', self.inputdict)
 
-        file_string = f'''#!/bin/bash
+        if link_dir_prefix is not None:
+            file_string = f'''#!/bin/bash
+{scheduler.get_script_header()}
+
+ln -sf {os.path.join(link_dir_prefix, 'epsmat.h5')} ./epsmat.h5
+ln -sf {os.path.join(link_dir_prefix, 'eps0mat.h5')} ./eps0mat.h5
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnco_link', self.inputdict))} ./WFN_co.h5 
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnqco_link', self.inputdict))} ./WFNq_co.h5 
+{scheduler.get_exec_prefix()}kernel.cplx.x &> kernel.inp.out
+    '''
+        else:
+            file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
 ln -sf {jmespath.search('bse.absorption.wfnco_link', self.inputdict)} ./WFN_co.h5 
 ln -sf {jmespath.search('bse.absorption.wfnqco_link', self.inputdict)} ./WFNq_co.h5 
 {scheduler.get_exec_prefix()}kernel.cplx.x &> kernel.inp.out
-'''
+    '''
+
         return file_string
 
     @property

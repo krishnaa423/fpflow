@@ -63,7 +63,7 @@ def fpflow():
     # Input. 
     input_parser = subcommand.add_parser('input', help='')
     input_parser.add_argument('--list', action='store_true', default=None, help='List available templates.')
-    input_parser.add_argument('--template', type=str, nargs='?', const='input_Si.yaml', default=None, help='Provide template. Default is input_Si.yaml')
+    input_parser.add_argument('--template', type=str, nargs='?', const='master.yaml', default=None, help='Provide template. Default is master.yaml')
     
     # Generator. 
     generator_parser = subcommand.add_parser('generator', help='')

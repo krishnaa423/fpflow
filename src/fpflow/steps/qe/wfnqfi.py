@@ -29,6 +29,6 @@ class QeWfnqfiStep(Step):
     def remove_inodes(self) -> List[str]:
         return []
     
-    def __init__(self, inputdict: dict):
+    def __init__(self, inputdict: dict, **kwargs):
         self.inputdict: dict = inputdict 
 #endregion

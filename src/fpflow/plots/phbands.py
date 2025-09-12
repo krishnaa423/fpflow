@@ -7,6 +7,7 @@ from fpflow.structure.kpath import Kpath
 from fpflow.inputs.inputyaml import InputYaml
 import jmespath
 import os 
+from fpflow.plots.common import set_common
 #endregion
 
 #region variables
@@ -27,7 +28,7 @@ class PhbandsPlot:
         self.phbands: np.ndarray = None 
         self.kpath: Kpath = Kpath.from_yamlfile() 
         self.inputdict: dict = InputYaml.from_yaml_file().inputdict
-        self.outdata_filename: str = './plot_phbands.h5'
+        self.outdata_filename: str = './plots/plot_phbands.h5'
 
     def get_data(self):
         data = np.loadtxt(self.phbands_filename)
@@ -79,7 +80,7 @@ class PhbandsPlot:
 class PhonopyPlot(PhbandsPlot):
     def __init__(self, **kwargs):
         super().__init__(phbands_filename='band.yaml', **kwargs)
-        self.outdata_filename: str = 'plot_phonopy.h5'
+        self.outdata_filename: str = './plots/plot_phonopy.h5'
 
     def get_data(self):
         with open(self.phbands_filename) as f: data = yaml.safe_load(f)
@@ -93,4 +94,5 @@ class PhonopyPlot(PhbandsPlot):
             self.phbands[k, b] = data['phonon'][k]['band'][b]['frequency']*33.356        # Factor in cm^{-1}
  
         self.num_bands = self.phbands.shape[1]
+
 #endregion

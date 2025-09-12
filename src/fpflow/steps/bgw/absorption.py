@@ -58,8 +58,25 @@ class BgwAbsorptionStep(Step):
     @property
     def job_absorption(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.absorption.job_info')
+        link_dir_prefix: str = jmespath.search('bse.absorption.link_dir_prefix', self.inputdict)
 
-        file_string = f'''#!/bin/bash
+        if link_dir_prefix is not None:
+            file_string = f'''#!/bin/bash
+{scheduler.get_script_header()}
+
+
+ln -sf {os.path.join(link_dir_prefix, 'epsmat.h5')} ./epsmat.h5 
+ln -sf {os.path.join(link_dir_prefix, 'eps0mat.h5')} ./eps0mat.h5 
+ln -sf {os.path.join(link_dir_prefix, 'eqp1.dat')} ./eqp_co.dat 
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnco_link', self.inputdict))} ./WFN_co.h5 
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnqco_link', self.inputdict))} ./WFNq_co.h5 
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnfi_link', self.inputdict))} ./WFN_fi.h5 
+ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnqfi_link', self.inputdict))} ./WFNq_fi.h5 
+{scheduler.get_exec_prefix()}absorption.cplx.x &> absorption.inp.out
+mv bandstructure.dat bandstructure_absorption.dat
+'''
+        else:
+            file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
 ln -sf {jmespath.search('bse.absorption.wfnco_link', self.inputdict)} ./WFN_co.h5 
