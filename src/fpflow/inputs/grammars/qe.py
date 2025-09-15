@@ -271,6 +271,13 @@ kpt_line: NUMBER NUMBER NUMBER NUMBER NEWLINE
                 lines = ["K_POINTS crystal", str(nkpt)] + [" ".join(list(map(str, row))) for row in rows]
                 out.append("\n".join(lines) + "\n")
 
+        # OCCUPATIONS
+        occupations = data.get("occupations", None)
+        if occupations is not None:
+            out.append("\nOCCUPATIONS\n")
+            for occ in occupations:
+                out.append(f"{occ}\n")
+
         text = "".join(out)
         if not text.endswith("\n"):
             text += "\n"

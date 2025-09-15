@@ -56,43 +56,64 @@ step_class_map: dict = {
     'relax_qe': QeRelaxStep,
     'cdft_qe': QeCdftStep,
     'md_qe': QeMdStep,
+    'ml_deepmd': MlDeepmdStep, #TODO
     'scf_qe': QeScfStep,
+    'scf_abacus': QeScfStep, #TODO
+    'scf_siesta': QeScfStep, #TODO
+    'ml_dftqe': MlQeDftStep, #TODO
+    'ml_dfptqe': MlQeDftStep, #TODO
+    'ml_dvscqe': MlQeDftStep, #TODO
+    'ml_dnvscqe': MlQeDftStep, #TODO
+    'ml_dftabacus': MlQeDftStep, #TODO
+    'ml_dftsiesta': MlQeDftStep, #TODO
     'dfpt_qe': QeDfptStep,
+    'pp_dvscf_dfpt': QeDfptStep, #TODO
+    'elph_dfpt': QeDfptStep, #TODO
     'phbands_qe': QePhbandsStep,
-    'phdos_qe': QePhdosStep,
-    'phmodes_qe': QePhmodesStep,
-    'dos_qe': QeDosStep,
-    'pdos_qe': QePdosStep,
-    'dftelbands_qe': QeDftelbandsStep,
-    'kpdos_qe': QeKpdosStep,
-    'wannier_qe': QeWannierStep,
+    'phdos_qe': QePhdosStep, #TODO
+    'phmodes_qe': QePhmodesStep, #TODO
+    'dos_qe': QeDosStep, #TODO
+    'pdos_qe': QePdosStep, #TODO
+    'dftelbands_qe': QeDftelbandsStep, #TODO
+    'kpdos_qe': QeKpdosStep, #TODO
+    'wannier_qe': QeWannierStep, #TODO
+    'tbmodels': QeWannierStep, #TODO
     'wfn_qe': QeWfnStep,
-    'epw_qe': QeEpwStep,
-    'elph': QeElphStep,
+    'pp_wfnqe': QeWfnStep, #TODO
+    'pp_wfnqesym': QeWfnStep, #TODO
+    'wfn_abacus': QeWfnStep, #TODO
+    'wfn_siesta': QeWfnStep, #TODO
+    'epw_qe': QeEpwStep, 
+    'elph_epw': QeElphStep, #TODO
     'wfnq_qe': QeWfnqStep,
+    'wfnq_abacus': QeWfnqStep, #TODO
+    'wfnq_siesta': QeWfnqStep, #TODO
     'wfnfi_qe': QeWfnfiStep,
     'wfnqfi_qe': QeWfnqfiStep,
-    'phonopy_qe': QePhonopyStep,
+    'phonopy_qe': QePhonopyStep, #TODO
+    'pp_dvscf_phonopy': QePhonopyStep, #TODO
+    'elph_phonopy': QePhonopyStep, #TODO
     'epsilon_bgw': BgwEpsilonStep,
-    'sigma_bgw': BgwSigmaStep,
-    'gwelbands_bgw': BgwGwelbandsStep,
-    'kernel_bgw': BgwKernelStep,
+    'sigmasc_bgw': BgwSigmaStep, #TODO
+    'epsilonsc_bgw': BgwSigmaStep, #TODO
+    'sigma_bgw': BgwSigmaStep, 
+    'ml_gwqe': MlQeGwStep, #TODO
+    'gwelbands_bgw': BgwGwelbandsStep, #TODO
+    'kernel_bgw': BgwKernelStep, 
     'absorption_bgw': BgwAbsorptionStep,
     'plotxct_bgw': BgwPlotxctStep,
     'bseq_bgw': BgwBseqStep,
-    'xctph': XctphStep,
-    'xctpol': XctpolStep,
-    'ste': SteStep,
-    'esf': EsfStep,
+    'ml_bseqe': MlQeBseStep, #TODO
+    'xctwannier_bgw': MlQeBseStep, #TODO
+    'xctph': XctphStep, #TODO
+    'xctpol': XctpolStep, #TODO
+    'ste': SteStep, #TODO
+    'esf': EsfStep, #TODO
     'esr': EsrStep,
-    'convergence_scf_qe': QeConvergenceScfStep,
-    'convergence_dfpt_qe': QeConvergenceDfptStep,
-    'convergence_gw_qe': BgwConvergenceGwStep,
-    'convergence_bse_qe': BgwConvergenceBseStep,
-    'mldeepmd': MlDeepmdStep,
-    'mldftqe': MlQeDftStep,
-    'mlgwqe': MlQeGwStep,
-    'mlbseqe': MlQeBseStep,
+    'convergence_scf_qe': QeConvergenceScfStep, #TODO
+    'convergence_dfpt_qe': QeConvergenceDfptStep, #TODO
+    'convergence_gw_qe': BgwConvergenceGwStep, #TODO
+    'convergence_bse_qe': BgwConvergenceBseStep, #TODO
     'create_script': CreateScriptStep,
     'run_script': RunScriptStep,
     'tail_script': TailScriptStep,

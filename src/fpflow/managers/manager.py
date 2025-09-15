@@ -20,6 +20,7 @@ class Manager:
     def __init__(self, **kwargs):
         self.inputdict: dict = None 
         self.steps: List[Step] = None 
+        self.plot_steps: List[Step] = None 
         self.current_dir: str = None 
         self.dest_dir: str = None 
         self.is_recursive: bool = False 
@@ -50,7 +51,9 @@ class Manager:
 
         # Get data. 
         steps_list_str: List[str] = jmespath.search('manager.steps[*]', inputdict) if jmespath.search('manager.steps[*]', inputdict) is not None else []
+        plot_steps_list_str: List[str] = jmespath.search('manager.plots[*]', inputdict) if jmespath.search('manager.plots[*]', inputdict) is not None else []
         steps: List[Step] = cls._get_step_classes(inputdict, steps_list_str)
+        plot_steps: List[Step] = cls._get_step_classes(inputdict, plot_steps_list_str)
         dest_dir: str = jmespath.search('manager.dest_dir', inputdict)
         is_recursive: str = jmespath.search('manager.is_recursive', inputdict)
 
@@ -59,12 +62,13 @@ class Manager:
             current_dir=os.getcwd(),
             dest_dir=dest_dir,
             steps=steps,
+            plot_steps=plot_steps,
             is_recursive=is_recursive,
         )
 
     @change_dir
     def plot(self, **kwargs):
-        for step in self.steps:
+        for step in self.plot_steps:
             step.plot(**kwargs)
 
     @change_dir

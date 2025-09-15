@@ -71,7 +71,7 @@ class QeRelaxStep(Step):
 
         save_final_cell_parameters_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /CELL_PARAMETERS/ {cell_flag=1; next} /End final coordinates/ {end_flag=0} end_flag && cell_flag {print; if (length==0) cell_flag=0 }' relax.in.out > relaxed_cell_parameters.txt"
         save_final_atomic_positions_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /ATOMIC_POSITIONS/ {pos_flag=1; next} /End final coordinates/ {end_flag=0}  end_flag && pos_flag { print $1, $2, $3, $4 }' relax.in.out > relaxed_atomic_positions.txt"
-
+        update_coord: bool = jmespath.search('relax.update_coord', self.inputdict)
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
@@ -81,11 +81,11 @@ class QeRelaxStep(Step):
 cp ./tmp/struct.save/data-file-schema.xml ./relax.xml
 
 # Copy the end atomic positions and cell parameters (if vc-relax).
-{save_final_cell_parameters_str}
-{save_final_atomic_positions_str}
+{save_final_cell_parameters_str if update_coord else ""}
+{save_final_atomic_positions_str if update_coord else ""}
 
 # Update from relax.
-fpflow generator --create
+{"fpflow generator --create" if update_coord else ""}
 '''
         
         return file_string

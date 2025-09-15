@@ -75,6 +75,7 @@ common:
   big_nkpts: &big_nkpts 8
   qgrid: &qgrid [2, 2, 2]
   qshift: &qshift [0.000, 0.000, 0.001]
+  dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign false 
   epw_nodes: &epw_nodes 1
   epw_nk: &epw_nk 1
   dft:
@@ -123,47 +124,68 @@ generator:
   pre_steps:
     - pseudos_qe
   steps: &gen_steps
-    # - esr_gen
-    - relax_qe
-    # - cdft_qe
-    # - md_qe
-    - scf_qe
-    - dfpt_qe
-    - phbands_qe
-    # - phdos_qe
-    # - phmodes_qe
-    # - dos_qe
-    # - pdos_qe
-    # - dftelbands_qe
-    # - kpdos_qe
-    # - wannier_qe
-    - wfn_qe
-    # - epw_qe
-    # - elph
-    - wfnq_qe
-    # - wfnfi_qe
-    # - wfnqfi_qe
-    # - phonopy_qe
-    - epsilon_bgw
-    - sigma_bgw
-    - gwelbands_bgw
-    - kernel_bgw
-    - absorption_bgw
-    # - plotxct_bgw
-    - bseq_bgw
-    # - xctph
-    # - xctpol
-    # - ste
-    # - esf
-    # - esr
-    # - convergence_scf_qe
-    # - convergence_dfpt_qe
-    # - convergence_gw_qe
-    # - convergence_bse_qe
-    # - mldeepmd
-    # - mldftqe
-    # - mlgwqe
-    # - mlbseqe
+  #  - esr_gen
+   - relax_qe
+  #  - cdft_qe
+  #  - md_qe
+  #  - ml_deepmd
+   - scf_qe
+  #  - scf_abacus
+  #  - scf_siesta
+  #  - ml_dftqe
+  #  - ml_dfptqe
+  #  - ml_dvscqe
+  #  - ml_dnvscqe
+  #  - ml_dftabacus
+  #  - ml_dftsiesta
+   - dfpt_qe
+  #  - pp_dvsc_dfpt
+  #  - elph_dfpt
+  #  - phbands_qe
+  #  - phdos_qe
+  #  - phmodes_qe
+  #  - dos_qe
+  #  - pdos_qe 
+  #  - dftelbands_qe
+  #  - kpdos_qe
+  #  - wannier_qe
+  #  - tbmodels
+  #  - wfn_qe
+  #  - pp_wfnqe
+  #  - pp_wfnqesym
+  #  - wfn_abacus
+  #  - wfn_siesta
+  #  - epw_qe
+  #  - elph_epw
+  #  - wfnq_qe
+  #  - wfnq_abacus
+  #  - wfnq_siesta
+  #  - wfnfi_qe
+  #  - wfnqfi_qe
+  #  - phonopy_qe
+  #  - pp_dvscf_phonopy
+  #  - elph_phonopy
+  #  - epsilon_bgw
+  #  - sigmasc_bgw
+  #  - epsilonsc_bgw
+  #  - sigma_bgw
+  #  - ml_gwqe
+  #  - gwelbands_bgw
+  #  - kernel_bgw
+  #  - absorption_bgw
+  #  - plotxct_bgw
+  #  - bseq_bgw
+  #  - ml_bseqe
+  #  - xctwannier_bgw
+  #  - xctph
+  #  - xctpol
+  #  - ste
+  #  - esf
+  #  - esr
+  #  - convergence_scf_qe
+  #  - convergence_dfpt_qe
+  #  - convergence_gw_qe
+  #  - convergence_bse_qe
   post_steps:
     - create_script
     - run_script
@@ -174,6 +196,7 @@ generator:
 manager:
   dest_dir: ./
   steps: *gen_steps
+  plots: *gen_steps
 #endregion: basic info
 
 job_types:
@@ -221,18 +244,25 @@ job_types:
 
 relax:
   type: 'vc-relax'  # Options are: relax, vcrelax, cdft-relax, cdft-vcrelax.  
+  update_coord: true
   args:
   job_info:
     <<: *para
 cdft:
-  type: 'relax'
+  type: 'vc-relax'
+  update_coord: false
+  excited_cond_band: 1 # relative to the fermi level. 1 start index
+  removed_val_band: -1  # relative to the fermi level. 1 start index 
   args:
   job_info:
     <<: *para
 md:
+  kgrid: *kgrid
+  type: 'md'      # Can be md or vc-md. 
   time_step: 20   # 20 a.u. a.u = 48 as. 
   nsteps: 100
   temp: 300
+  structure_index: 0    # Choose which structure index to start with for md. 0 index based.
   args:
   job_info:
     <<: *para
@@ -246,6 +276,7 @@ scf:
     <<: *para
 dfpt:
   qgrid: *qgrid
+  auto_assign_ni_and_nodes: *dfpt_ni_nodes_auto_assign
   conv_thr: '1.0d-16'
   args:
   job_info:
