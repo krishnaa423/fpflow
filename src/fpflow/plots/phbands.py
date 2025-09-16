@@ -29,6 +29,7 @@ class PhbandsPlot:
         self.kpath: Kpath = Kpath.from_yamlfile() 
         self.inputdict: dict = InputYaml.from_yaml_file().inputdict
         self.outdata_filename: str = './plots/plot_phbands.h5'
+        os.system('mkdir -p ./plots')
 
     def get_data(self):
         data = np.loadtxt(self.phbands_filename)

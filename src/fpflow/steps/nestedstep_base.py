@@ -45,10 +45,10 @@ import glob
 import subprocess
 from fpflow.managers.run import subprocess_run
 
-# Set the stdout and stderr. 
-outfile = open('script_{self.steptag}.py.out', 'w')
-sys.stdout = outfile
-sys.stderr = outfile
+# # Set the stdout and stderr. 
+# outfile = open('script_{self.steptag}.py.out', 'w')
+# sys.stdout = outfile
+# sys.stderr = outfile
 
 # Get the directories. 
 {self.steptag}_dirs = [inode for inode in glob.glob('./{self.steptag}/*') if os.path.isdir(inode)]
@@ -74,7 +74,7 @@ print(f'Done {self.steptag} in total time: ', total_time, ' seconds.', flush=Tru
         return f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-python ./script_{self.steptag}.py
+python ./script_{self.steptag}.py &> script_{self.steptag}.py.out
 '''
 
     @property

@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 #region functions
 setup(
     name='fpflow',
-    version='1.0.1',
+    version='1.1.0',
     description='First principles workflow',
     long_description='First principles workflow',
     author='Krishnaa Vadivel',
@@ -17,7 +17,7 @@ setup(
     package_dir={'': 'src'},
     include_package_data=True,
     package_data={'fpflow': ['data/**/*']},
-    requires=[
+    install_requires=[
         'numpy',
         'scipy',
         'ase',
@@ -27,6 +27,7 @@ setup(
         'mp_api',
         'glom',
         'python-benedict[all]',
+        # 'phonopy',
     ],
     entry_points={
         'console_scripts': [

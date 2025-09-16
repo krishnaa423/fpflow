@@ -125,7 +125,7 @@ generator:
     - pseudos_qe
   steps: &gen_steps
   #  - esr_gen
-   - relax_qe
+  #  - relax_qe
   #  - cdft_qe
   #  - md_qe
   #  - ml_deepmd
@@ -141,7 +141,7 @@ generator:
    - dfpt_qe
   #  - pp_dvsc_dfpt
   #  - elph_dfpt
-  #  - phbands_qe
+   - phbands_qe
   #  - phdos_qe
   #  - phmodes_qe
   #  - dos_qe

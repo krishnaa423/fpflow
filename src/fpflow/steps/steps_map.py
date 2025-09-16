@@ -60,7 +60,7 @@ step_class_map: dict = {
     'scf_qe': QeScfStep,
     'scf_abacus': QeScfStep, #TODO
     'scf_siesta': QeScfStep, #TODO
-    'ml_dftqe': MlQeDftStep, #TODO
+    'ml_dftqe': MlQeDftStep,
     'ml_dfptqe': MlQeDftStep, #TODO
     'ml_dvscqe': MlQeDftStep, #TODO
     'ml_dnvscqe': MlQeDftStep, #TODO
