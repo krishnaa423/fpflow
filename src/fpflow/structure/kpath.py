@@ -86,14 +86,23 @@ class Kpath:
         )
 
     @property
-    def axis(self):
+    def ase_axis(self):
         bandpath: BandPath = self.atoms.cell.bandpath(
             path=''.join(self.special_points), 
-            npoints=len(self.special_points)*self.npoints_segment
+            npoints=(len(self.special_points)-1)*self.npoints_segment+1
         )
 
         return bandpath.get_linear_kpoint_axis()
     
+    @property
+    def even_spaced_axis(self):
+        nseg = len(self.special_points) - 1
+        n = nseg * self.npoints_segment + 1
+        xaxis = np.arange(n, dtype=float) / self.npoints_segment
+        xticks = np.arange(nseg + 1, dtype=float)
+        xlabels = list(self.special_points)
+        return xaxis, xticks, xlabels
+
     @property
     def matdyn_str(self):
         output = ''
@@ -106,6 +115,23 @@ class Kpath:
             output += f'{coord[0]:15.10f} {coord[1]:15.10f} {coord[2]:15.10f} {self.npoints_segment} !{path_special_point}\n'
         
         return output 
+
+    @property
+    def dftelbands_list(self):
+        output = []
+        special_points = get_special_points(self.atoms.cell)
+
+        for path_special_point in self.special_points:
+            coord = special_points[path_special_point]
+            output.append([
+                coord[0],
+                coord[1],
+                coord[2],
+                self.npoints_segment,
+            ])
+
+        return output
+        
 
         
 #endregion

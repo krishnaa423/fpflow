@@ -20,6 +20,8 @@ setup(
     install_requires=[
         'numpy',
         'scipy',
+        'pandas',
+        'matplotlib',
         'ase',
         'pyyaml',
         'jmespath',

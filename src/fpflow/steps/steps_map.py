@@ -74,7 +74,7 @@ step_class_map: dict = {
     'phmodes_qe': QePhmodesStep, #TODO
     'dos_qe': QeDosStep, #TODO
     'pdos_qe': QePdosStep, #TODO
-    'dftelbands_qe': QeDftelbandsStep, #TODO
+    'dftelbands_qe': QeDftelbandsStep,
     'kpdos_qe': QeKpdosStep, #TODO
     'wannier_qe': QeWannierStep, #TODO
     'tbmodels': QeWannierStep, #TODO

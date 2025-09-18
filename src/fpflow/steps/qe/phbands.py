@@ -118,6 +118,6 @@ class QePhbandsStep(Step):
         ]
     
     def plot(self, **kwargs):
-        PhbandsPlot().save_plot(**kwargs)
+        PhbandsPlot().save_figures(**kwargs)
 
 #endregion

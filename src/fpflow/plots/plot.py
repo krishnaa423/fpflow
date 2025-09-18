@@ -323,7 +323,13 @@ class AxisPlot:
 
     def set_label_dict(self):
         self.label_dict = {}
+        plot_type: str = self.figs_row['plot_type']
+        
         if self.figs_row['legend_label'] is not None: self.label_dict['label'] = self.figs_row['legend_label']
+        if plot_type=='line':
+            color = self.figs_row['color']
+            if color is not None:
+                self.label_dict['color'] = color
 
     def set_common_axis_props(self):
         keys_and_functions: dict = {
@@ -358,13 +364,16 @@ class AxisPlot:
             if elev is not None and azim is not None: 
                 self.axis.view_init(elev=elev, azim=azim)
             
-
         for key, func in keys_and_functions.items():
             if self.figs_row[key] is not None: func(self.figs_row[key])
 
-        
+        legend_label = self.figs_row['legend_label']
+        if legend_label is not None: self.axis.legend()
 
-        self.axis.legend()
+        xgrid: bool = self.figs_row['xgrid']
+        ygrid: bool = self.figs_row['xgrid']
+        if xgrid is not None: self.axis.grid(xgrid, axis='x')
+        if ygrid is not None: self.axis.grid(ygrid, axis='y')
     
     def add_colorbar(self, mappable, label: str | None = None, **kwargs):
         fig: Figure = self.figs_row['figure']
@@ -682,6 +691,8 @@ class PlotBase:
             'dset_axis_cols': pd.Series(dtype='object'),
             'dset_data_cols': pd.Series(dtype='object'),
             'color': pd.Series(dtype='string'),
+            'xgrid': pd.Series(dtype='bool'),
+            'ygrid': pd.Series(dtype='bool'),
             'legend_label': pd.Series(dtype='string'),
         })
 
@@ -712,7 +723,6 @@ class PlotBase:
                 PlotType.CONTOUR3D,
             ]
             kwargs_dict = {}
-            if color is not None: kwargs_dict['color'] = color
             if plot_type in plots_that_are_3d: kwargs_dict['projection'] = '3d'
 
             # ---- FIGURE CACHE ----
@@ -744,7 +754,7 @@ class PlotBase:
             )
             axisplot.plot()
 
-    def save_figures(self):
+    def save_figures(self, **kwargs):
         os.makedirs('./plots', exist_ok=True)
         # Render figures. 
         self.render_figures()

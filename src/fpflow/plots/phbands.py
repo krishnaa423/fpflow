@@ -7,7 +7,9 @@ from fpflow.structure.kpath import Kpath
 from fpflow.inputs.inputyaml import InputYaml
 import jmespath
 import os 
-from fpflow.plots.plot import set_common
+from fpflow.plots.plot import PlotBase, PlotType
+import pandas as pd
+
 #endregion
 
 #region variables
@@ -17,74 +19,82 @@ from fpflow.plots.plot import set_common
 #endregion
 
 #region classes
-class PhbandsPlot:
+class PhbandsPlot(PlotBase):
     def __init__(
         self,
-        phbands_filename: str = './struct.freq.gp',
+        infile='./struct.freq.gp',
+        outfile_prefix='phbands_ph',
+        **kwargs,
     ):
-        self.phbands_filename = phbands_filename
-
-        self.num_bands: int = None 
-        self.phbands: np.ndarray = None 
-        self.kpath: Kpath = Kpath.from_yamlfile() 
-        self.inputdict: dict = InputYaml.from_yaml_file().inputdict
-        self.outdata_filename: str = './plots/plot_phbands.h5'
-        os.system('mkdir -p ./plots')
+        super().__init__(**kwargs)
+        self.infilename: str = infile
+        self.outfile_prefix: str = outfile_prefix
+        
+        self.get_data()
+        self.set_figures()
 
     def get_data(self):
-        data = np.loadtxt(self.phbands_filename)
+        data = np.loadtxt(self.infilename)
         self.phbands = data[:, 1:]
+        self.numbands: int = self.phbands.shape[1]
 
-        self.num_bands = self.phbands.shape[1]
-        
-    def save_data(self):
-        # Get some data. 
-        self.get_data()
-        # kpts = self.kpath.get_kpts()
+        self.xaxis, self.xticks, self.xtick_labels = Kpath.from_yamlfile().even_spaced_axis
+        self.axis = self.xaxis.reshape(-1, 1)
 
-        with h5py.File(self.outdata_filename, 'w') as f:
-            # f.create_dataset('kpts', data=kpts)
-            f.create_dataset('pheigs', data=self.phbands)
+        # Get name.
+        inputdict: dict = InputYaml.from_yaml_file().inputdict
+        active_idx: int = jmespath.search('structures.active_idx', inputdict)
+        self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
 
-    def save_plot(self, save_filename='./plots/phbands.png', show=False, ylim=None):
-        # Get some data. 
-        self.get_data()
-        # TODO: debug kpts assignment. 
-        # kpts = self.kpath.get_kpts()
-        path_special_points = jmespath.search('kpath.special_points', self.inputdict)
-        path_segment_npoints = jmespath.search('kpath.npoints_segment', self.inputdict)
+        # Create column names: y1, y2, ..., yN
+        self.data_colnames = [f"y{i+1}" for i in range(self.phbands.shape[1])]
 
-        with h5py.File(self.outdata_filename, 'w') as f:
-            # f.create_dataset('kpts', data=kpts)
-            f.create_dataset('pheigs', data=self.phbands)
-
-        plt.style.use('bmh')
-        fig = plt.figure()
-        ax = fig.add_subplot()
-
-        # Set xaxis based on segments.
-        ax.plot(self.phbands, color='blue')
-        ax.yaxis.grid(False)  
-        ax.set_xticks(
-            ticks=np.arange(len(path_special_points))*path_segment_npoints,
-            labels=path_special_points,
+        # Build dataframe with x + y's
+        df = pd.DataFrame(
+            np.hstack([self.axis, self.phbands]),
+            columns=["x"] + self.data_colnames
         )
 
-        # Set some labels. 
-        ax.set_title('Phonon Bandstructure')
-        ax.set_ylabel('Freq (cm-1)')
-        if ylim: ax.set_ylim(bottom=ylim[0], top=ylim[1])
-        os.system('mkdir -p plots')
-        fig.savefig(save_filename)
-        if show: plt.show()
+        append_dset_df: pd.DataFrame = pd.DataFrame({
+            "name": ["dset_phbands"],
+            "data": [df]  # Store df as a single object in one row
+        })
+
+        self.dsets_df = pd.concat([self.dsets_df, append_dset_df], ignore_index=True)
+
+    def set_figures(self):
+        for ib in range(self.numbands):
+            append_fig_df: pd.DataFrame = pd.DataFrame([{
+                'fig_name': self.outfile_prefix,
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.LINE, 'axis': None,
+                'xlabel': None, 'xlim': None, 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': r'Energy ($cm^{-1}$)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} Phonon Bandstructure',
+                'dset_name': 'dset_phbands',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': [self.data_colnames[ib]],
+                'color': 'blue', 
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': None,
+            }])
+
+            self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)            
 
 class PhonopyPlot(PhbandsPlot):
-    def __init__(self, **kwargs):
-        super().__init__(phbands_filename='band.yaml', **kwargs)
-        self.outdata_filename: str = './plots/plot_phonopy.h5'
+    def __init__(
+        self,
+        infile='./phonopy/band.yaml',
+        outfile_prefix='phbands_phonopy',
+        **kwargs
+    ):
+        super().__init__(infile=infile, outfile_prefix=outfile_prefix, **kwargs)
 
     def get_data(self):
-        with open(self.phbands_filename) as f: data = yaml.safe_load(f)
+        with open(self.infilename) as f: data = yaml.safe_load(f)
 
         nk = len(data['phonon'])
         nb = len(data['phonon'][0]['band'])
@@ -93,7 +103,31 @@ class PhonopyPlot(PhbandsPlot):
         self.phbands = np.zeros(shape=(nk, nb), dtype='f8')
         for (k, b), value in np.ndenumerate(self.phbands):
             self.phbands[k, b] = data['phonon'][k]['band'][b]['frequency']*33.356        # Factor in cm^{-1}
- 
-        self.num_bands = self.phbands.shape[1]
+
+        self.numbands: int = self.phbands.shape[1]
+
+        self.xaxis, self.xticks, self.xtick_labels = Kpath.from_yamlfile().even_spaced_axis
+        self.axis = self.xaxis.reshape(-1, 1)
+
+        # Get name.
+        inputdict: dict = InputYaml.from_yaml_file().inputdict
+        active_idx: int = jmespath.search('structures.active_idx', inputdict)
+        self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
+
+        # Create column names: y1, y2, ..., yN
+        self.data_colnames = [f"y{i+1}" for i in range(self.phbands.shape[1])]
+
+        # Build dataframe with x + y's
+        df = pd.DataFrame(
+            np.hstack([self.axis, self.phbands]),
+            columns=["x"] + self.data_colnames
+        )
+
+        append_dset_df: pd.DataFrame = pd.DataFrame({
+            "name": ["dset_phbands"],
+            "data": [df]  # Store df as a single object in one row
+        })
+
+        self.dsets_df = pd.concat([self.dsets_df, append_dset_df], ignore_index=True)
 
 #endregion

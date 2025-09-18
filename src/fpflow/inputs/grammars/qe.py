@@ -270,6 +270,11 @@ kpt_line: NUMBER NUMBER NUMBER NUMBER NEWLINE
                 rows = kpts.get("data", [])
                 lines = ["K_POINTS crystal", str(nkpt)] + [" ".join(list(map(str, row))) for row in rows]
                 out.append("\n".join(lines) + "\n")
+            elif kpts.get('type')=='crystal_b':
+                nkpt = kpts.get("nkpt")
+                rows = kpts.get("data", [])
+                lines = ["K_POINTS crystal_b", str(nkpt)] + [" ".join(list(map(str, row))) for row in rows]
+                out.append("\n".join(lines) + "\n")
 
         # OCCUPATIONS
         occupations = data.get("occupations", None)

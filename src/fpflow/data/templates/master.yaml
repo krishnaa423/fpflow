@@ -9,7 +9,8 @@
 structures:
   active_idx: 0
   list:
-    - file:
+    - name: 'Si'
+      file:
         # type: 'mpapi-formula'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
         # value: 'Si'
       cell:
@@ -32,7 +33,8 @@ structures:
         # vca:    # Virtual crystal approximation. 
         #   - ['Si', 'Ag', 0.2]
       # supercell_size: [2, 2, 2]
-    - file:
+    - name: 'Si'
+      file:
         # type: 'mpapi-formula'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
         # value: 'Si'
       cell:
@@ -61,10 +63,6 @@ kpath:
     - 'L'
     - 'G'
     - 'X'
-    # - 'W'
-    # - 'L'
-    # - 'K'
-    # - 'G'
   npoints_segment: 10  
 
 common:
@@ -138,15 +136,15 @@ generator:
   #  - ml_dnvscqe
   #  - ml_dftabacus
   #  - ml_dftsiesta
-   - dfpt_qe
+  #  - dfpt_qe
   #  - pp_dvsc_dfpt
   #  - elph_dfpt
-   - phbands_qe
+  #  - phbands_qe
   #  - phdos_qe
   #  - phmodes_qe
   #  - dos_qe
   #  - pdos_qe 
-  #  - dftelbands_qe
+   - dftelbands_qe
   #  - kpdos_qe
   #  - wannier_qe
   #  - tbmodels
