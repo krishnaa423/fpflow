@@ -9,7 +9,6 @@ from pymatgen.io.ase import AseAtomsAdaptor
 #endregion
 
 #region functions
-mpid = os.environ['MP_API']
 #endregion
 
 #region classes
@@ -23,6 +22,7 @@ class MateralsProject:
 
     @classmethod
     def from_id(cls, id: int):
+        mpid = os.environ['MP_API']
         with MPRester(mpid) as mpr:
             docs = mpr.materials.summary.search(material_ids=[id])
             atoms: Atoms = AseAtomsAdaptor().get_atoms(docs[0].structure)
@@ -31,6 +31,7 @@ class MateralsProject:
     
     @classmethod
     def from_formula(cls, formula: int):
+        mpid = os.environ['MP_API']
         with MPRester(mpid) as mpr:
             docs = mpr.materials.summary.search(formula=formula, energy_above_hull=[0, 0])
             atoms: Atoms = AseAtomsAdaptor().get_atoms(docs[0].structure)

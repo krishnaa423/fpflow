@@ -185,7 +185,7 @@ class Struct:
             supercell_size: list = jmespath.search(f'structures.list[{struct_idx}].supercell_size', inputdict)
             if supercell_size is not None:
                 structure = structure * supercell_size
-            
+
             # Append the structure. 
             atoms.append(structure)
 

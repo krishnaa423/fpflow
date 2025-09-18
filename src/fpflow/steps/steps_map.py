@@ -21,6 +21,7 @@ from fpflow.steps.qe.wfnq import QeWfnqStep
 from fpflow.steps.qe.wfnfi import QeWfnfiStep
 from fpflow.steps.qe.wfnqfi import QeWfnqfiStep
 from fpflow.steps.qe.phonopy import QePhonopyStep
+from fpflow.steps.qe.phonopy_nested import QePhonopyNestedStep
 from fpflow.steps.bgw.epsilon import BgwEpsilonStep
 from fpflow.steps.bgw.sigma import BgwSigmaStep
 from fpflow.steps.bgw.gwelbands import BgwGwelbandsStep
@@ -90,7 +91,7 @@ step_class_map: dict = {
     'wfnq_siesta': QeWfnqStep, #TODO
     'wfnfi_qe': QeWfnfiStep,
     'wfnqfi_qe': QeWfnqfiStep,
-    'phonopy_qe': QePhonopyStep, #TODO
+    'phonopy_qe': QePhonopyNestedStep, #TODO
     'pp_dvscf_phonopy': QePhonopyStep, #TODO
     'elph_phonopy': QePhonopyStep, #TODO
     'epsilon_bgw': BgwEpsilonStep,

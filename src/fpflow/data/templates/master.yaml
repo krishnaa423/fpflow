@@ -325,6 +325,9 @@ wannier:
   args:
   job_info:
     <<: *single_node
+phonopy:
+  job_info:
+    <<: *big_para
 wfn:
   kgrid: *kgrid
   sym: *sym
