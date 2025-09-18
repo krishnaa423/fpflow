@@ -12,6 +12,7 @@ from fpflow.schedulers.scheduler import Scheduler
 from fpflow.structure.kpath import Kpath
 from fpflow.inputs.grammars.namelist import NamelistGrammar
 from fpflow.plots.dftelbands import DftelbandsPlot
+
 #endregion
 
 #region variables

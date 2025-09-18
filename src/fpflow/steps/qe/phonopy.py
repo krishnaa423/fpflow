@@ -16,6 +16,10 @@ from ase import Atoms
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.inputs.grammars.qe import QeGrammar
 from fpflow.plots.phbands import PhonopyPlot
+from phonopy import Phonopy
+from phonopy.structure.atoms import PhonopyAtoms 
+import copy 
+
 #endregion
 
 #region variables
@@ -27,105 +31,156 @@ from fpflow.plots.phbands import PhonopyPlot
 #region classes
 class QePhonopyStep(Step):
     @property
-    def phonopy_scf_prefix(self) -> str:
-        qestruct = QeStruct.from_inputdict(self.inputdict)
+    def script_phonopy_fc_bs(self):
+        return f'''
+# script_phonopy_fc_bs.py (patched)
+from fpflow.inputs.inputyaml import InputYaml
+from phonopy import load
+from phonopy.interface.qe import parse_set_of_forces
+from ase.dft.kpoints import get_special_points
+import numpy as np
+import jmespath
+import glob
+import re
+from fpflow.structure.struct import Struct
+from ase import Atoms
+import os
 
-        qeprefixdict: dict = {
-            'control': {
-                'outdir': './tmp',
-                'prefix': 'struct',
-                'pseudo_dir': './pseudos/qe',
-                'calculation': 'scf',
-                'tprnfor': True,
-            },
-            'system': {
-                'ibrav': 0,
-                'ntyp': qestruct.ntyp(),
-                'nat': qestruct.nat(),
-                'ecutwfc': jmespath.search('scf.ecut', self.inputdict)
-            },
-            'electrons': {},
-            'ions': {},
-            'cell': {},
-        }
-        if jmespath.search('scf.is_spinorbit', self.inputdict):
-            qeprefixdict['system']['noncolin'] = True
-            qeprefixdict['system']['lspinorb'] = True
+def sorted_supercell_outs(pattern="phonopy-supercell-*.out"):
+    files = glob.glob(pattern)
+    if not files:
+        raise FileNotFoundError(f"No QE output files matched pattern: {pattern}")
+    # sort by trailing integer index: phonopy-supercell-<idx>.out
+    def idx_of(f):
+        m = re.search(r"phonopy-supercell-(\d+)\.out$", f)
+        return int(m.group(1)) if m else 1_000_000
+    return sorted(files, key=idx_of)
 
-        # Update if needed. 
-        update_dict(qeprefixdict, jmespath.search('scf.args', self.inputdict))
+# 1) Load displacements + structure that Phonopy created earlier
+phonon = load("phonopy_disp.yaml")  # has supercell, displacements, etc.
 
-        return QeGrammar().write(qeprefixdict)
-    
+# 2) Collect ONLY QE .out files in the correct order and get num_atoms
+qe_outs = sorted_supercell_outs("phonopy-supercell-*.out")
+num_atoms = len(phonon.supercell)
+
+# 3) Parse forces from QE outputs
+#    Your Phonopy version expects (forces_filenames, num_atoms, ...)
+forces = parse_set_of_forces(
+    forces_filenames=qe_outs,
+    num_atoms=num_atoms
+)
+
+# 4) Attach forces and build force constants
+phonon.forces = forces
+phonon.produce_force_constants()
+
+# 5) Save for later reuse
+phonon.save("force_constants.h5")
+phonon.save("phonopy.yaml")
+
+# 6) Build band path using ASE special k-points and the kpath from input yaml
+inputdict: dict = InputYaml.from_yaml_file(yaml_filename='./input.yaml').inputdict
+struct: Struct = Struct.from_inputdict(inputdict=inputdict)
+ase_atoms: Atoms = struct.atoms[struct.struct_idx]
+points = get_special_points(ase_atoms.cell)
+path = jmespath.search('kpath.special_points', inputdict)  # e.g., ["G","X","W",...]
+nseg = jmespath.search('kpath.npoints_segment', inputdict)  # integer
+
+bands = [[points[s] + (points[e] - points[s]) * i / nseg
+          for i in range(nseg + 1)]
+         for s, e in zip(path[:-1], path[1:])]
+
+# 7) Compute & write band structure
+phonon.run_band_structure(bands)
+phonon.write_yaml_band_structure("band.yaml")
+'''
+        
     @property
-    def phonopy_scf_suffix(self) -> str:
-        qesuffixdict: dict = {
-            'k_points': {
-                'type': 'automatic',
-                'data': [
-                    jmespath.search('scf.kgrid[0]', self.inputdict),
-                    jmespath.search('scf.kgrid[1]', self.inputdict),
-                    jmespath.search('scf.kgrid[2]', self.inputdict),
-                    0,
-                    0,
-                    0,
-                ],
-            }
-        }
-        if jmespath.search('scf.is_spinorbit', self.inputdict):
-            qesuffixdict['system']['noncolin'] = True
-            qesuffixdict['system']['lspinorb'] = True
+    def qedisp_files(self) -> list[str]:
+        qedisp_files_dict: dict = {}
 
-        # Update if needed. 
-        update_dict(qesuffixdict, jmespath.search('scf.args', self.inputdict))
-
-        return QeGrammar().write(qesuffixdict)
-    
-    def get_phonopy_bandpath(self) -> str:
-        #TODO: Copy pasted. Can refactor this. 
+        # Get phonopy atoms. 
         struct: Struct = Struct.from_inputdict(self.inputdict)
-        atoms: Atoms = struct.atoms[struct.struct_idx]
-        sc_map = get_special_points(atoms.cell)
-        sc_labels = jmespath.search('kpath.special_points[*]', self.inputdict)
-        npoints_segment = jmespath.search('kpath.npoints_segment', self.inputdict)
-        output = ''
+        ase_atoms: Atoms = struct.atoms[struct.struct_idx]
+        phonopy_atoms: PhonopyAtoms = PhonopyAtoms(
+            symbols=ase_atoms.get_chemical_symbols(),
+            cell=ase_atoms.get_cell(),
+            scaled_positions=ase_atoms.get_scaled_positions()
+        )
+        supercell_size = jmespath.search('dfpt.qgrid', self.inputdict)
 
-        output += '--band=" '
+        # Generate disps. 
+        phonon = Phonopy(phonopy_atoms, supercell_matrix=supercell_size)
+        phonon.generate_displacements(distance=0.01)
+        phonon.save('phonopy_disp.yaml')
+        
+        # Get supercells.
+        for idx, sc in enumerate(phonon.supercells_with_displacements):
+            ase_atoms = Atoms(
+                numbers=sc.get_atomic_numbers(),
+                positions=sc.get_positions(),
+                cell=sc.cell,
+                pbc=[True, True, True],
+            )
+            qestruct: QeStruct = QeStruct(atoms=[ase_atoms])
 
-        for sc_label in sc_labels:
-            for col in sc_map[sc_label]:
-                output += f' {col:15.10f} '
+            qedict: dict = {
+                'control': {
+                    'outdir': './tmp',
+                    'prefix': 'struct',
+                    'pseudo_dir': './pseudos/qe',
+                    'calculation': 'scf',
+                    'tprnfor': True,
+                },
+                'system': {
+                    'ibrav': 0,
+                    'ntyp': qestruct.ntyp(),
+                    'nat': qestruct.nat(),
+                    'ecutwfc': jmespath.search('scf.ecut', self.inputdict),
+                    'nosym': True,
+                },
+                'electrons': {},
+                'ions': {},
+                'cell': {},
+                'atomic_species': qestruct.atomic_species,
+                'cell_parameters': qestruct.cell,
+                'atomic_positions': qestruct.atomic_positions,
+                'k_points': {
+                    'type': 'automatic',
+                    'data': [
+                        1,
+                        1,
+                        1,
+                        0,
+                        0,
+                        0,
+                    ],
+                }
+            }
+            if jmespath.search('scf.is_spinorbit', self.inputdict):
+                qedict['system']['noncolin'] = True
+                qedict['system']['lspinorb'] = True
 
-        output += ' " '
+            # Update if needed. 
+            update_dict(qedict, jmespath.search('scf.args', self.inputdict))
 
-        output += f' --band-points={npoints_segment} '
+            qedisp_files_dict[f'phonopy-supercell-{idx}'] = QeGrammar().write(qedict)
 
-        return output
+        return qedisp_files_dict 
 
     @property
     def job_phonopy(self) -> str:
-        #TODO: Copy pasted. Can refactor this. 
-
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'dfpt.job_info')
 
-        qdim: list = jmespath.search('dfpt.qgrid[*]', self.inputdict)
-        str_2_f(self.phonopy_scf_prefix, 'phonopy_scf_prefix')
-        str_2_f(self.phonopy_scf_suffix, 'phonopy_scf_suffix')
-        os.system(f'phonopy --qe -d --dim="{qdim[0]} {qdim[1]} {qdim[2]}" -c scf.in')
-        sc_files = glob.glob('supercell-*')
-        for sc_file in sc_files:
-            os.system(f'cat phonopy_scf_prefix {sc_file} phonopy_scf_suffix >| phonopy-{sc_file}')
-
+        qefiles: list[str] = self.qedisp_files.keys()
 
         # Create supercell job.
-        phonopy_bandpath_str: str = self.get_phonopy_bandpath()
-        files = glob.glob('phonopy-supercell-*')
         start_idx = 0
-        stop_idx = len(files)
+        stop_idx = len(qefiles)
         debug_str: str = '\n'
         files_bashvar_str: str = '\nfiles=('
         files_args_str: str = ''
-        for file_idx, file in enumerate(files): 
+        for file_idx, file in enumerate(qefiles): 
             files_bashvar_str += f'"{file}" '
             files_args_str += f' {file}.out '
             debug_str += f'#idx: {file_idx}, filename: {file}\n'
@@ -147,19 +202,20 @@ for (( i=$start; i<=$stop; i++ )); do
 {scheduler.get_exec_prefix()}pw.x < {file_variable} &> {file_variable}.out
 done
 
-# Post processing. This should create FORCE_SETS and phonon bands. 
-phonopy -f {files_args_str}
-phonopy --qe -c scf.in {phonopy_bandpath_str} --dim="{qdim[0]} {qdim[1]} {qdim[2]}"
+# Post processing. This should create force_constants.yaml and band.yaml
+python script_phonopy_fc_bs.py &> script_phonopy_fc_bs.py.out
 '''
         return file_string
 
     @property
     def file_contents(self) -> dict:
-        return {
-            'phonopy_scf_prefix': self.phonopy_scf_prefix,
-            'phonopy_scf_suffix': self.phonopy_scf_suffix,
+        output: dict = {
             'job_phonopy.sh': self.job_phonopy,
+            'script_phonopy_fc_bs.py': self.script_phonopy_fc_bs,
         }
+        output.update(self.qedisp_files)
+
+        return output 
     
     @property
     def job_scripts(self) -> List[str]:
@@ -174,18 +230,17 @@ phonopy --qe -c scf.in {phonopy_bandpath_str} --dim="{qdim[0]} {qdim[1]} {qdim[2
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './phonopy_scf_prefix',
             './phonopy_disp.yaml',
-            './phonopy_scf_suffix',
             './phonopy-supercell*',
-            './supercell*',
             './job_phonopy.sh',
-            './FORCE_SETS',
             './phonopy.yaml',
+            './force_constants.h5',
             './band.yaml',
+            './script_phonopy_fc_bs.py',
+            './script_phonopy_fc_bs.py.out',
         ]
     
     def plot(self):
-        PhonopyPlot().save_plot()
+        PhonopyPlot().save_figures()
 
 #endregion

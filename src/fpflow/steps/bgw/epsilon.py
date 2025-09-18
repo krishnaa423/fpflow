@@ -101,5 +101,6 @@ ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5
             './chi_converge.dat',
             './epsilon.inp.out',
             './checkbz.log',
+            './x.dat',
         ]
 #endregion

@@ -98,7 +98,7 @@ step_class_map: dict = {
     'epsilonsc_bgw': BgwSigmaStep, #TODO
     'sigma_bgw': BgwSigmaStep, 
     'ml_gwqe': MlQeGwStep, #TODO
-    'gwelbands_bgw': BgwGwelbandsStep, #TODO
+    'gwelbands_bgw': BgwGwelbandsStep,
     'kernel_bgw': BgwKernelStep, 
     'absorption_bgw': BgwAbsorptionStep,
     'plotxct_bgw': BgwPlotxctStep,

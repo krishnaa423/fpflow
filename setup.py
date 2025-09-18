@@ -29,7 +29,7 @@ setup(
         'mp_api',
         'glom',
         'python-benedict[all]',
-        # 'phonopy',
+        'phonopy',
     ],
     entry_points={
         'console_scripts': [

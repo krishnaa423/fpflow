@@ -136,6 +136,10 @@ class Struct:
         self.struct_idx: int = struct_idx
 
     @classmethod
+    def from_ase_atoms(cls, ase_atoms: Atoms, **kwargs):
+        return cls(atoms=ase_atoms, **kwargs)
+
+    @classmethod
     def from_yaml_file(cls, filename: str, **kwargs):
         inputdict: dict = InputYaml.from_yaml_file(filename).inputdict
         atoms: List[Atoms] = cls.get_atoms_from_inputdict(inputdict)
