@@ -7,7 +7,7 @@ from fpflow.structure.kpath import Kpath
 from fpflow.inputs.inputyaml import InputYaml
 import jmespath
 import os 
-from fpflow.plots.common import set_common
+from fpflow.plots.plot import set_common
 #endregion
 
 #region variables

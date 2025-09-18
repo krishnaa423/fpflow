@@ -28,8 +28,29 @@ class Kpath:
             setattr(self, key, value)
 
     @classmethod
-    def from_special_pts_list(cls, special_points: Iterable[str], npoint_per_segment: int = 20):
-        raise NotImplementedError()
+    def from_special_pts_list(cls, atoms: Atoms, special_points: Iterable[str], npoint_per_segment: int = 20):
+        special_points_loc = get_special_points(atoms.cell)
+
+        num_special_points = len(special_points)
+        kpts = np.zeros(shape=((num_special_points-1)*npoint_per_segment+1, 3), dtype='f8')
+
+        # Add points between the special points. 
+        for sp_idx in range(num_special_points-1):
+            for coord in range(3):
+                start = special_points_loc[special_points[sp_idx]][coord]
+                stop = special_points_loc[special_points[sp_idx+1]][coord]
+                step = (stop - start)/npoint_per_segment
+                kpts[sp_idx*npoint_per_segment:(sp_idx+1)*npoint_per_segment, coord] = np.arange(start, stop, step) if step!=0.0 else 0.0
+
+        # Add the final kpoint. 
+        kpts[-1, :] = np.array(special_points_loc[special_points[-1]])
+
+        return cls(
+            special_points=special_points,
+            npoints_segment=npoint_per_segment,
+            kpts=kpts,
+            atoms=atoms,
+        )
 
     @classmethod
     def from_yamlfile(cls, filename: str='./input.yaml', struct_idx: int =0):
