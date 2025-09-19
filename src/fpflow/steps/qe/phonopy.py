@@ -49,7 +49,7 @@ import os
 def sorted_supercell_outs(pattern="phonopy-supercell-*.out"):
     files = glob.glob(pattern)
     if not files:
-        raise FileNotFoundError(f"No QE output files matched pattern: {pattern}")
+        raise FileNotFoundError(f"No QE output files matched pattern")
     # sort by trailing integer index: phonopy-supercell-<idx>.out
     def idx_of(f):
         m = re.search(r"phonopy-supercell-(\d+)\.out$", f)

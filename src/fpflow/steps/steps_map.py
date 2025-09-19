@@ -5,6 +5,7 @@ from fpflow.steps.qe.relax import QeRelaxStep
 from fpflow.steps.qe.cdft import QeCdftStep
 from fpflow.steps.qe.md import QeMdStep
 from fpflow.steps.qe.scf import QeScfStep
+from fpflow.steps.qe.scf_pw2bgw import QeScfPw2bgwStep
 from fpflow.steps.qe.dfpt import QeDfptStep
 from fpflow.steps.qe.phbands import QePhbandsStep
 from fpflow.steps.qe.phdos import QePhdosStep
@@ -59,6 +60,7 @@ step_class_map: dict = {
     'md_qe': QeMdStep,
     'ml_deepmd': MlDeepmdStep, #TODO
     'scf_qe': QeScfStep,
+    'scf_pw2bgw_qe': QeScfPw2bgwStep,
     'scf_abacus': QeScfStep, #TODO
     'scf_siesta': QeScfStep, #TODO
     'ml_dftqe': MlQeDftStep,

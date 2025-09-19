@@ -102,6 +102,29 @@ class Kpath:
         xticks = np.arange(nseg + 1, dtype=float)
         xlabels = list(self.special_points)
         return xaxis, xticks, xlabels
+    
+    @property
+    def phonopy_axis(self):
+        nseg = len(self.special_points) - 1
+        n = nseg * self.npoints_segment  # e.g., 2 * 10 = 20
+
+        # Build cumulative path without duplicating junctions:
+        # - First segment: include left endpoint (L), exclude right (Γ)
+        # - Subsequent segments: exclude left, include right (last includes X)
+        parts = []
+        for i in range(nseg):
+            left, right = i, i + 1
+            if i == 0:
+                seg = np.linspace(left, right, self.npoints_segment, endpoint=False)            # 0.0..0.9
+            else:
+                seg = np.linspace(left, right, self.npoints_segment + 1, endpoint=True)[1:]     # 1.1..2.0
+            parts.append(seg)
+
+        xaxis = np.concatenate(parts).astype(float)
+
+        xticks = np.arange(nseg + 1, dtype=float)         # [0., 1., 2.]
+        xlabels = list(self.special_points)               # ["L", "G", "X"]
+        return xaxis, xticks, xlabels
 
     @property
     def matdyn_str(self):

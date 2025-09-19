@@ -87,7 +87,7 @@ class PhbandsPlot(PlotBase):
 class PhonopyPlot(PhbandsPlot):
     def __init__(
         self,
-        infile='./band.yaml',
+        infile='./phonopy_band.yaml',
         outfile_prefix='phbands_phonopy',
         **kwargs
     ):
@@ -105,9 +105,8 @@ class PhonopyPlot(PhbandsPlot):
             self.phbands[k, b] = data['phonon'][k]['band'][b]['frequency']*33.356        # Factor in cm^{-1}
 
         self.numbands: int = self.phbands.shape[1]
-        print(self.phbands.shape)
 
-        self.xaxis, self.xticks, self.xtick_labels = Kpath.from_yamlfile().even_spaced_axis
+        self.xaxis, self.xticks, self.xtick_labels = Kpath.from_yamlfile().phonopy_axis
         self.axis = self.xaxis.reshape(-1, 1)
 
         # Get name.

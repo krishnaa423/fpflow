@@ -127,6 +127,7 @@ generator:
   #  - md_qe
   #  - ml_deepmd
    - scf_qe
+  #  - scf_pw2bgw_qe
   #  - scf_abacus
   #  - scf_siesta
   #  - ml_dftqe
@@ -268,6 +269,10 @@ scf:
   ecut: *dft_ecut
   is_spinorbit: *dft_spinorbit
   xc: *dft_xc
+  args:
+  job_info:
+    <<: *para
+scf_pw2bgw:
   args:
   job_info:
     <<: *para

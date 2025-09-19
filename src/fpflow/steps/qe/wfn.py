@@ -12,7 +12,8 @@ from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.structure.kpts import Kpts
-import numpy as np 
+import numpy as np
+ 
 #endregion
 
 #region variables
