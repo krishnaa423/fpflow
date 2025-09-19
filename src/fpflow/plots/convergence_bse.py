@@ -11,6 +11,7 @@ import os
 from fpflow.plots.plot import PlotBase, PlotType
 import pandas as pd
 from ase.units import Hartree, eV
+import glob 
 
 #endregion
 
@@ -21,49 +22,44 @@ from ase.units import Hartree, eV
 #endregion
 
 #region classes
-class BseAbsorptionPlot(PlotBase):
+class BgwConvergenceBsePlot(PlotBase):
     def __init__(
         self,
-        eh_filename='./absorption_eh.dat',
-        noeh_filename='absorption_noeh.dat',
-        outfile_prefix='bse_absorption',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.eh_filename: str = eh_filename
-        self.noeh_filename: str = noeh_filename
-        self.outfile_prefix: str = outfile_prefix
-        
-        self.get_data()
-        self.set_figures()
+        self.get_data_and_figures()
 
-    def get_data(self):
-        abs_eh_data = np.loadtxt(self.eh_filename, dtype='f8', skiprows=4)
-        abs_noeh_data = np.loadtxt(self.noeh_filename, dtype='f8', skiprows=4)
+    def get_from_single_folder(self, dest_dir: str, color, src_dir: str=os.getcwd()):
+        # Change to dest dir.
+        os.chdir(dest_dir)
+
+        abs_eh_data = np.loadtxt('./absorption_eh.dat', dtype='f8', skiprows=4)
         axis = abs_eh_data[:, 0]
-        noeh_data = abs_noeh_data[:, 1]
         eh_data = abs_eh_data[:, 1]
 
         # Get name.
         inputdict: dict = InputYaml.from_yaml_file().inputdict
         active_idx: int = jmespath.search('structures.active_idx', inputdict)
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
+        bse_nv: str = 'v' + str(jmespath.search('bse.absorption.val_bands', inputdict))
+        bse_nc: str = 'c' + str(jmespath.search('bse.absorption.cond_bands', inputdict))
+        bse_kgrid: str = 'x'.join(list(map(str, jmespath.search('wfn.kgrid', inputdict))))
+        dset_name: str = f'dset_{bse_nv}_{bse_nc}_{bse_kgrid}'
 
         append_dset_df: pd.DataFrame = pd.DataFrame({
-            "name": ["dset_bse_absorption"],
+            "name": [dset_name],
             "data": [pd.DataFrame({
                 "x": axis,
-                "y_noeh": noeh_data,
                 "y_eh": eh_data,
             })]
         })
 
         self.dsets_df = pd.concat([self.dsets_df, append_dset_df], ignore_index=True)
 
-    def set_figures(self):
         append_fig_df: pd.DataFrame = pd.DataFrame([
             {
-                'fig_name': self.outfile_prefix,
+                'fig_name': 'convqebse',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
                 'xlabel': 'Energy (eV)', 'xlim': None, 'xticks': None, 'xtick_labels': None,
@@ -71,33 +67,29 @@ class BseAbsorptionPlot(PlotBase):
                 'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                 'z_inc': None, 'z_azim': None,
                 'title': f'{self.struct_name} BSE Absorption',
-                'dset_name': 'dset_bse_absorption',
-                'dset_axis_cols': 'x',        
-                'dset_data_cols': ['y_noeh'],
-                'color': 'blue', 
-                'xgrid': True,
-                'ygrid': False,
-                'legend_label': 'noeh',
-            },
-            {
-                'fig_name': self.outfile_prefix,
-                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                'plot_type': PlotType.LINE, 'axis': None,
-                'xlabel': 'Energy (eV)', 'xlim': None, 'xticks': None, 'xtick_labels': None,
-                'ylabel': r'$\epsilon_2(\omega) (arb.)$', 'ylim': None, 'yticks': None, 'ytick_labels': None,
-                'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
-                'z_inc': None, 'z_azim': None,
-                'title': f'{self.struct_name} BSE Absorption',
-                'dset_name': 'dset_bse_absorption',
+                'dset_name': dset_name,
                 'dset_axis_cols': 'x',        
                 'dset_data_cols': ['y_eh'],
-                'color': 'red', 
+                'color': color, 
                 'xgrid': True,
                 'ygrid': False,
-                'legend_label': 'eh',
+                'legend_label': f'{bse_nv}_{bse_nc}_{bse_kgrid}',
             },
         ])
 
-        self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)            
+        self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)   
+
+
+        # Change back to src dir.
+        os.chdir(src_dir)
+
+    def get_data_and_figures(self):
+        dirs = glob.glob('./convergence/qe/bse/*')
+        dirs.sort()
+
+        colors = plt.cm.tab20(np.linspace(0, 1, len(dirs)))
+
+        for idir, color in zip(dirs, colors):
+            self.get_from_single_folder(idir, color)
 
 #endregion

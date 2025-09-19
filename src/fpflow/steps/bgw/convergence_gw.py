@@ -1,5 +1,6 @@
 #region modules
 from fpflow.steps.convergencestep_base import ConvergenceBaseStep
+from fpflow.plots.convergence_gw import BgwConvergenceGwPlot
 #endregion
 
 #region variables
@@ -12,5 +13,8 @@ from fpflow.steps.convergencestep_base import ConvergenceBaseStep
 class BgwConvergenceGwStep(ConvergenceBaseStep):
     def __init__(self, **kwargs):
         super().__init__(subdir1='qe', subdir2='gw', **kwargs)
+
+    def plot(self, **kwargs):
+        BgwConvergenceGwPlot().save_figures(**kwargs)
 
 #endregion

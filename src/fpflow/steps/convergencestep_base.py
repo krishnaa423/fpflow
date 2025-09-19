@@ -75,8 +75,6 @@ print(f'Done conv{self.subdir1}{self.subdir2} in total time: ', total_time, ' se
         return f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-./link.sh
-
 python ./script_conv{self.subdir1}{self.subdir2}.py
 '''
 

@@ -12,6 +12,7 @@ from fpflow.schedulers.scheduler import Scheduler
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.structure.kpts import Kpts
+from fpflow.plots.absorption import BseAbsorptionPlot
 #endregion
 
 #region variables
@@ -133,4 +134,8 @@ mv bandstructure.dat bandstructure_absorption.dat
             './vmtxel',
             './absorption.inp.out',
         ]
+    
+    def plot(self, **kwargs):
+        BseAbsorptionPlot().save_figures(**kwargs)
+
 #endregion

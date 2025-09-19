@@ -83,9 +83,9 @@ Steps, post-processsing, and (Plots):
 - interactive_script
 
 ## Installation. 
+Clone this repository. Then,
 
 ```
-git clone 
 cd fpflow
 pip install -e .
 ```

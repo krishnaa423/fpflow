@@ -74,7 +74,7 @@ step_class_map: dict = {
     'elph_dfpt': QeDfptStep, #TODO
     'phbands_qe': QePhbandsStep,
     'phdos_qe': QePhdosStep, #TODO
-    'phmodes_qe': QePhmodesStep, #TODO
+    'phmodes_qe': QePhmodesStep,
     'dos_qe': QeDosStep, #TODO
     'pdos_qe': QePdosStep, #TODO
     'dftelbands_qe': QeDftelbandsStep,
@@ -93,7 +93,7 @@ step_class_map: dict = {
     'wfnq_siesta': QeWfnqStep, #TODO
     'wfnfi_qe': QeWfnfiStep,
     'wfnqfi_qe': QeWfnqfiStep,
-    'phonopy_qe': QePhonopyNestedStep, #TODO
+    'phonopy_qe': QePhonopyNestedStep,
     'pp_dvscf_phonopy': QePhonopyStep, #TODO
     'elph_phonopy': QePhonopyStep, #TODO
     'epsilon_bgw': BgwEpsilonStep,
@@ -113,10 +113,10 @@ step_class_map: dict = {
     'ste': SteStep, #TODO
     'esf': EsfStep, #TODO
     'esr': EsrStep,
-    'convergence_scf_qe': QeConvergenceScfStep, #TODO
-    'convergence_dfpt_qe': QeConvergenceDfptStep, #TODO
-    'convergence_gw_qe': BgwConvergenceGwStep, #TODO
-    'convergence_bse_qe': BgwConvergenceBseStep, #TODO
+    'convergence_scf_qe': QeConvergenceScfStep, 
+    'convergence_dfpt_qe': QeConvergenceDfptStep, 
+    'convergence_gw_qe': BgwConvergenceGwStep, 
+    'convergence_bse_qe': BgwConvergenceBseStep, 
     'create_script': CreateScriptStep,
     'run_script': RunScriptStep,
     'tail_script': TailScriptStep,

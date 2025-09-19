@@ -1,5 +1,6 @@
 #region modules
 from fpflow.steps.convergencestep_base import ConvergenceBaseStep
+from fpflow.plots.convergence_dfpt import QeConvergenceDfptPlot
 #endregion
 
 #region variables
@@ -12,5 +13,8 @@ from fpflow.steps.convergencestep_base import ConvergenceBaseStep
 class QeConvergenceDfptStep(ConvergenceBaseStep):
     def __init__(self, **kwargs):
         super().__init__(subdir1='qe', subdir2='dfpt', **kwargs)
+
+    def plot(self, **kwargs):
+        QeConvergenceDfptPlot().save_figures(**kwargs)
 
 #endregion
