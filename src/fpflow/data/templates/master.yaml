@@ -1,18 +1,11 @@
-# # Input info when iterating over input parameter values. Not implemented. 
-# multi_info:    
-#   - path: 'scf.xc'
-#     values: ['pbe', 'lda']
-#   - path: 'scf.is_spinorbit'
-#     values: [false, true]
-
 #region: basic info 
 structures:
   active_idx: 0
   list:
     - name: 'Si'
       file:
-        # type: 'mpapi-formula'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
-        # value: 'Si'
+        # type: 'mpapi-id'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
+        # value: 'mp-149'
       cell:
         unit: angstrom  # angstrom, bohr, alat. 
         read_if_relaxed: true
@@ -78,19 +71,19 @@ common:
   epw_nk: &epw_nk 1
   dft:
     ecut: &dft_ecut 20.0
-    val_bands: &dft_valbands 4
-    cond_bands: &dft_condbands 4
+    val_bands: &dft_valbands 2
+    cond_bands: &dft_condbands 3
     xc: &dft_xc 'pbe'  # pbe, lda. 
     is_spinorbit: &dft_spinorbit false
   gw:
     ecut: &gwecut 10.0
-    val_bands: &gw_valbands 4
-    cond_bands: &gw_condbands 4
+    val_bands: &gw_valbands 2
+    cond_bands: &gw_condbands 3
     para_cond_bands: &gw_para_condbands 201
     conv_cond_bands: &gw_conv_condbands 200
   bse:
-    val_bands: &bse_valbands 4
-    cond_bands: &bse_condbands 4
+    val_bands: &bse_valbands 2
+    cond_bands: &bse_condbands 2
     nxct: &bse_nxct 5
     supercell_size: &xct_supercell_size [2, 2, 2]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
@@ -127,63 +120,63 @@ generator:
   #  - md_qe
   #  - ml_deepmd
    - scf_qe
-  # #  - scf_pw2bgw_qe
-  # #  - scf_abacus
-  # #  - scf_siesta
-  # #  - ml_dftqe
-  # #  - ml_dfptqe
-  # #  - ml_dvscqe
-  # #  - ml_dnvscqe
-  # #  - ml_dftabacus
-  # #  - ml_dftsiesta
-  #  - dfpt_qe
-  # #  - pp_dvsc_dfpt
-  # #  - elph_dfpt
-  #  - phbands_qe
-  # #  - phdos_qe
+  #  - scf_pw2bgw_qe
+  #  - scf_abacus
+  #  - scf_siesta
+  #  - ml_dftqe
+  #  - ml_dfptqe
+  #  - ml_dvscqe
+  #  - ml_dnvscqe
+  #  - ml_dftabacus
+  #  - ml_dftsiesta
+   - dfpt_qe
+  #  - pp_dvsc_dfpt
+  #  - elph_dfpt
+   - phbands_qe
+  #  - phdos_qe
   #  - phmodes_qe
-  # #  - dos_qe
-  # #  - pdos_qe 
-  #  - dftelbands_qe
-  # #  - kpdos_qe
-  # #  - wannier_qe
-  # #  - tbmodels
-  #  - wfn_qe
-  # #  - pp_wfnqe
-  # #  - pp_wfnqesym
-  # #  - wfn_abacus
-  # #  - wfn_siesta
-  # #  - epw_qe
-  # #  - elph_epw
-  #  - wfnq_qe
-  # #  - wfnq_abacus
-  # #  - wfnq_siesta
-  # #  - wfnfi_qe
-  # #  - wfnqfi_qe
-  # #  - phonopy_qe
-  # #  - pp_dvscf_phonopy
-  # #  - elph_phonopy
-  #  - epsilon_bgw
-  # #  - sigmasc_bgw
-  # #  - epsilonsc_bgw
-  #  - sigma_bgw
-  # #  - ml_gwqe
-  #  - gwelbands_bgw
-  #  - kernel_bgw
-  #  - absorption_bgw
-  #  - plotxct_bgw
-  # #  - bseq_bgw
-  # #  - ml_bseqe
-  # #  - xctwannier_bgw
-  # #  - xctph
-  # #  - xctpol
-  # #  - ste
-  # #  - esf
-  # #  - esr
-  #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
-  #  - convergence_bse_qe
+  #  - dos_qe
+  #  - pdos_qe 
+   - dftelbands_qe
+  #  - kpdos_qe
+  #  - wannier_qe
+  #  - tbmodels
+   - wfn_qe
+  #  - pp_wfnqe
+  #  - pp_wfnqesym
+  #  - wfn_abacus
+  #  - wfn_siesta
+  #  - epw_qe
+  #  - elph_epw
+   - wfnq_qe
+  #  - wfnq_abacus
+  #  - wfnq_siesta
+  #  - wfnfi_qe
+  #  - wfnqfi_qe
+  #  - phonopy_qe
+  #  - pp_dvscf_phonopy
+  #  - elph_phonopy
+   - epsilon_bgw
+  #  - sigmasc_bgw
+  #  - epsilonsc_bgw
+   - sigma_bgw
+  #  - ml_gwqe
+   - gwelbands_bgw
+   - kernel_bgw
+   - absorption_bgw
+   - plotxct_bgw
+  #  - bseq_bgw
+  #  - ml_bseqe
+  #  - xctwannier_bgw
+  #  - xctph
+  #  - xctpol
+  #  - ste
+  #  - esf
+  #  - esr
+   - convergence_scf_qe
+   - convergence_dfpt_qe
+   - convergence_gw_qe
+   - convergence_bse_qe
   post_steps:
     - create_script
     - run_script
@@ -683,9 +676,9 @@ convergence:
             - path: 'gw.sigma.conv_cond_bands'
               value: 200
             - path: 'bse.absorption.val_bands'
-              value: 4
+              value: 2
             - path: 'bse.absorption.cond_bands'
-              value: 4
+              value: 2
           link_inodes:
             - source: ../../gw/dset_1/tmp
               dest: ./tmp

@@ -74,7 +74,7 @@ class QeConvergenceDfptPlot(PlotBase):
                 'fig_name': 'convqedfpt',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
-                'xlabel': None, 'xlim': None, 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
                 'ylabel': r'Energy ($cm^{-1}$)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                 'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                 'z_inc': None, 'z_azim': None,

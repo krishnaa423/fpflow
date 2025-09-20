@@ -1,35 +1,36 @@
-# # Input info when iterating over input parameter values. Not implemented. 
-# multi_info:    
-#   - path: 'scf.xc'
-#     values: ['pbe', 'lda']
-#   - path: 'scf.is_spinorbit'
-#     values: [false, true]
-
 #region: basic info 
 structures:
   active_idx: 0
   list:
-    - name: 'Si'
+    - name: 'Cs2AgInCl6'
       file:
-        type: 'mpapi-formula'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
-        value: 'Cs2AgInCl6'
+        # type: 'mpapi-formula'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
+        # value: 'Cs2AgInCl6'
       cell:
         unit: angstrom  # angstrom, bohr, alat. 
-        read_if_relaxed: true
+        read_if_relaxed: false
         # Specify either 'vectors' or 'bravais_lattice_info'
-        # vectors:
-        #   - [5.45, 5.43, 0.0]
-        #   - [0.0, 5.43, 5.43]
-        #   - [5.43, 0.0, 5.43]
+        vectors:
+            - [-0.000000000,   5.102704622,   5.102704622]
+            - [ 5.102704622,  -0.000000000,   5.102704622]
+            - [ 5.102704622,   5.102704622,  -0.000000000]
         # bravais_lattice_info:
         #   ibrav: 'fcc'
         #   A: 5.43
       positions:
-        unit: crystal   # angstrom, bohr, crystal, alat. 
-        read_if_relaxed: true
+        unit: angstrom   # angstrom, bohr, crystal, alat. 
+        read_if_relaxed: false
         coords:
-          # - ['Si', 0.00, 0.00, 0.00]
-          # - ['Si', 0.25, 0.25, 0.25]  
+          - ["Cs",  7.6540569337, 7.6540569337, 7.6540569337 ]
+          - ["Cs",  2.5513523112, 2.5513523112, 2.5513523112 ]
+          - ["In", -0.0000000000, 0.0000000000, 0.0000000000 ]
+          - ["Ag",  5.1027046224, 5.1027046224, 5.1027046224 ]
+          - ["Cl",  2.5038793239, 5.1027046224, 5.1027046224 ]
+          - ["Cl",  5.1027046224, 5.1027046224, 2.5038793239 ]
+          - ["Cl",  7.7015299210, 5.1027046224, 5.1027046224 ]
+          - ["Cl",  5.1027046224, 2.5038793239, 5.1027046224 ]
+          - ["Cl",  5.1027046224, 7.7015299210, 5.1027046224 ]
+          - ["Cl",  5.1027046224, 5.1027046224, 7.7015299210 ]
         # vca:    # Virtual crystal approximation. 
         #   - ['Si', 'Ag', 0.2]
       # supercell_size: [2, 2, 2]
@@ -46,53 +47,53 @@ kpath:
 
 common:
   sym: &sym true
-  kgrid: &kgrid [6, 6, 6]
-  nkpts: &nkpts 216
-  big_kgrid: &big_kgrid [6, 6, 6]
-  big_nkpts: &big_nkpts 216
-  qgrid: &qgrid [6, 6, 6]
+  kgrid: &kgrid [4, 4, 4]
+  nkpts: &nkpts 64
+  big_kgrid: &big_kgrid [4, 4, 4]
+  big_nkpts: &big_nkpts 64
+  qgrid: &qgrid [4, 4, 4]
   qshift: &qshift [0.000, 0.000, 0.001]
   dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign true 
   epw_nodes: &epw_nodes 1
-  epw_nk: &epw_nk 216
+  epw_nk: &epw_nk 64
   dft:
     ecut: &dft_ecut 50.0
     val_bands: &dft_valbands 2
-    cond_bands: &dft_condbands 4
+    cond_bands: &dft_condbands 2
     xc: &dft_xc 'pbe'  # pbe, lda. 
     is_spinorbit: &dft_spinorbit false
   gw:
     ecut: &gwecut 10.0
     val_bands: &gw_valbands 2
-    cond_bands: &gw_condbands 4
+    cond_bands: &gw_condbands 2
     para_cond_bands: &gw_para_condbands 2001
     conv_cond_bands: &gw_conv_condbands 2000
   bse:
     val_bands: &bse_valbands 2
     cond_bands: &bse_condbands 2
     nxct: &bse_nxct 5
-    supercell_size: &xct_supercell_size [6, 6, 6]
+    supercell_size: &xct_supercell_size [4, 4, 4]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
     elec_position: &xct_elec_position [0.5, 0.5, 0.5]
     xct_state: &xct_state 1
   job_types:
     scheduler: &scheduler_dict
-      name: &scheduler_name 'perlmutter_cpu'
+      name: &scheduler_name 'perlmutter_gpu'
       is_interactive: true
     interactive:
       nodes: &interactive_nodes 1
       time: &interactive_time 03:40:00
     single:
       nodes: &single_nodes 1
-      ntasks: &single_ntasks 128
+      ntasks: &single_ntasks 4
       time: &single_time "02:45:00"
     para:
       nodes: &para_nodes 4
-      ntasks: &para_ntasks 512
+      ntasks: &para_ntasks 16
       time: &para_time "02:45:00"
     big:
       nodes: &big_nodes 4
-      ntasks: &big_ntasks 512
+      ntasks: &big_ntasks 16
       time: &big_time "02:45:00"
 
 generator:
@@ -101,56 +102,56 @@ generator:
     - pseudos_qe
   steps: &gen_steps
   #  - esr_gen
-   - relax_qe
+  #  - relax_qe
   #  - cdft_qe
   #  - md_qe
   #  - ml_deepmd
-   - scf_qe
-  #  - scf_pw2bgw_qe
-  #  - scf_abacus
-  #  - scf_siesta
-  #  - ml_dftqe
-  #  - ml_dfptqe
-  #  - ml_dvscqe
-  #  - ml_dnvscqe
-  #  - ml_dftabacus
-  #  - ml_dftsiesta
-   - dfpt_qe
-  #  - pp_dvsc_dfpt
-  #  - elph_dfpt
-   - phbands_qe
-  #  - phdos_qe
-   - phmodes_qe
-  #  - dos_qe
-  #  - pdos_qe 
-   - dftelbands_qe
-  #  - kpdos_qe
-  #  - wannier_qe
-  #  - tbmodels
-   - wfn_qe
-  #  - pp_wfnqe
-  #  - pp_wfnqesym
-  #  - wfn_abacus
-  #  - wfn_siesta
-  #  - epw_qe
-  #  - elph_epw
-   - wfnq_qe
-  #  - wfnq_abacus
-  #  - wfnq_siesta
-  #  - wfnfi_qe
-  #  - wfnqfi_qe
-   - phonopy_qe
-  #  - pp_dvscf_phonopy
-  #  - elph_phonopy
-   - epsilon_bgw
-  #  - sigmasc_bgw
-  #  - epsilonsc_bgw
-   - sigma_bgw
-  #  - ml_gwqe
-   - gwelbands_bgw
-   - kernel_bgw
-   - absorption_bgw
-   - plotxct_bgw
+  #  - scf_qe
+  # #  - scf_pw2bgw_qe
+  # #  - scf_abacus
+  # #  - scf_siesta
+  # #  - ml_dftqe
+  # #  - ml_dfptqe
+  # #  - ml_dvscqe
+  # #  - ml_dnvscqe
+  # #  - ml_dftabacus
+  # #  - ml_dftsiesta
+  #  - dfpt_qe
+  # #  - pp_dvsc_dfpt
+  # #  - elph_dfpt
+  #  - phbands_qe
+  # #  - phdos_qe
+  #  - phmodes_qe
+  # #  - dos_qe
+  # #  - pdos_qe 
+  #  - dftelbands_qe
+  # #  - kpdos_qe
+  # #  - wannier_qe
+  # #  - tbmodels
+  #  - wfn_qe
+  # #  - pp_wfnqe
+  # #  - pp_wfnqesym
+  # #  - wfn_abacus
+  # #  - wfn_siesta
+  # #  - epw_qe
+  # #  - elph_epw
+  #  - wfnq_qe
+  # #  - wfnq_abacus
+  # #  - wfnq_siesta
+  # #  - wfnfi_qe
+  # #  - wfnqfi_qe
+  #  - phonopy_qe
+  # #  - pp_dvscf_phonopy
+  # #  - elph_phonopy
+  #  - epsilon_bgw
+  # #  - sigmasc_bgw
+  # #  - epsilonsc_bgw
+  #  - sigma_bgw
+  # #  - ml_gwqe
+  #  - gwelbands_bgw
+  #  - kernel_bgw
+  #  - absorption_bgw
+  #  - plotxct_bgw
   #  - bseq_bgw
   #  - ml_bseqe
   #  - xctwannier_bgw
@@ -159,10 +160,10 @@ generator:
   #  - ste
   #  - esf
   #  - esr
-   - convergence_scf_qe
+  #  - convergence_scf_qe
   #  - convergence_dfpt_qe
   #  - convergence_gw_qe
-  #  - convergence_bse_qe
+   - convergence_bse_qe
   post_steps:
     - create_script
     - run_script
@@ -174,11 +175,75 @@ manager:
   dest_dir: ./
   steps:
   #  - esr_gen
-   - relax_qe
+  #  - relax_qe
   #  - cdft_qe
   #  - md_qe
   #  - ml_deepmd
-   - scf_qe
+  #  - scf_qe
+  # #  - scf_pw2bgw_qe
+  # #  - scf_abacus
+  # #  - scf_siesta
+  # #  - ml_dftqe
+  # #  - ml_dfptqe
+  # #  - ml_dvscqe
+  # #  - ml_dnvscqe
+  # #  - ml_dftabacus
+  # #  - ml_dftsiesta
+  #  - dfpt_qe
+  # #  - pp_dvsc_dfpt
+  # #  - elph_dfpt
+  #  - phbands_qe
+  # #  - phdos_qe
+  #  - phmodes_qe
+  # #  - dos_qe
+  # #  - pdos_qe 
+  #  - dftelbands_qe
+  # #  - kpdos_qe
+  # #  - wannier_qe
+  # #  - tbmodels
+  #  - wfn_qe
+  # #  - pp_wfnqe
+  # #  - pp_wfnqesym
+  # #  - wfn_abacus
+  # #  - wfn_siesta
+  # #  - epw_qe
+  # #  - elph_epw
+  #  - wfnq_qe
+  # #  - wfnq_abacus
+  # #  - wfnq_siesta
+  # #  - wfnfi_qe
+  # #  - wfnqfi_qe
+  #  - phonopy_qe
+  # #  - pp_dvscf_phonopy
+  # #  - elph_phonopy
+  #  - epsilon_bgw
+  # #  - sigmasc_bgw
+  # #  - epsilonsc_bgw
+  #  - sigma_bgw
+  # #  - ml_gwqe
+  #  - gwelbands_bgw
+  #  - kernel_bgw
+  #  - absorption_bgw
+  #  - plotxct_bgw
+  #  - bseq_bgw
+  #  - ml_bseqe
+  #  - xctwannier_bgw
+  #  - xctph
+  #  - xctpol
+  #  - ste
+  #  - esf
+  #  - esr
+  #  - convergence_scf_qe
+  #  - convergence_dfpt_qe
+  #  - convergence_gw_qe
+   - convergence_bse_qe
+  plots:
+  #  - esr_gen
+  #  - relax_qe
+  #  - cdft_qe
+  #  - md_qe
+  #  - ml_deepmd
+  #  - scf_qe
   #  - scf_pw2bgw_qe
   #  - scf_abacus
   #  - scf_siesta
@@ -188,42 +253,42 @@ manager:
   #  - ml_dnvscqe
   #  - ml_dftabacus
   #  - ml_dftsiesta
-   - dfpt_qe
+  #  - dfpt_qe
   #  - pp_dvsc_dfpt
   #  - elph_dfpt
-   - phbands_qe
+  #  - phbands_qe
   #  - phdos_qe
-   - phmodes_qe
+  #  - phmodes_qe
   #  - dos_qe
   #  - pdos_qe 
-   - dftelbands_qe
+  #  - dftelbands_qe
   #  - kpdos_qe
   #  - wannier_qe
   #  - tbmodels
-   - wfn_qe
+  #  - wfn_qe
   #  - pp_wfnqe
   #  - pp_wfnqesym
   #  - wfn_abacus
   #  - wfn_siesta
   #  - epw_qe
   #  - elph_epw
-   - wfnq_qe
+  #  - wfnq_qe
   #  - wfnq_abacus
   #  - wfnq_siesta
   #  - wfnfi_qe
   #  - wfnqfi_qe
-   - phonopy_qe
+  #  - phonopy_qe
   #  - pp_dvscf_phonopy
   #  - elph_phonopy
-   - epsilon_bgw
+  #  - epsilon_bgw
   #  - sigmasc_bgw
   #  - epsilonsc_bgw
-   - sigma_bgw
+  #  - sigma_bgw
   #  - ml_gwqe
-   - gwelbands_bgw
-   - kernel_bgw
-   - absorption_bgw
-   - plotxct_bgw
+  #  - gwelbands_bgw
+  #  - kernel_bgw
+  #  - absorption_bgw
+  #  - plotxct_bgw
   #  - bseq_bgw
   #  - ml_bseqe
   #  - xctwannier_bgw
@@ -232,11 +297,10 @@ manager:
   #  - ste
   #  - esf
   #  - esr
-   - convergence_scf_qe
+  #  - convergence_scf_qe
   #  - convergence_dfpt_qe
   #  - convergence_gw_qe
-  #  - convergence_bse_qe
-  plots: *gen_steps
+   - convergence_bse_qe
 #endregion: basic info
 
 job_types:
@@ -465,8 +529,8 @@ bse:
     pol_dir: *qshift
     wfnco_link: 'WFN_parabands.h5'
     wfnqco_link: 'WFN_parabands.h5'
-    wfnfi_link: 'WFN_parabands.h5'
-    wfnqfi_link: 'WFN_parabands.h5'
+    wfnfi_link: 'WFN_fii.h5'
+    wfnqfi_link: 'WFNq_fii.h5'
     args:
     job_info:
       <<: *para
@@ -522,7 +586,7 @@ convergence:
             - path: 'scf.ecut'
               value: 20.0
             - path: 'scf.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
           link_inodes:
           generator:
             pre_steps: ['pseudos_qe']
@@ -531,7 +595,7 @@ convergence:
         # dset_1
         - params:
             - path: 'scf.ecut'
-              value: 20.0
+              value: 40.0
             - path: 'scf.kgrid'
               value: [4, 4, 4]
           link_inodes:
@@ -542,9 +606,9 @@ convergence:
         # dset_2
         - params:
             - path: 'scf.ecut'
-              value: 20.0
+              value: 50.0
             - path: 'scf.kgrid'
-              value: [6, 6, 6]
+              value: [4, 4, 4]
           link_inodes:
           generator:
             pre_steps: ['pseudos_qe']
@@ -553,7 +617,51 @@ convergence:
         # dset_3
         - params:
             - path: 'scf.ecut'
-              value: 20.0
+              value: 60.0
+            - path: 'scf.kgrid'
+              value: [4, 4, 4]
+          link_inodes:
+          generator:
+            pre_steps: ['pseudos_qe']
+            steps: ['scf_qe', 'dftelbands_qe']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+        # dset_4
+        - params:
+            - path: 'scf.ecut'
+              value: 80.0
+            - path: 'scf.kgrid'
+              value: [4, 4, 4]
+          link_inodes:
+          generator:
+            pre_steps: ['pseudos_qe']
+            steps: ['scf_qe', 'dftelbands_qe']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+        # dset_5
+        - params:
+            - path: 'scf.ecut'
+              value: 100.0
+            - path: 'scf.kgrid'
+              value: [4, 4, 4]
+          link_inodes:
+          generator:
+            pre_steps: ['pseudos_qe']
+            steps: ['scf_qe', 'dftelbands_qe']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+        # dset_6
+        - params:
+            - path: 'scf.ecut'
+              value: 50.0
+            - path: 'scf.kgrid'
+              value: [6, 6, 6]
+          link_inodes:
+          generator:
+            pre_steps: ['pseudos_qe']
+            steps: ['scf_qe', 'dftelbands_qe']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+        # dset_7
+        - params:
+            - path: 'scf.ecut'
+              value: 50.0
             - path: 'scf.kgrid'
               value: [8, 8, 8]
           link_inodes:
@@ -610,27 +718,27 @@ convergence:
         # dset_0
         - params:
             - path: 'scf.ecut'
-              value: 20.0
+              value: 50.0
             - path: 'scf.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
             - path: 'wfn.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
             - path: 'wfn.parabands_cond_bands'
-              value: 201
+              value: 6001
             - path: 'wfnq.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
             - path: 'gw.epsilon.ecut'
               value: 10.0
             - path: 'gw.epsilon.cond_bands'
-              value: 100
+              value: 500
             - path: 'gw.sigma.ecut'
               value: 10.0
             - path: 'gw.sigma.conv_cond_bands'
-              value: 100
+              value: 500
           link_inodes:
-            - source: ../../scf/dset_1/tmp
+            - source: ../../scf/dset_2/tmp
               dest: ./tmp
-            - source: ../../scf/dset_1/pseudos
+            - source: ../../scf/dset_2/pseudos
               dest: ./pseudos
           generator:
             pre_steps: []
@@ -639,23 +747,66 @@ convergence:
         # dset_1
         - params:
             - path: 'scf.ecut'
-              value: 20
+              value: 50.0
             - path: 'scf.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
             - path: 'wfn.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
             - path: 'wfn.parabands_cond_bands'
-              value: 201
+              value: 6001
             - path: 'wfnq.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
             - path: 'gw.epsilon.ecut'
               value: 10.0
             - path: 'gw.epsilon.cond_bands'
-              value: 200
+              value: 2000
             - path: 'gw.sigma.ecut'
               value: 10.0
             - path: 'gw.sigma.conv_cond_bands'
-              value: 200
+              value: 2000
+          link_inodes:
+            - source: ../../gw/dset_0/tmp
+              dest: ./tmp
+            - source: ../../gw/dset_0/pseudos
+              dest: ./pseudos
+            - source: ../../gw/dset_0/WFN_parabands.h5
+              dest: ./WFN_parabands.h5
+            - source: ../../gw/dset_0/WFN_coo
+              dest: ./WFN_coo
+            - source: ../../gw/dset_0/WFNq_coo.h5
+              dest: ./WFNq_coo.h5
+            - source: ../../gw/dset_0/WFN_dftelbands
+              dest: ./WFN_dftelbands    
+            - source: ../../gw/dset_0/dftelbands.xml
+              dest: ./dftelbands.xml    
+            - source: ../../gw/dset_0/VXC
+              dest: ./VXC    
+            - source: ../../gw/dset_0/RHO
+              dest: ./RHO         
+          generator:
+            pre_steps: []
+            steps: ['epsilon_bgw', 'sigma_bgw', 'gwelbands_bgw']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+        # dset_2
+        - params:
+            - path: 'scf.ecut'
+              value: 50.0
+            - path: 'scf.kgrid'
+              value: [4, 4, 4]
+            - path: 'wfn.kgrid'
+              value: [4, 4, 4]
+            - path: 'wfn.parabands_cond_bands'
+              value: 6001
+            - path: 'wfnq.kgrid'
+              value: [4, 4, 4]
+            - path: 'gw.epsilon.ecut'
+              value: 10.0
+            - path: 'gw.epsilon.cond_bands'
+              value: 4000
+            - path: 'gw.sigma.ecut'
+              value: 10.0
+            - path: 'gw.sigma.conv_cond_bands'
+              value: 4000
           link_inodes:
             - source: ../../gw/dset_0/tmp
               dest: ./tmp
@@ -685,34 +836,14 @@ convergence:
       dir_list:
         # dset_0
         - params:
-            - path: 'scf.ecut'
-              value: 20
-            - path: 'scf.kgrid'
-              value: [2, 2, 2]
-            - path: 'wfn.kgrid'
-              value: [2, 2, 2]
-            - path: 'wfnq.kgrid'
-              value: [2, 2, 2]
             - path: 'wfnfi.kgrid'
-              value: [2, 2, 2]
+              value: [4, 4, 4]
             - path: 'wfnqfi.kgrid'
-              value: [2, 2, 2]
-            - path: 'gw.epsilon.ecut'
-              value: 10.0
-            - path: 'gw.epsilon.cond_bands'
-              value: 200
-            - path: 'gw.sigma.ecut'
-              value: 10.0
-            - path: 'gw.sigma.conv_cond_bands'
-              value: 200
-            - path: 'bse.absorption.val_bands'
-              value: 2
-            - path: 'bse.absorption.cond_bands'
-              value: 2
+              value: [4, 4, 4]
           link_inodes:
-            - source: ../../gw/dset_1/tmp
+            - source: ../../scf/dset_2/tmp
               dest: ./tmp
-            - source: ../../gw/dset_1/pseudos
+            - source: ../../scf/dset_2/tmp
               dest: ./pseudos
             # - source: ../../gw/dset_1/WFN_parabands.h5
             #   dest: ./WFN_parabands.h5
@@ -726,48 +857,72 @@ convergence:
             post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
         # dset_1
         - params:
-            - path: 'scf.ecut'
-              value: 20
-            - path: 'scf.kgrid'
-              value: [2, 2, 2]
-            - path: 'wfn.kgrid'
-              value: [3, 3, 3]
-            - path: 'wfnq.kgrid'
-              value: [3, 3, 3]
             - path: 'wfnfi.kgrid'
-              value: [3, 3, 3]
+              value: [8, 8, 8]
             - path: 'wfnqfi.kgrid'
-              value: [3, 3, 3]
-            - path: 'gw.epsilon.ecut'
-              value: 10.0
-            - path: 'gw.epsilon.cond_bands'
-              value: 200
-            - path: 'gw.sigma.ecut'
-              value: 10.0
-            - path: 'gw.sigma.conv_cond_bands'
-              value: 200
-            - path: 'bse.absorption.val_bands'
-              value: 4
-            - path: 'bse.absorption.cond_bands'
-              value: 4
+              value: [8, 8, 8]
           link_inodes:
-            - source: ../../gw/dset_1/tmp
+            - source: ../../bse/dset_0/tmp
               dest: ./tmp
-            - source: ../../gw/dset_1/pseudos
+            - source: ../../bse/dset_0/pseudos
               dest: ./pseudos
-            # - source: ../../gw/dset_1/WFN_parabands.h5
-            #   dest: ./WFN_parabands.h5
-            # - source: ../../gw/dset_1/WFNq_coo.h5
-            #   dest: ./WFNq_coo.h5
-            # - source: ../../gw/dset_1/eqp1.dat
-            #   dest: ./eqp1.dat
-            # - source: ../../bse/dset_0/WFN_fii.h5
-            #   dest: ./WFN_fii.h5
-            # - source: ../../bse/dset_0/WFNq_fii.h5
-            #   dest: ./WFNq_fii.h5
+            - source: ../../bse/dset_0/WFN_parabands.h5
+              dest: ./WFN_parabands.h5
+            - source: ../../bse/dset_0/eqp1.dat
+              dest: ./eqp1.dat
+            - source: ../../bse/dset_0/WFN_fii.h5
+              dest: ./WFN_fii.h5
+            - source: ../../bse/dset_0/WFNq_fii.h5
+              dest: ./WFNq_fii.h5
           generator:
             pre_steps: []
-            steps: ['wfn_qe', 'wfnq_qe', 'epsilon_bgw', 'sigma_bgw', 'kernel_bgw', 'absorption_bgw']
+            steps: ['kernel_bgw', 'absorption_bgw']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+        # dset_2
+        - params:
+            - path: 'wfnfi.kgrid'
+              value: [16, 16, 16]
+            - path: 'wfnqfi.kgrid'
+              value: [16, 16, 16]
+          link_inodes:
+            - source: ../../bse/dset_0/tmp
+              dest: ./tmp
+            - source: ../../bse/dset_0/pseudos
+              dest: ./pseudos
+            - source: ../../bse/dset_0/WFN_parabands.h5
+              dest: ./WFN_parabands.h5
+            - source: ../../bse/dset_0/eqp1.dat
+              dest: ./eqp1.dat
+            - source: ../../bse/dset_0/WFN_fii.h5
+              dest: ./WFN_fii.h5
+            - source: ../../bse/dset_0/WFNq_fii.h5
+              dest: ./WFNq_fii.h5
+          generator:
+            pre_steps: []
+            steps: ['kernel_bgw', 'absorption_bgw']
+            post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+        # dset_3
+        - params:
+            - path: 'wfnfi.kgrid'
+              value: [20, 20, 20]
+            - path: 'wfnqfi.kgrid'
+              value: [20, 20, 20]
+          link_inodes:
+            - source: ../../bse/dset_0/tmp
+              dest: ./tmp
+            - source: ../../bse/dset_0/pseudos
+              dest: ./pseudos
+            - source: ../../bse/dset_0/WFN_parabands.h5
+              dest: ./WFN_parabands.h5
+            - source: ../../bse/dset_0/eqp1.dat
+              dest: ./eqp1.dat
+            - source: ../../bse/dset_0/WFN_fii.h5
+              dest: ./WFN_fii.h5
+            - source: ../../bse/dset_0/WFNq_fii.h5
+              dest: ./WFNq_fii.h5
+          generator:
+            pre_steps: []
+            steps: ['kernel_bgw', 'absorption_bgw']
             post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       job_info:
         <<: *big_para
