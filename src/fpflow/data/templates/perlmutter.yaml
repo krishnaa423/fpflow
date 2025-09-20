@@ -98,22 +98,22 @@ common:
     xct_state: &xct_state 1
   job_types:
     scheduler: &scheduler_dict
-      name: &scheduler_name 'mac_mini_parallel'
+      name: &scheduler_name 'perlmutter_cpu'
       is_interactive: true
     interactive:
       nodes: &interactive_nodes 1
       time: &interactive_time 03:40:00
     single:
       nodes: &single_nodes 1
-      ntasks: &single_ntasks 1
+      ntasks: &single_ntasks 128
       time: &single_time "02:45:00"
     para:
-      nodes: &para_nodes 1
-      ntasks: &para_ntasks 1
+      nodes: &para_nodes 4
+      ntasks: &para_ntasks 512
       time: &para_time "02:45:00"
     big:
-      nodes: &big_nodes 1
-      ntasks: &big_ntasks 1
+      nodes: &big_nodes 4
+      ntasks: &big_ntasks 512
       time: &big_time "02:45:00"
 
 generator:
@@ -123,67 +123,67 @@ generator:
   steps: &gen_steps
   #  - esr_gen
    - relax_qe
-  #  - cdft_qe
-  #  - md_qe
+   - cdft_qe
+   - md_qe
   #  - ml_deepmd
    - scf_qe
-  # #  - scf_pw2bgw_qe
-  # #  - scf_abacus
-  # #  - scf_siesta
-  # #  - ml_dftqe
-  # #  - ml_dfptqe
-  # #  - ml_dvscqe
-  # #  - ml_dnvscqe
-  # #  - ml_dftabacus
-  # #  - ml_dftsiesta
-  #  - dfpt_qe
-  # #  - pp_dvsc_dfpt
-  # #  - elph_dfpt
-  #  - phbands_qe
-  # #  - phdos_qe
-  #  - phmodes_qe
-  # #  - dos_qe
-  # #  - pdos_qe 
-  #  - dftelbands_qe
-  # #  - kpdos_qe
-  # #  - wannier_qe
-  # #  - tbmodels
-  #  - wfn_qe
-  # #  - pp_wfnqe
-  # #  - pp_wfnqesym
-  # #  - wfn_abacus
-  # #  - wfn_siesta
-  # #  - epw_qe
-  # #  - elph_epw
-  #  - wfnq_qe
-  # #  - wfnq_abacus
-  # #  - wfnq_siesta
-  # #  - wfnfi_qe
-  # #  - wfnqfi_qe
-  # #  - phonopy_qe
-  # #  - pp_dvscf_phonopy
-  # #  - elph_phonopy
-  #  - epsilon_bgw
-  # #  - sigmasc_bgw
-  # #  - epsilonsc_bgw
-  #  - sigma_bgw
-  # #  - ml_gwqe
-  #  - gwelbands_bgw
-  #  - kernel_bgw
-  #  - absorption_bgw
-  #  - plotxct_bgw
-  # #  - bseq_bgw
-  # #  - ml_bseqe
-  # #  - xctwannier_bgw
-  # #  - xctph
-  # #  - xctpol
-  # #  - ste
-  # #  - esf
-  # #  - esr
-  #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
-  #  - convergence_bse_qe
+  #  - scf_pw2bgw_qe
+  #  - scf_abacus
+  #  - scf_siesta
+  #  - ml_dftqe
+  #  - ml_dfptqe
+  #  - ml_dvscqe
+  #  - ml_dnvscqe
+  #  - ml_dftabacus
+  #  - ml_dftsiesta
+   - dfpt_qe
+  #  - pp_dvsc_dfpt
+  #  - elph_dfpt
+   - phbands_qe
+  #  - phdos_qe
+   - phmodes_qe
+  #  - dos_qe
+  #  - pdos_qe 
+   - dftelbands_qe
+  #  - kpdos_qe
+  #  - wannier_qe
+  #  - tbmodels
+   - wfn_qe
+  #  - pp_wfnqe
+  #  - pp_wfnqesym
+  #  - wfn_abacus
+  #  - wfn_siesta
+  #  - epw_qe
+  #  - elph_epw
+   - wfnq_qe
+  #  - wfnq_abacus
+  #  - wfnq_siesta
+  #  - wfnfi_qe
+  #  - wfnqfi_qe
+  #  - phonopy_qe
+  #  - pp_dvscf_phonopy
+  #  - elph_phonopy
+   - epsilon_bgw
+  #  - sigmasc_bgw
+  #  - epsilonsc_bgw
+   - sigma_bgw
+  #  - ml_gwqe
+   - gwelbands_bgw
+   - kernel_bgw
+   - absorption_bgw
+   - plotxct_bgw
+  #  - bseq_bgw
+  #  - ml_bseqe
+  #  - xctwannier_bgw
+  #  - xctph
+  #  - xctpol
+  #  - ste
+  #  - esf
+  #  - esr
+   - convergence_scf_qe
+   - convergence_dfpt_qe
+   - convergence_gw_qe
+   - convergence_bse_qe
   post_steps:
     - create_script
     - run_script

@@ -156,13 +156,26 @@ class Struct:
         struct_type: str = jmespath.search('file.type', struct_dict)
         struct_value: str = jmespath.search('file.value', struct_dict)
 
+        atoms: Atoms = None
         match struct_type:
             case 'localfile':
-                return read(struct_value)
+                atoms = read(struct_value)
             case 'mpapi-id':
-                return MateralsProject.from_id(struct_value).atoms
+                atoms = MateralsProject.from_id(struct_value).atoms
             case 'mpapi-formula':
-                return MateralsProject.from_formula(struct_value).atoms
+                atoms = MateralsProject.from_formula(struct_value).atoms
+
+        # Read positions relaxed file if present. 
+        read_if_relaxed: bool = False if jmespath.search('positions.read_if_relaxed', struct_dict) is None else jmespath.search('positions.read_if_relaxed', struct_dict)
+        if read_if_relaxed and os.path.exists('./relaxed_atomic_positions.txt'):
+            atoms.set_positions(np.loadtxt('./relaxed_atomic_positions.txt', usecols=(1, 2, 3)))
+
+        # Read cell relaxed file if present. 
+        read_if_relaxed: bool = False if jmespath.search('cell.read_if_relaxed', struct_dict) is None else jmespath.search('cell.read_if_relaxed', struct_dict)
+        if read_if_relaxed and os.path.exists('./relaxed_cell_parameters.txt'):
+            atoms.set_cell(np.loadtxt('./relaxed_cell_parameters.txt'))
+
+        return atoms
 
     @classmethod
     def get_atoms_from_inputdict(cls, inputdict: dict) -> List[Atoms]:
