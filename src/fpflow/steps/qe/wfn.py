@@ -158,6 +158,10 @@ cp ./tmp/VKB ./
             'wfn_io_mpiio_mode': 1,
         }
 
+        # Add pseudobands option if needed.
+        if jmespath.search('wfn.is_pseudobands', self.inputdict):
+            parabandsdict['use_pseudobands'] = ''
+
         # Update if needed. 
         update_dict(parabandsdict, jmespath.search('wfn.parabands_args', self.inputdict))
 

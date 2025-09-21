@@ -136,6 +136,6 @@ mv bandstructure.dat bandstructure_absorption.dat
         ]
     
     def plot(self, **kwargs):
-        BseAbsorptionPlot().save_figures(**kwargs)
+        BseAbsorptionPlot(inputdict=self.inputdict).save_figures(**kwargs)
 
 #endregion

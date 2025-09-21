@@ -89,6 +89,6 @@ mv bandstructure.dat bandstructure_inteqp.dat
         ]
     
     def plot(self, **kwargs):
-            GwelbandsPlot().save_figures(**kwargs)
+            GwelbandsPlot(inputdict=self.inputdict).save_figures(**kwargs)
     
 #endregion

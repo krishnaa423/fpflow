@@ -240,10 +240,6 @@ def set_common_rcparams(theme='nature'):
         case _:
             plt.style.use('seaborn-v0_8-whitegrid')
 
-def main():
-    tp = TestPlot()
-    tp.save_figures()
-
 #endregion
 
 #region classes
@@ -695,6 +691,11 @@ class PlotBase:
             'ygrid': pd.Series(dtype='bool'),
             'legend_label': pd.Series(dtype='string'),
         })
+
+        self.inputdict: dict = None
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def save_data(self):
         os.makedirs('./plots', exist_ok=True)

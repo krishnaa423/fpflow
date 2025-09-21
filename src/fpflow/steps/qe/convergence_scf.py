@@ -16,6 +16,6 @@ class QeConvergenceScfStep(ConvergenceBaseStep):
         super().__init__(subdir1='qe', subdir2='scf', **kwargs)
 
     def plot(self, **kwargs):
-        QeConvergenceScfPlot().save_figures(**kwargs)
+        QeConvergenceScfPlot(inputdict=self.inputdict).save_figures(**kwargs)
 
 #endregion

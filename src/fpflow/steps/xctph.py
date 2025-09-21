@@ -101,6 +101,6 @@ exec &> xctph.out
         ] 
     
     def plot(self, **kwargs):
-        XctphPlot().save_plot(**kwargs)
+        XctphPlot(inputdict=self.inputdict).save_plot(**kwargs)
 
 #endregion

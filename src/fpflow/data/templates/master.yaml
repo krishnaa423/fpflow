@@ -80,6 +80,7 @@ common:
     val_bands: &gw_valbands 2
     cond_bands: &gw_condbands 3
     para_cond_bands: &gw_para_condbands 201
+    is_pseudobands: &is_pseudobands true
     conv_cond_bands: &gw_conv_condbands 200
   bse:
     val_bands: &bse_valbands 2
@@ -331,6 +332,7 @@ wfn:
   sym: *sym
   cond_bands: *gw_condbands
   parabands_cond_bands: *gw_para_condbands
+  is_pseudobands: *is_pseudobands
   pw2bgw_args:
   parabands_args:
   args:

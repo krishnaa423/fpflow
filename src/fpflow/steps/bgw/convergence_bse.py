@@ -15,6 +15,6 @@ class BgwConvergenceBseStep(ConvergenceBaseStep):
         super().__init__(subdir1='qe', subdir2='bse', **kwargs)
 
     def plot(self, **kwargs):
-        BgwConvergenceBsePlot().save_figures(**kwargs)
+        BgwConvergenceBsePlot(inputdict=self.inputdict).save_figures(**kwargs)
 
 #endregion

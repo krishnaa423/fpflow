@@ -282,6 +282,6 @@ phonon.write_hdf5_band_structure(filename='./phonopy_band.h5')
         ]
     
     def plot(self):
-        PhonopyPlot().save_figures()
+        PhonopyPlot(inputdict=self.inputdict).save_figures()
 
 #endregion

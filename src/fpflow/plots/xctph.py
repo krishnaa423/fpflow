@@ -88,7 +88,7 @@ class XctphPlot:
         # Additional data created. 
         self.num_bands: int = None 
         self.phbands: np.ndarray = None
-        self.inputdict: dict = InputYaml.from_yaml_file().inputdict
+        self.inputdict: dict = self.inputdict
         self.xctph_interpolated: np.ndarray = None 
 
     def get_phbands_data(self):

@@ -23,12 +23,39 @@ from fpflow.structure.kpts import Kpts
 #region classes
 class BgwEpsilonStep(Step):
     @property
+    def eps_update_from_pseuobands(self) -> str:
+        return f'''#!/usr/bin/env python
+
+import h5py
+import glom 
+from fpflow.inputs.inputyaml import InputYaml
+from fpflow.steps.bgw.epsilon import BgwEpsilonStep
+from fpflow.structure.qe.qe_struct import QeStruct
+import jmespath
+
+inputdict: dict = InputYaml.from_yaml_file('./input.yaml').inputdict
+num_pseudobands: int = 0
+with h5py.File(jmespath.search('gw.epsilon.wfnlink', inputdict), 'r') as f:
+    num_pseudobands = f['/parabands/pseudobands/nb_total'][()]
+# Qestruct.
+max_val_bands: int = int(QeStruct.from_inputdict(inputdict).max_val(
+    xc=jmespath.search('scf.xc', inputdict),
+    is_soc=jmespath.search('scf.is_spinorbit', inputdict),
+))
+
+num_gw_cond_bands: int = num_pseudobands - max_val_bands - 1
+glom.assign(inputdict, 'gw.epsilon.cond_bands', num_gw_cond_bands)
+eps_step = BgwEpsilonStep(inputdict=inputdict)
+eps_step.create()
+'''
+
+    @property
     def epsilon(self) -> str:
         # Qestruct.
-        max_val_bands: int = QeStruct.from_inputdict(self.inputdict).max_val(
+        max_val_bands: int = int(QeStruct.from_inputdict(self.inputdict).max_val(
             xc=jmespath.search('scf.xc', self.inputdict),
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
-        )
+        ))
 
         # Kpts.
         kpts: Kpts = Kpts.from_kgrid(
@@ -65,6 +92,8 @@ class BgwEpsilonStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+{'python ./script_update_eps_from_pseudobands.py &> script_update_eps_from_pseudobands.py.out' if jmespath.search('wfn.is_pseudobands', self.inputdict) else ''}
+
 ln -sf {jmespath.search('gw.epsilon.wfnlink', self.inputdict)} ./WFN.h5 
 ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5 
 {scheduler.get_exec_prefix()}epsilon.cplx.x &> epsilon.inp.out 
@@ -73,10 +102,16 @@ ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5
 
     @property
     def file_contents(self) -> dict:
-        return {
+        output = {
             'epsilon.inp': self.epsilon,
             'job_epsilon.sh': self.job_epsilon,
         }
+
+        # Add the script to from pseudobands if needed.
+        if jmespath.search('wfn.is_pseudobands', self.inputdict):
+            output['script_update_eps_from_pseudobands.py'] = self.eps_update_from_pseuobands
+
+        return output
     
     @property
     def job_scripts(self) -> List[str]:
@@ -102,5 +137,7 @@ ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5
             './epsilon.inp.out',
             './checkbz.log',
             './x.dat',
+            './script_update_eps_from_pseudobands.py',
+            './script_update_eps_from_pseudobands.py.out',
         ]
 #endregion

@@ -157,6 +157,6 @@ wfn2hdf.x BIN WFN_dftelbands WFN_dftelbands.h5
         ]
     
     def plot(self, **kwargs):
-        DftelbandsPlot().save_figures(**kwargs)
+        DftelbandsPlot(inputdict=self.inputdict).save_figures(**kwargs)
 
 #endregion

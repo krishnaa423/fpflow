@@ -8,29 +8,31 @@ structures:
         # value: 'Cs2AgInCl6'
       cell:
         unit: angstrom  # angstrom, bohr, alat. 
-        read_if_relaxed: false
+        read_if_relaxed: true
         # Specify either 'vectors' or 'bravais_lattice_info'
-        vectors:
-            - [-0.000000000,   5.102704622,   5.102704622]
-            - [ 5.102704622,  -0.000000000,   5.102704622]
-            - [ 5.102704622,   5.102704622,  -0.000000000]
-        # bravais_lattice_info:
-        #   ibrav: 'fcc'
-        #   A: 5.43
+        # vectors:
+        #     - [-0.000000000,   5.102704622,   5.102704622]
+        #     - [ 5.102704622,  -0.000000000,   5.102704622]
+        #     - [ 5.102704622,   5.102704622,  -0.000000000]
+        bravais_lattice_info:
+          ibrav: 'fcc'
+          A: 10.48
       positions:
         unit: angstrom   # angstrom, bohr, crystal, alat. 
-        read_if_relaxed: false
+        read_if_relaxed: true
         coords:
-          - ["Cs",  7.6540569337, 7.6540569337, 7.6540569337 ]
-          - ["Cs",  2.5513523112, 2.5513523112, 2.5513523112 ]
-          - ["In", -0.0000000000, 0.0000000000, 0.0000000000 ]
-          - ["Ag",  5.1027046224, 5.1027046224, 5.1027046224 ]
-          - ["Cl",  2.5038793239, 5.1027046224, 5.1027046224 ]
-          - ["Cl",  5.1027046224, 5.1027046224, 2.5038793239 ]
-          - ["Cl",  7.7015299210, 5.1027046224, 5.1027046224 ]
-          - ["Cl",  5.1027046224, 2.5038793239, 5.1027046224 ]
-          - ["Cl",  5.1027046224, 7.7015299210, 5.1027046224 ]
-          - ["Cl",  5.1027046224, 5.1027046224, 7.7015299210 ]
+          - ["Cs", 0.0, 0.0, 0.0]
+          - ["Cs", 0.5, 0.5, 0.5]
+          - ["In", 0.0, 0.0, 0.0]
+          - ["Ag", 0.5, 0.5, 0.5]
+          - ["Cl", 0.25, 0.25, 0.25]
+          - ["Cl", 0.75, 0.75, 0.25]
+          - ["Cl", 0.75, 0.25, 0.75]
+          - ["Cl", 0.25, 0.75, 0.75]
+          - ["Cl", 0.25, 0.75, 0.25]
+          - ["Cl", 0.75, 0.25, 0.25]
+          - ["Cl", 0.25, 0.25, 0.75]
+          - ["Cl", 0.75, 0.75, 0.75]
         # vca:    # Virtual crystal approximation. 
         #   - ['Si', 'Ag', 0.2]
       # supercell_size: [2, 2, 2]
@@ -58,18 +60,18 @@ common:
   epw_nk: &epw_nk 64
   dft:
     ecut: &dft_ecut 50.0
-    val_bands: &dft_valbands 2
+    val_bands: &dft_valbands 4
     cond_bands: &dft_condbands 2
     xc: &dft_xc 'pbe'  # pbe, lda. 
-    is_spinorbit: &dft_spinorbit false
+    is_spinorbit: &dft_spinorbit true
   gw:
     ecut: &gwecut 10.0
-    val_bands: &gw_valbands 2
+    val_bands: &gw_valbands 4
     cond_bands: &gw_condbands 2
     para_cond_bands: &gw_para_condbands 2001
     conv_cond_bands: &gw_conv_condbands 2000
   bse:
-    val_bands: &bse_valbands 2
+    val_bands: &bse_valbands 4
     cond_bands: &bse_condbands 2
     nxct: &bse_nxct 5
     supercell_size: &xct_supercell_size [4, 4, 4]
@@ -78,7 +80,7 @@ common:
     xct_state: &xct_state 1
   job_types:
     scheduler: &scheduler_dict
-      name: &scheduler_name 'perlmutter_gpu'
+      name: &scheduler_name 'perlmutter_cpu'
       is_interactive: true
     interactive:
       nodes: &interactive_nodes 1
@@ -102,56 +104,56 @@ generator:
     - pseudos_qe
   steps: &gen_steps
   #  - esr_gen
-  #  - relax_qe
+   - relax_qe
   #  - cdft_qe
   #  - md_qe
   #  - ml_deepmd
-  #  - scf_qe
-  # #  - scf_pw2bgw_qe
-  # #  - scf_abacus
-  # #  - scf_siesta
-  # #  - ml_dftqe
-  # #  - ml_dfptqe
-  # #  - ml_dvscqe
-  # #  - ml_dnvscqe
-  # #  - ml_dftabacus
-  # #  - ml_dftsiesta
-  #  - dfpt_qe
-  # #  - pp_dvsc_dfpt
-  # #  - elph_dfpt
-  #  - phbands_qe
-  # #  - phdos_qe
-  #  - phmodes_qe
-  # #  - dos_qe
-  # #  - pdos_qe 
-  #  - dftelbands_qe
-  # #  - kpdos_qe
-  # #  - wannier_qe
-  # #  - tbmodels
-  #  - wfn_qe
-  # #  - pp_wfnqe
-  # #  - pp_wfnqesym
-  # #  - wfn_abacus
-  # #  - wfn_siesta
-  # #  - epw_qe
-  # #  - elph_epw
-  #  - wfnq_qe
-  # #  - wfnq_abacus
-  # #  - wfnq_siesta
-  # #  - wfnfi_qe
-  # #  - wfnqfi_qe
-  #  - phonopy_qe
-  # #  - pp_dvscf_phonopy
-  # #  - elph_phonopy
-  #  - epsilon_bgw
-  # #  - sigmasc_bgw
-  # #  - epsilonsc_bgw
-  #  - sigma_bgw
-  # #  - ml_gwqe
-  #  - gwelbands_bgw
-  #  - kernel_bgw
-  #  - absorption_bgw
-  #  - plotxct_bgw
+   - scf_qe
+  #  - scf_pw2bgw_qe
+  #  - scf_abacus
+  #  - scf_siesta
+  #  - ml_dftqe
+  #  - ml_dfptqe
+  #  - ml_dvscqe
+  #  - ml_dnvscqe
+  #  - ml_dftabacus
+  #  - ml_dftsiesta
+   - dfpt_qe
+  #  - pp_dvsc_dfpt
+  #  - elph_dfpt
+   - phbands_qe
+  #  - phdos_qe
+   - phmodes_qe
+  #  - dos_qe
+  #  - pdos_qe 
+   - dftelbands_qe
+  #  - kpdos_qe
+  #  - wannier_qe
+  #  - tbmodels
+   - wfn_qe
+  #  - pp_wfnqe
+  #  - pp_wfnqesym
+  #  - wfn_abacus
+  #  - wfn_siesta
+  #  - epw_qe
+  #  - elph_epw
+   - wfnq_qe
+  #  - wfnq_abacus
+  #  - wfnq_siesta
+  #  - wfnfi_qe
+  #  - wfnqfi_qe
+   - phonopy_qe
+  #  - pp_dvscf_phonopy
+  #  - elph_phonopy
+   - epsilon_bgw
+  #  - sigmasc_bgw
+  #  - epsilonsc_bgw
+   - sigma_bgw
+  #  - ml_gwqe
+   - gwelbands_bgw
+   - kernel_bgw
+   - absorption_bgw
+   - plotxct_bgw
   #  - bseq_bgw
   #  - ml_bseqe
   #  - xctwannier_bgw
@@ -160,9 +162,9 @@ generator:
   #  - ste
   #  - esf
   #  - esr
-  #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
+   - convergence_scf_qe
+   - convergence_dfpt_qe
+   - convergence_gw_qe
    - convergence_bse_qe
   post_steps:
     - create_script
@@ -175,75 +177,11 @@ manager:
   dest_dir: ./
   steps:
   #  - esr_gen
-  #  - relax_qe
+   - relax_qe
   #  - cdft_qe
   #  - md_qe
   #  - ml_deepmd
-  #  - scf_qe
-  # #  - scf_pw2bgw_qe
-  # #  - scf_abacus
-  # #  - scf_siesta
-  # #  - ml_dftqe
-  # #  - ml_dfptqe
-  # #  - ml_dvscqe
-  # #  - ml_dnvscqe
-  # #  - ml_dftabacus
-  # #  - ml_dftsiesta
-  #  - dfpt_qe
-  # #  - pp_dvsc_dfpt
-  # #  - elph_dfpt
-  #  - phbands_qe
-  # #  - phdos_qe
-  #  - phmodes_qe
-  # #  - dos_qe
-  # #  - pdos_qe 
-  #  - dftelbands_qe
-  # #  - kpdos_qe
-  # #  - wannier_qe
-  # #  - tbmodels
-  #  - wfn_qe
-  # #  - pp_wfnqe
-  # #  - pp_wfnqesym
-  # #  - wfn_abacus
-  # #  - wfn_siesta
-  # #  - epw_qe
-  # #  - elph_epw
-  #  - wfnq_qe
-  # #  - wfnq_abacus
-  # #  - wfnq_siesta
-  # #  - wfnfi_qe
-  # #  - wfnqfi_qe
-  #  - phonopy_qe
-  # #  - pp_dvscf_phonopy
-  # #  - elph_phonopy
-  #  - epsilon_bgw
-  # #  - sigmasc_bgw
-  # #  - epsilonsc_bgw
-  #  - sigma_bgw
-  # #  - ml_gwqe
-  #  - gwelbands_bgw
-  #  - kernel_bgw
-  #  - absorption_bgw
-  #  - plotxct_bgw
-  #  - bseq_bgw
-  #  - ml_bseqe
-  #  - xctwannier_bgw
-  #  - xctph
-  #  - xctpol
-  #  - ste
-  #  - esf
-  #  - esr
-  #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
-   - convergence_bse_qe
-  plots:
-  #  - esr_gen
-  #  - relax_qe
-  #  - cdft_qe
-  #  - md_qe
-  #  - ml_deepmd
-  #  - scf_qe
+   - scf_qe
   #  - scf_pw2bgw_qe
   #  - scf_abacus
   #  - scf_siesta
@@ -253,42 +191,42 @@ manager:
   #  - ml_dnvscqe
   #  - ml_dftabacus
   #  - ml_dftsiesta
-  #  - dfpt_qe
+   - dfpt_qe
   #  - pp_dvsc_dfpt
   #  - elph_dfpt
-  #  - phbands_qe
+   - phbands_qe
   #  - phdos_qe
-  #  - phmodes_qe
+   - phmodes_qe
   #  - dos_qe
   #  - pdos_qe 
-  #  - dftelbands_qe
+   - dftelbands_qe
   #  - kpdos_qe
   #  - wannier_qe
   #  - tbmodels
-  #  - wfn_qe
+   - wfn_qe
   #  - pp_wfnqe
   #  - pp_wfnqesym
   #  - wfn_abacus
   #  - wfn_siesta
   #  - epw_qe
   #  - elph_epw
-  #  - wfnq_qe
+   - wfnq_qe
   #  - wfnq_abacus
   #  - wfnq_siesta
   #  - wfnfi_qe
   #  - wfnqfi_qe
-  #  - phonopy_qe
+   - phonopy_qe
   #  - pp_dvscf_phonopy
   #  - elph_phonopy
-  #  - epsilon_bgw
+   - epsilon_bgw
   #  - sigmasc_bgw
   #  - epsilonsc_bgw
-  #  - sigma_bgw
+   - sigma_bgw
   #  - ml_gwqe
-  #  - gwelbands_bgw
-  #  - kernel_bgw
-  #  - absorption_bgw
-  #  - plotxct_bgw
+   - gwelbands_bgw
+   - kernel_bgw
+   - absorption_bgw
+   - plotxct_bgw
   #  - bseq_bgw
   #  - ml_bseqe
   #  - xctwannier_bgw
@@ -297,9 +235,73 @@ manager:
   #  - ste
   #  - esf
   #  - esr
-  #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
+   - convergence_scf_qe
+   - convergence_dfpt_qe
+   - convergence_gw_qe
+   - convergence_bse_qe  
+  plots:
+  #  - esr_gen
+   - relax_qe
+  #  - cdft_qe
+  #  - md_qe
+  #  - ml_deepmd
+   - scf_qe
+  #  - scf_pw2bgw_qe
+  #  - scf_abacus
+  #  - scf_siesta
+  #  - ml_dftqe
+  #  - ml_dfptqe
+  #  - ml_dvscqe
+  #  - ml_dnvscqe
+  #  - ml_dftabacus
+  #  - ml_dftsiesta
+   - dfpt_qe
+  #  - pp_dvsc_dfpt
+  #  - elph_dfpt
+   - phbands_qe
+  #  - phdos_qe
+   - phmodes_qe
+  #  - dos_qe
+  #  - pdos_qe 
+   - dftelbands_qe
+  #  - kpdos_qe
+  #  - wannier_qe
+  #  - tbmodels
+   - wfn_qe
+  #  - pp_wfnqe
+  #  - pp_wfnqesym
+  #  - wfn_abacus
+  #  - wfn_siesta
+  #  - epw_qe
+  #  - elph_epw
+   - wfnq_qe
+  #  - wfnq_abacus
+  #  - wfnq_siesta
+  #  - wfnfi_qe
+  #  - wfnqfi_qe
+   - phonopy_qe
+  #  - pp_dvscf_phonopy
+  #  - elph_phonopy
+   - epsilon_bgw
+  #  - sigmasc_bgw
+  #  - epsilonsc_bgw
+   - sigma_bgw
+  #  - ml_gwqe
+   - gwelbands_bgw
+   - kernel_bgw
+   - absorption_bgw
+   - plotxct_bgw
+  #  - bseq_bgw
+  #  - ml_bseqe
+  #  - xctwannier_bgw
+  #  - xctph
+  #  - xctpol
+  #  - ste
+  #  - esf
+  #  - esr
+   - convergence_scf_qe
+   - convergence_dfpt_qe
+   - convergence_gw_qe
    - convergence_bse_qe
 #endregion: basic info
 

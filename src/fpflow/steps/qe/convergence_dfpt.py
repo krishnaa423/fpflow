@@ -15,6 +15,6 @@ class QeConvergenceDfptStep(ConvergenceBaseStep):
         super().__init__(subdir1='qe', subdir2='dfpt', **kwargs)
 
     def plot(self, **kwargs):
-        QeConvergenceDfptPlot().save_figures(**kwargs)
+        QeConvergenceDfptPlot(inputdict=self.inputdict).save_figures(**kwargs)
 
 #endregion
