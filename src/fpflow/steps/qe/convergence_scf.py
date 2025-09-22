@@ -13,7 +13,7 @@ from fpflow.plots.convergence_scf import QeConvergenceScfPlot
 #region classes
 class QeConvergenceScfStep(ConvergenceBaseStep):
     def __init__(self, **kwargs):
-        super().__init__(subdir1='qe', subdir2='scf', **kwargs)
+        super().__init__(subdir='qescf', **kwargs)
 
     def plot(self, **kwargs):
         QeConvergenceScfPlot(inputdict=self.inputdict).save_figures(**kwargs)

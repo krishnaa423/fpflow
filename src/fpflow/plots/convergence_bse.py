@@ -85,7 +85,7 @@ class BgwConvergenceBsePlot(PlotBase):
         os.chdir(src_dir)
 
     def get_data_and_figures(self):
-        dirs = glob.glob('./convergence/qe/bse/dset_*')
+        dirs = glob.glob('./convergence/bgwbse/dset_*')
         dirs.sort()
 
         colors = plt.cm.tab20(np.linspace(0, 1, len(dirs)))

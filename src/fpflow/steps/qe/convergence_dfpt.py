@@ -12,7 +12,7 @@ from fpflow.plots.convergence_dfpt import QeConvergenceDfptPlot
 #region classes
 class QeConvergenceDfptStep(ConvergenceBaseStep):
     def __init__(self, **kwargs):
-        super().__init__(subdir1='qe', subdir2='dfpt', **kwargs)
+        super().__init__(subdir='qedfpt', **kwargs)
 
     def plot(self, **kwargs):
         QeConvergenceDfptPlot(inputdict=self.inputdict).save_figures(**kwargs)

@@ -95,7 +95,7 @@ class QeConvergenceDfptPlot(PlotBase):
         os.chdir(src_dir)
                   
     def get_data_and_figures(self):
-        dirs = glob.glob('./convergence/qe/dfpt/dset_*')
+        dirs = glob.glob('./convergence/qedfpt/dset_*')
         dirs.sort()
 
         colors = plt.cm.tab20(np.linspace(0, 1, len(dirs)))

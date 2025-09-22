@@ -23,7 +23,7 @@ from fpflow.io.change_dir import change_dir
 
 #region classes
 class ConvergenceBaseStep(Step):
-    def __init__(self, generatorclass=None, subdir1:str = None, subdir2: str = None, **kwargs):
+    def __init__(self, generatorclass=None, subdir:str = None, **kwargs):
         '''
         Problem:
             Generator calls Step which calls Generator. 
@@ -32,11 +32,9 @@ class ConvergenceBaseStep(Step):
         '''
         super().__init__(**kwargs)
         self.generatorclass = generatorclass
-        self.subdir1: str = subdir1
-        self.subdir2: str = subdir2
+        self.subdir: str = subdir
 
-        assert len(self.subdir1)>0, 'subdir1 should have length more than 1'
-        assert len(self.subdir2)>0, 'subdir2 should have length more than 1'
+        assert len(self.subdir)>0, 'subdir should have length more than 1'
 
     @property
     def script_conv(self) -> str:
@@ -47,35 +45,35 @@ import subprocess
 from fpflow.managers.run import subprocess_run
 
 # Set the stdout and stderr. 
-outfile = open('script_conv{self.subdir1}{self.subdir2}.py.out', 'w')
+outfile = open('script_conv{self.subdir}.py.out', 'w')
 sys.stdout = outfile
 sys.stderr = outfile
 
 # Get the directories. 
-{self.subdir1}{self.subdir2}_dirs = [inode for inode in glob.glob('./convergence/{self.subdir1}/{self.subdir2}/*') if os.path.isdir(inode)]
-{self.subdir1}{self.subdir2}_dirs.sort()
+{self.subdir}_dirs = [inode for inode in glob.glob('./convergence/{self.subdir}/dset_*') if os.path.isdir(inode)]
+{self.subdir}_dirs.sort()
 start: int = 0
-stop: int = len({self.subdir1}{self.subdir2}_dirs)
+stop: int = len({self.subdir}_dirs)
 
 # Override if needed. Comment this out and set. 
 #start = 0 
 #stop = 1
 
 total_time: float = 0.0
-for {self.subdir1}{self.subdir2}_dir in {self.subdir1}{self.subdir2}_dirs[start:stop]:
-    total_time = subprocess_run('./run.sh', total_time=total_time, dest_dir={self.subdir1}{self.subdir2}_dir)
+for {self.subdir}_dir in {self.subdir}_dirs[start:stop]:
+    total_time = subprocess_run('./run.sh', total_time=total_time, dest_dir={self.subdir}_dir)
 
-print(f'Done conv{self.subdir1}{self.subdir2} in total time: ', total_time, ' seconds.', flush=True)
+print(f'Done conv{self.subdir} in total time: ', total_time, ' seconds.', flush=True)
 '''
     
     @property
     def job_conv(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, f'convergence.{self.subdir1}.{self.subdir2}.job_info')
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, f'convergence.{self.subdir}.job_info')
         
         return f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-python ./script_conv{self.subdir1}{self.subdir2}.py
+python ./script_conv{self.subdir}.py
 '''
 
     @change_dir
@@ -87,9 +85,9 @@ python ./script_conv{self.subdir1}{self.subdir2}.py
         - Runs the generator to create the step files. 
         '''
         inputdict_local: dict = copy.deepcopy(self.inputdict)
-        params: list = jmespath.search(f'convergence.{self.subdir1}.{self.subdir2}.dir_list[{dir_list_idx}].params', inputdict_local)
-        link_inodes: list = jmespath.search(f'convergence.{self.subdir1}.{self.subdir2}.dir_list[{dir_list_idx}].link_inodes', inputdict_local)
-        generator_steps: list = jmespath.search(f'convergence.{self.subdir1}.{self.subdir2}.dir_list[{dir_list_idx}].generator', inputdict_local)
+        params: list = jmespath.search(f'convergence.{self.subdir}.dir_list[{dir_list_idx}].params', inputdict_local)
+        link_inodes: list = jmespath.search(f'convergence.{self.subdir}.dir_list[{dir_list_idx}].link_inodes', inputdict_local)
+        generator_steps: list = jmespath.search(f'convergence.{self.subdir}.dir_list[{dir_list_idx}].generator', inputdict_local)
 
         # Update values. 
         for param in params:
@@ -113,10 +111,11 @@ python ./script_conv{self.subdir1}{self.subdir2}.py
         generator.create()
 
     def create_in_subdirs(self):
-        dir_list_len = len(jmespath.search(f'convergence.{self.subdir1}.{self.subdir2}.dir_list', self.inputdict))
+        dir_list_len = len(jmespath.search(f'convergence.{self.subdir}.dir_list', self.inputdict))
 
         for dir_list_idx in range(dir_list_len):
-            self.dest_dir: str = f'./convergence/{self.subdir1}/{self.subdir2}/dset_{dir_list_idx}'
+            dset_dirname: str = jmespath.search(f'convergence.{self.subdir}.dir_list[{dir_list_idx}].dirname', self.inputdict)
+            self.dest_dir: str = f'./convergence/{self.subdir}/{dset_dirname}'
             self.current_dir: str = os.getcwd()
             os.makedirs(self.dest_dir, exist_ok=True)
             self._create_in_subdir(dir_list_idx)
@@ -125,8 +124,8 @@ python ./script_conv{self.subdir1}{self.subdir2}.py
         self.create_in_subdirs()
 
         extra_filecontents: dict = {
-            f'script_conv{self.subdir1}{self.subdir2}.py': self.script_conv,
-            f'job_conv{self.subdir1}{self.subdir2}.sh': self.job_conv,
+            f'script_conv{self.subdir}.py': self.script_conv,
+            f'job_conv{self.subdir}.sh': self.job_conv,
         }
         for filename, filecontents in extra_filecontents.items():
             str_2_f(filecontents, filename)
@@ -136,7 +135,7 @@ python ./script_conv{self.subdir1}{self.subdir2}.py
     @property
     def job_scripts(self) -> List[str]:
         return [
-            f'./job_conv{self.subdir1}{self.subdir2}.sh',
+            f'./job_conv{self.subdir}.sh',
         ]
 
     @property
@@ -147,9 +146,9 @@ python ./script_conv{self.subdir1}{self.subdir2}.py
     def remove_inodes(self) -> List[str]:
         return [
             './convergence',
-            f'./script_conv{self.subdir1}{self.subdir2}.py.out',
-            f'./script_conv{self.subdir1}{self.subdir2}.py',
-            f'./job_conv{self.subdir1}{self.subdir2}.sh',
+            f'./script_conv{self.subdir}.py.out',
+            f'./script_conv{self.subdir}.py',
+            f'./job_conv{self.subdir}.sh',
         ]
 
 #endregion

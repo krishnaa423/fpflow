@@ -12,7 +12,7 @@ from fpflow.plots.convergence_gw import BgwConvergenceGwPlot
 #region classes
 class BgwConvergenceGwStep(ConvergenceBaseStep):
     def __init__(self, **kwargs):
-        super().__init__(subdir1='qe', subdir2='gw', **kwargs)
+        super().__init__(subdir='bgwgw', **kwargs)
 
     def plot(self, **kwargs):
         BgwConvergenceGwPlot(inputdict=self.inputdict).save_figures(**kwargs)
