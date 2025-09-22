@@ -101,7 +101,7 @@ class QeConvergenceScfPlot(PlotBase):
         os.chdir(src_dir)
                   
     def get_data_and_figures(self):
-        dirs = glob.glob('./convergence/qe/scf/*')
+        dirs = glob.glob('./convergence/qe/scf/dset_*')
         dirs.sort()
 
         colors = plt.cm.tab20(np.linspace(0, 1, len(dirs)))
