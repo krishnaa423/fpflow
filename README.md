@@ -28,54 +28,57 @@ Steps, post-processsing, and (Plots):
 - ml_dftsiesta
 - dfpt_qe
 - pp_dvscf_dfpt
-- elph_dfpt (plot: elph_proj) 
-- phbands_qe (plot: phbands)
-- phdos_qe (plot: phdos)
-- phmodes_qe (plot: phmode)
-- dos_qe (plot: dos)
-- pdos_qe (plot: dos)
-- dftelbands_qe (plot: dftelbands)
-- kpdos_qe (plot: kpdos)
-- wannier_qe (plot: wannier_bands, wannier_wfn, wannier_hr, wannier_hr_decay)
+- elph_dfpt  
+- phbands_qe 
+- phdos_qe 
+- phmodes_qe 
+- dos_qe 
+- pdos_qe 
+- dftelbands_qe 
+- kpdos_qe 
+- wannier_qe 
 - tbmodels
-- wfn_qe.  Use qe, abacus or siesta. (plot: wfn after post processing) 
+- wfn_qe.  
 - pp_wfnqe
 - pp_wfnqesym
 - wfn_abacus
 - wfn_siesta
 - epw_qe
-- elph_epw (plot: elph_proj) 
-- wfnq_qe.  Use qe, abacus or siesta. 
+- elph_epw 
+- wfnq_qe
 - wfnq_abacus
 - wfnq_siesta
 - wfnfi_qe
 - wfnqfi_qe
-- phonopy_qe (plot: phonopy_bands)
+- phonopy_qe 
 - pp_dvscf_phonopy
-- elph_phonopy (plot: elph_proj) 
+- elph_phonopy
 - phonopy_abacus
 - phonopy_siesta
-- epsilon_bgw (plot: conv, epsmat)
+- epsilon_bgw 
 - sigmasc_bgw. Repeat this and below as many times as needed for scGW. 
 - epsilonsc_bgw
-- sigma_bgw (plot: conv, sigma)
+- sigma_bgw
 - ml_gwqe
-- gwelbands_bgw (plot: gwbands, dftelbands)
+- gwelbands_bgw 
 - kernel_bgw
-- absorption_bgw (plot: absorption, hbse)
-- plotxct_bgw (plot: xct_wfn)
-- bseq_bgw (plot: xctbands)
+- absorption_bgw 
+- plotxct_bgw 
+- bse_fp 
+- bseq_bgw 
+- bseq_fp 
 - ml_bseqe
 - xctwannier_bgw
-- xctph (plot: xctph_proj)
-- xctpol (plot: xct_shifts, ph_shifts, disp, ph_proj, wfn, conv, emission)
-- ste (plot: xct_shifts, ph_shifts, disp, ph_proj, wfn, conv, emission, barrier)
-- esf (plot: xsf with forces, ph_proj)
-- esr (plot: e_change, *_change)
-- convergence_scf_qe (plot: dftelbands_ecut_kgrid)
-- convergence_dfpt_qe (plot: phbands_qgrid_tr)
-- convergence_gw_qe (plot: gwelbands_ecut_kgrid_bands)
-- convergence_bse_qe (plot: absorption_cvk)
+- xctph_bowen 
+- xctph_fp 
+- xctpol_fp 
+- ste_fp 
+- esf_fp
+- esr_fp 
+- convergence_scf_qe 
+- convergence_dfpt_qe 
+- convergence_gw_qe
+- convergence_bse_qe 
 - create_script
 - run_script
 - remove_script

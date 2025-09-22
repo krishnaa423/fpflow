@@ -36,6 +36,12 @@ class BgwPlotxctStep(Step):
             'use_wfn_hdf5': '',
         }
 
+        # Add spinor if needed. 
+        if jmespath.search('scf.is_spinorbit', self.inputdict):
+            plotxctdict['spinor'] = ''
+            plotxctdict['electron_spin'] = jmespath.search('bse.plotxct.spinor.electron_spin', self.inputdict)
+            plotxctdict['hole_spin'] = jmespath.search('bse.plotxct.spinor.hole_spin', self.inputdict)
+
         # Update if needed. 
         update_dict(plotxctdict, jmespath.search('bse.plotxct.args', self.inputdict))
 

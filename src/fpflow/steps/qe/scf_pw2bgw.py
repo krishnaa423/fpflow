@@ -7,6 +7,7 @@ from fpflow.schedulers.scheduler import Scheduler
 import jmespath
 from fpflow.io.update import update_dict
 from fpflow.inputs.grammars.namelist import NamelistGrammar
+from fpflow.structure.qe.qe_struct import QeStruct
 
 #endregion
 
@@ -20,6 +21,12 @@ from fpflow.inputs.grammars.namelist import NamelistGrammar
 class QeScfPw2bgwStep(Step):
     @property
     def pw2bgw(self) -> str:
+        # Qestruct.
+        max_val_bands: int = QeStruct.from_inputdict(self.inputdict).max_val(
+            xc=jmespath.search('scf.xc', self.inputdict),
+            is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
+        )
+
         pw2bgwdict: dict = {
             'input_pw2bgw': {
                 'outdir': "'./tmp'",
@@ -36,8 +43,12 @@ class QeScfPw2bgwStep(Step):
                 'wfng_dk3': 0.0,
                 'rhog_flag': '.true.',
                 'rhog_file': "'RHO_scf'",
-                'vxcg_flag': '.true.',
-                'vxcg_file': "'VXCG_scf'",
+                'vxc_flag': '.true.',
+                'vxc_file': "'vxc_scf.dat'",
+                'vxc_diag_nmin': 1,
+                'vxc_diag_nmax': max_val_bands,
+                'vxc_offdiag_nmin': 0,
+                'vxc_offdiag_nmax': 0,
                 'vscg_flag': '.true.',
                 'vscg_file': "'VSCG_scf'",
                 'vkbg_flag': '.true.',
@@ -61,7 +72,7 @@ class QeScfPw2bgwStep(Step):
 cp ./tmp/WFN_scf ./WFN_scf
 cp ./tmp/RHO_scf ./
 cp ./tmp/VXC_scf ./
-cp ./tmp/VSC_scf ./
+cp ./tmp/vxc_scf.dat ./
 cp ./tmp/VKB_scf ./
 wfn2hdf.x BIN WFN_scf WFN_scf.h5 
 '''
@@ -93,6 +104,7 @@ wfn2hdf.x BIN WFN_scf WFN_scf.h5
             './WFN_scf.h5',
             './RHO_scf',
             './VXC_scf',
+            './vxc_scf.dat',
             './VSC_scf',
             './VKB_scf',
         ]

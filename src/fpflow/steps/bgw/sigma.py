@@ -74,7 +74,6 @@ sig_step.create()
             'band_index_max': max_val_bands + jmespath.search('gw.sigma.val_bands', self.inputdict),
             'degeneracy_check_override': '',
             'screened_coulomb_cutoff': jmespath.search('gw.sigma.ecut', self.inputdict),
-            'dont_use_vxcdat': '',
             'use_wfn_hdf5': '',
             'kpoints': kpts.sigma_kpts,
         }

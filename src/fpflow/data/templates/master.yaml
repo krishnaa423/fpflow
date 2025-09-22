@@ -74,7 +74,7 @@ common:
     val_bands: &dft_valbands 2
     cond_bands: &dft_condbands 3
     xc: &dft_xc 'pbe'  # pbe, lda. 
-    is_spinorbit: &dft_spinorbit false
+    is_spinorbit: &dft_spinorbit true
   gw:
     ecut: &gwecut 10.0
     val_bands: &gw_valbands 2
@@ -90,6 +90,9 @@ common:
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
     elec_position: &xct_elec_position [0.25, 0.25, 0.25]
     xct_state: &xct_state 1
+    spinor: &plotxct_spinor # Only activated in spin orbit coupling mode. 1 is up, 2 is down.
+      electron_spin: 2      
+      hole_spin: 1
   job_types:
     scheduler: &scheduler_dict
       name: &scheduler_name 'mac_mini_parallel'
@@ -174,10 +177,10 @@ generator:
   #  - ste
   #  - esf
   #  - esr
-   - convergence_scf_qe
-   - convergence_dfpt_qe
-   - convergence_gw_qe
-   - convergence_bse_qe
+  #  - convergence_scf_qe
+  #  - convergence_dfpt_qe
+  #  - convergence_gw_qe
+  #  - convergence_bse_qe
   post_steps:
     - create_script
     - run_script
@@ -431,6 +434,7 @@ bse:
     supercell_size: *xct_supercell_size
     elec_position: *xct_elec_position
     xct_state: *xct_state
+    spinor: *plotxct_spinor
     args:
     job_info:
       <<: *big_para

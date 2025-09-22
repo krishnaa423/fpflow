@@ -95,6 +95,12 @@ cp ./tmp/struct.xml ./wfn.xml
     
     @property
     def wfn_pw2bgw(self) -> str:
+        # Qestruct.
+        max_val_bands: int = QeStruct.from_inputdict(self.inputdict).max_val(
+            xc=jmespath.search('scf.xc', self.inputdict),
+            is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
+        )
+
         pw2bgwdict: dict = {
             'input_pw2bgw': {
                 'outdir': "'./tmp'",
@@ -111,8 +117,12 @@ cp ./tmp/struct.xml ./wfn.xml
                 'wfng_dk3': 0.0,
                 'rhog_flag': '.true.',
                 'rhog_file': "'RHO'",
-                'vxcg_flag': '.true.',
-                'vxcg_file': "'VXC'",
+                'vxc_flag': '.true.',
+                'vxc_file': "'vxc.dat'",
+                'vxc_diag_nmin': max_val_bands - jmespath.search('gw.sigma.cond_bands', self.inputdict) + 1,
+                'vxc_diag_nmax': max_val_bands + jmespath.search('gw.sigma.val_bands', self.inputdict),
+                'vxc_offdiag_nmin': 0,
+                'vxc_offdiag_nmax': 0,
                 'vscg_flag': '.true.',
                 'vscg_file': "'VSC'",
                 'vkbg_flag': '.true.',
@@ -135,7 +145,7 @@ cp ./tmp/struct.xml ./wfn.xml
 {scheduler.get_exec_prefix()}pw2bgw.x -pd .true. < wfn_pw2bgw.in &> wfn_pw2bgw.in.out
 cp ./tmp/WFN_coo ./
 cp ./tmp/RHO ./
-cp ./tmp/VXC ./
+cp ./tmp/vxc.dat ./
 cp ./tmp/VSC ./
 cp ./tmp/VKB ./ 
 '''
@@ -216,6 +226,7 @@ cp ./tmp/VKB ./
             './WFN_coo',
             './RHO',
             './VXC',
+            './vxc.dat',
             './VSC',
             './VKB',
             './wfn.in.out',
