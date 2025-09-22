@@ -39,7 +39,7 @@ class BgwConvergenceBsePlot(PlotBase):
         eh_data = abs_eh_data[:, 1]
 
         # Get name.
-        inputdict: dict = self.inputdict
+        inputdict: dict = InputYaml.from_yaml_file('./input.yaml').inputdict
         active_idx: int = jmespath.search('structures.active_idx', inputdict)
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
         bse_nv: str = 'v' + str(jmespath.search('bse.absorption.val_bands', inputdict))

@@ -396,6 +396,7 @@ gw:
     val_bands: *gw_valbands
     wfnlink: 'WFN_parabands.h5' 
     args:
+      screening_semiconductor: ''
     job_info:
       <<: *big_para
   gwelbands:
@@ -408,6 +409,7 @@ bse:
   kernel:
     qshift: [0.0, 0.0, 0.0]
     args:
+      screening_semiconductor: ''
     job_info:
       <<: *big_para
   absorption:
@@ -421,6 +423,7 @@ bse:
     wfnfi_link: 'WFN_parabands.h5'
     wfnqfi_link: 'WFN_parabands.h5'
     args:
+      screening_semiconductor: ''
     job_info:
       <<: *para
   plotxct:
@@ -547,7 +550,7 @@ convergence:
             - path: 'wfn.kgrid'
               value: [2, 2, 2]
             - path: 'wfn.parabands_cond_bands'
-              value: 201
+              value: 101
             - path: 'wfnq.kgrid'
               value: [2, 2, 2]
             - path: 'gw.epsilon.ecut'
@@ -591,24 +594,10 @@ convergence:
             - source: ../../gw/dset_0/tmp
               dest: ./tmp
             - source: ../../gw/dset_0/pseudos
-              dest: ./pseudos
-            - source: ../../gw/dset_0/WFN_parabands.h5
-              dest: ./WFN_parabands.h5
-            - source: ../../gw/dset_0/WFN_coo
-              dest: ./WFN_coo
-            - source: ../../gw/dset_0/WFNq_coo.h5
-              dest: ./WFNq_coo.h5
-            - source: ../../gw/dset_0/WFN_dftelbands
-              dest: ./WFN_dftelbands    
-            - source: ../../gw/dset_0/dftelbands.xml
-              dest: ./dftelbands.xml    
-            - source: ../../gw/dset_0/VXC
-              dest: ./VXC    
-            - source: ../../gw/dset_0/RHO
-              dest: ./RHO         
+              dest: ./pseudos       
           generator:
             pre_steps: []
-            steps: ['epsilon_bgw', 'sigma_bgw', 'gwelbands_bgw']
+            steps: ['dftelbands_qe', 'wfn_qe', 'wfnq_qe', 'epsilon_bgw', 'sigma_bgw', 'gwelbands_bgw']
             post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       job_info:
         <<: *big_para

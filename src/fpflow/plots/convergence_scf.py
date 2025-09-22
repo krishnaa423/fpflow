@@ -52,7 +52,7 @@ class QeConvergenceScfPlot(PlotBase):
         self.axis = self.xaxis.reshape(-1, 1)
 
         # Get name.
-        inputdict: dict = self.inputdict
+        inputdict: dict = InputYaml.from_yaml_file('./input.yaml').inputdict
         active_idx: int = jmespath.search('structures.active_idx', inputdict)
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
         scf_kgrid: str = 'x'.join(list(map(str, jmespath.search('scf.kgrid', inputdict))))
