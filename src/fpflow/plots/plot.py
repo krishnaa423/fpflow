@@ -317,7 +317,7 @@ class AxisPlot:
             case _:
                 NotImplementedError
 
-    def set_label_dict(self):
+    def set_additional_kwargs_dict(self):
         self.label_dict = {}
         plot_type: str = self.figs_row['plot_type']
         
@@ -326,6 +326,10 @@ class AxisPlot:
             color = self.figs_row['color']
             if color is not None:
                 self.label_dict['color'] = color
+
+            linewidth = self.figs_row['linewidth']
+            if linewidth is not None and pd.notna(linewidth):
+                self.label_dict['linewidth'] = linewidth
 
     def set_common_axis_props(self):
         keys_and_functions: dict = {
@@ -384,7 +388,7 @@ class AxisPlot:
         axis_data: np.ndarray = self.dset_row['data'][axis_col].to_numpy()
         line_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
 
-        self.set_label_dict()
+        self.set_additional_kwargs_dict()
         self.axis.plot(axis_data, line_data, **self.label_dict)
         self.set_common_axis_props()
 
@@ -408,7 +412,7 @@ class AxisPlot:
                     case _:
                         NotImplementedError
 
-        self.set_label_dict()
+        self.set_additional_kwargs_dict()
         sc = self.axis.scatter(axis_data, scatter_data[:, 0], **additional_scatter_data, **self.label_dict)
         # If we used a colormap (i.e., 'c' in kwargs), add a colorbar:
         if 'c' in additional_scatter_data and 'cmap' in additional_scatter_data:
@@ -486,7 +490,7 @@ class AxisPlot:
         data_col: str = self.figs_row['dset_data_cols']
         hist_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
 
-        self.set_label_dict()
+        self.set_additional_kwargs_dict()
         self.axis.hist(hist_data, bins=30, edgecolor='black', **self.label_dict)
         self.set_common_axis_props()
 
@@ -494,7 +498,7 @@ class AxisPlot:
         data_col: str = self.figs_row['dset_data_cols']
         hist_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
 
-        self.set_label_dict()
+        self.set_additional_kwargs_dict()
         H, xedges, yedges, im = self.axis.hist2d(hist_data[:, 0], hist_data[:, 1], bins=30, **self.label_dict)
         self.add_colorbar(im, label='count')
         self.set_common_axis_props()
@@ -505,7 +509,7 @@ class AxisPlot:
         box_data: np.ndarray = box_df.to_numpy()
         box_labels: list[str] = box_df.columns.to_list()
 
-        self.set_label_dict()
+        self.set_additional_kwargs_dict()
         self.axis.boxplot(box_data)
         self.set_common_axis_props()
 
@@ -515,7 +519,7 @@ class AxisPlot:
         violin_data: np.ndarray = violin_df.to_numpy()
         violin_labels: list[str] = violin_df.columns.to_list()
 
-        self.set_label_dict()
+        self.set_additional_kwargs_dict()
         self.axis.violinplot(violin_data)
         self.set_common_axis_props()
 
@@ -687,6 +691,7 @@ class PlotBase:
             'dset_axis_cols': pd.Series(dtype='object'),
             'dset_data_cols': pd.Series(dtype='object'),
             'color': pd.Series(dtype='string'),
+            'linewidth': pd.Series(dtype='Float64'),
             'xgrid': pd.Series(dtype='bool'),
             'ygrid': pd.Series(dtype='bool'),
             'legend_label': pd.Series(dtype='string'),

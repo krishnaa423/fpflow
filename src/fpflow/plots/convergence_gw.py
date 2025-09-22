@@ -88,6 +88,7 @@ class BgwConvergenceGwPlot(PlotBase):
                 'dset_axis_cols': 'x',        
                 'dset_data_cols': [self.data_colnames[ib]],
                 'color': color, 
+                'linewidth': 1, 
                 'xgrid': True,
                 'ygrid': False,
                 'legend_label': f'{gw_ecut}_{gw_bands}' if ib==0 else None,

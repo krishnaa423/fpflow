@@ -71,6 +71,7 @@ class BgwConvergenceBsePlot(PlotBase):
                 'dset_axis_cols': 'x',        
                 'dset_data_cols': ['y_eh'],
                 'color': color, 
+                'linewidth': 1, 
                 'xgrid': True,
                 'ygrid': False,
                 'legend_label': f'{bse_nv}_{bse_nc}_{bse_kgrid}',

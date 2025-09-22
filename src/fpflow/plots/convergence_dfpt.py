@@ -83,6 +83,7 @@ class QeConvergenceDfptPlot(PlotBase):
                 'dset_axis_cols': 'x',        
                 'dset_data_cols': [self.data_colnames[ib]],
                 'color': color, 
+                'linewidth': 1, 
                 'xgrid': True,
                 'ygrid': False,
                 'legend_label': f'{dfpt_ecut}_{dfpt_conv_thr}_{dfpt_qgrid}' if ib==0 else None,

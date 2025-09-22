@@ -89,6 +89,7 @@ class QeConvergenceScfPlot(PlotBase):
                 'dset_axis_cols': 'x',        
                 'dset_data_cols': [self.data_colnames[ib]],
                 'color': color, 
+                'linewidth': 1, 
                 'xgrid': True,
                 'ygrid': False,
                 'legend_label': f'{scf_ecut}_{scf_kgrid}' if ib==0 else None,
