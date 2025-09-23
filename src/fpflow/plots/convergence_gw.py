@@ -43,7 +43,14 @@ class BgwConvergenceGwPlot(PlotBase):
         })
 
         dirnames = glob.glob('./convergence/bgwgw/dset_*')
+        
+        # If dirs to plot is specified, filter dirs.
+        dirs_to_plot = jmespath.search('convergence.bgwgw.plot.dirs', self.inputdict)
+        if dirs_to_plot is not None:
+            dirnames = [d for d in dirnames if os.path.basename(d) in dirs_to_plot]
+
         dirnames.sort()
+
         current_dir = os.getcwd()
 
         for idir in dirnames:
@@ -354,7 +361,6 @@ class BgwConvergenceGwPlot(PlotBase):
             }])
             self.figs_df = pd.concat([self.figs_df, append_fig_df, append_scatter_df], ignore_index=True)
             
-
     def get_from_single_folder(self, dest_dir: str, color, src_dir: str=os.getcwd()):
         # Change to dest dir.
         os.chdir(dest_dir)
