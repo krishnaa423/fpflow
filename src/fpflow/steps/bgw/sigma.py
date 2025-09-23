@@ -70,8 +70,8 @@ sig_step.create()
         sigmadict: dict = {
             'no_symmetries_q_grid': '',
             'number_bands': jmespath.search('gw.sigma.conv_cond_bands', self.inputdict) + max_val_bands,
-            'band_index_min': max_val_bands - jmespath.search('gw.sigma.cond_bands', self.inputdict) + 1,
-            'band_index_max': max_val_bands + jmespath.search('gw.sigma.val_bands', self.inputdict),
+            'band_index_min': max_val_bands - jmespath.search('gw.sigma.val_bands', self.inputdict) + 1,
+            'band_index_max': max_val_bands + jmespath.search('gw.sigma.cond_bands', self.inputdict),
             'degeneracy_check_override': '',
             'screened_coulomb_cutoff': jmespath.search('gw.sigma.ecut', self.inputdict),
             'use_wfn_hdf5': '',
