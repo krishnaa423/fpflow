@@ -86,6 +86,12 @@ class BgwConvergenceBsePlot(PlotBase):
 
     def get_data_and_figures(self):
         dirs = glob.glob('./convergence/bgwbse/dset_*')
+        
+        # If dirs to plot is specified, filter dirs.
+        dirs_to_plot = jmespath.search('convergence.bgwbse.plot.dirs', self.inputdict)
+        if dirs_to_plot is not None:
+            dirs = [d for d in dirs if os.path.basename(d) in dirs_to_plot]
+
         dirs.sort()
 
         colors = plt.cm.tab20(np.linspace(0, 1, len(dirs)))

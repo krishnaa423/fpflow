@@ -610,6 +610,8 @@ convergence:
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
     job_info:
       <<: *big_para
+    plot:
+      dirs: [dset_1]
   bgwbse:
     dir_list:
       # dset_0
