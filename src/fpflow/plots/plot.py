@@ -769,6 +769,6 @@ class PlotBase:
         for key, group in self.figs_df[['fig_name', 'figure']].groupby(by=['fig_name']):
             figname = key[0]
             fig: Figure = group['figure'].iloc[0]
-            fig.savefig(f'./plots/{figname}.png')
+            fig.savefig(f'./plots/{figname}.png', dpi=300)
 
 #endregion

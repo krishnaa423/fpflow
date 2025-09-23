@@ -177,10 +177,10 @@ generator:
   #  - ste
   #  - esf
   #  - esr
-  #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
-  #  - convergence_bse_qe
+   - convergence_scf_qe
+   - convergence_dfpt_qe
+   - convergence_gw_qe
+   - convergence_bse_qe
   post_steps:
     - create_script
     - run_script
