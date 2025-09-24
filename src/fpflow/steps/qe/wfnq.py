@@ -79,7 +79,7 @@ class QeWfnqStep(Step):
             wfndict['system']['lspinorb'] = True
 
         # Update if needed. 
-        update_dict(wfndict, jmespath.search('wfn.args', self.inputdict))
+        update_dict(wfndict, jmespath.search('wfnq.args', self.inputdict))
 
         return QeGrammar().write(wfndict)
 
@@ -107,9 +107,9 @@ class QeWfnqStep(Step):
                 'wfng_nk1': jmespath.search('wfnq.kgrid[0]', self.inputdict),
                 'wfng_nk2': jmespath.search('wfnq.kgrid[1]', self.inputdict),
                 'wfng_nk3': jmespath.search('wfnq.kgrid[2]', self.inputdict),
-                'wfng_dk1': jmespath.search('wfnq.qshift[0]', self.inputdict),
-                'wfng_dk2': jmespath.search('wfnq.qshift[1]', self.inputdict),
-                'wfng_dk3': jmespath.search('wfnq.qshift[2]', self.inputdict),
+                'wfng_dk1': jmespath.search('wfnq.qshift[0]', self.inputdict) * jmespath.search('wfnq.kgrid[0]', self.inputdict),
+                'wfng_dk2': jmespath.search('wfnq.qshift[1]', self.inputdict) * jmespath.search('wfnq.kgrid[1]', self.inputdict),
+                'wfng_dk3': jmespath.search('wfnq.qshift[2]', self.inputdict) * jmespath.search('wfnq.kgrid[2]', self.inputdict),
             }
         }
 
