@@ -44,8 +44,9 @@ class BgwConvergenceBsePlot(PlotBase):
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
         bse_nv: str = 'v' + str(jmespath.search('bse.absorption.val_bands', inputdict))
         bse_nc: str = 'c' + str(jmespath.search('bse.absorption.cond_bands', inputdict))
-        bse_kgrid: str = 'x'.join(list(map(str, jmespath.search('wfn.kgrid', inputdict))))
-        dset_name: str = f'dset_{bse_nv}_{bse_nc}_{bse_kgrid}'
+        bse_coarse_kgrid: str = 'c' + 'x'.join(list(map(str, jmespath.search('wfn.kgrid', inputdict))))
+        bse_fine_grid: str = 'f' + 'x'.join(list(map(str, jmespath.search('wfnfi.kgrid', inputdict))))
+        dset_name: str = f'dset_{bse_nv}_{bse_nc}_{bse_coarse_kgrid}_{bse_fine_grid}'
 
         append_dset_df: pd.DataFrame = pd.DataFrame({
             "name": [dset_name],
@@ -74,7 +75,7 @@ class BgwConvergenceBsePlot(PlotBase):
                 'linewidth': 1, 
                 'xgrid': True,
                 'ygrid': False,
-                'legend_label': f'{bse_nv}_{bse_nc}_{bse_kgrid}',
+                'legend_label': f'{bse_nv}_{bse_nc}_{bse_coarse_kgrid}_{bse_fine_grid}',
             },
         ])
 
