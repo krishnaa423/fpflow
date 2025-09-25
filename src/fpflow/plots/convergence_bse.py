@@ -162,8 +162,11 @@ class BgwConvergenceBsePlot(PlotBase):
             struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
             bse_nv: int = jmespath.search('bse.absorption.val_bands', inputdict)
             bse_nc: int = jmespath.search('bse.absorption.cond_bands', inputdict)
-            bse_coarse_kgrid: str = 'x'.join(list(map(str, jmespath.search('wfn.kgrid', inputdict))))
-            bse_fine_grid: str = 'x'.join(list(map(str, jmespath.search('wfnfi.kgrid', inputdict))))
+            def format_kgrid(kgrid):
+                return 'x'.join([f"{int(k):02d}" for k in kgrid])
+
+            bse_coarse_kgrid: str = format_kgrid(jmespath.search('wfn.kgrid', inputdict))
+            bse_fine_grid: str = format_kgrid(jmespath.search('wfnfi.kgrid', inputdict))
 
             eigfile_data = np.loadtxt('./eigenvalues.dat', dtype='f8', skiprows=4)
             eigs = eigfile_data[:, 0]  # in eV
