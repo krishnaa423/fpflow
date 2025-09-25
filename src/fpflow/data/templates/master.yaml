@@ -178,10 +178,10 @@ generator:
   #  - ste
   #  - esf
   #  - esr
-  #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
-  #  - convergence_bse_qe
+   - convergence_scf_qe
+   - convergence_dfpt_qe
+   - convergence_gw_qe
+   - convergence_bse_qe
   post_steps:
     - create_script
     - run_script
@@ -400,7 +400,6 @@ gw:
     val_bands: *gw_valbands
     wfnlink: 'WFN_parabands.h5' 
     args:
-      screening_semiconductor: ''
     job_info:
       <<: *big_para
   gwelbands:
@@ -413,7 +412,6 @@ bse:
   kernel:
     qshift: [0.0, 0.0, 0.0]
     args:
-      screening_semiconductor: ''
     job_info:
       <<: *big_para
   absorption:
@@ -424,10 +422,9 @@ bse:
     pol_dir: *qshift
     wfnco_link: 'WFN_parabands.h5'
     wfnqco_link: 'WFNq_coo.h5'
-    wfnfi_link: 'WFN_fii.h5'
-    wfnqfi_link: 'WFNq_fii.h5'
+    wfnfi_link: 'WFN_parabands.h5'
+    wfnqfi_link: 'WFNq_coo.h5'
     args:
-      screening_semiconductor: ''
     job_info:
       <<: *para
   plotxct:
@@ -611,8 +608,6 @@ convergence:
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
     job_info:
       <<: *big_para
-    plot:
-      dirs: [dset_1]
   bgwbse:
     dir_list:
       # dset_0
@@ -705,3 +700,5 @@ convergence:
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
     job_info:
       <<: *big_para
+    plot:
+      eigs: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]

@@ -268,6 +268,8 @@ class AxisPlot:
                 NotImplementedError
             case PlotType.STEP:
                 NotImplementedError
+            case PlotType.STEM:
+                self.stem()
             case PlotType.FILLBETWEEN:
                 NotImplementedError
 
@@ -318,18 +320,18 @@ class AxisPlot:
                 NotImplementedError
 
     def set_additional_kwargs_dict(self):
-        self.label_dict = {}
+        self.addition_dict = {}
         plot_type: str = self.figs_row['plot_type']
         
-        if self.figs_row['legend_label'] is not None: self.label_dict['label'] = self.figs_row['legend_label']
+        if self.figs_row['legend_label'] is not None: self.addition_dict['label'] = self.figs_row['legend_label']
         if plot_type=='line':
             color = self.figs_row['color']
             if color is not None:
-                self.label_dict['color'] = color
+                self.addition_dict['color'] = color
 
             linewidth = self.figs_row['linewidth']
             if linewidth is not None and pd.notna(linewidth):
-                self.label_dict['linewidth'] = linewidth
+                self.addition_dict['linewidth'] = linewidth
 
     def set_common_axis_props(self):
         keys_and_functions: dict = {
@@ -389,7 +391,20 @@ class AxisPlot:
         line_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
 
         self.set_additional_kwargs_dict()
-        self.axis.plot(axis_data, line_data, **self.label_dict)
+        self.axis.plot(axis_data, line_data, **self.addition_dict)
+        self.set_common_axis_props()
+    
+    def stem(self):
+        axis_col: str = self.figs_row['dset_axis_cols']
+        data_col: str = self.figs_row['dset_data_cols']
+        axis_data: np.ndarray = self.dset_row['data'][axis_col].to_numpy()
+        stem_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
+
+        self.set_additional_kwargs_dict()
+        markerline, stemlines, baseline = self.axis.stem(axis_data, stem_data, **self.addition_dict)
+        if self.figs_row['color'] is not None: plt.setp(markerline, color=self.figs_row['color'])
+        if self.figs_row['color'] is not None: plt.setp(stemlines, color=self.figs_row['color'])
+        plt.setp(baseline, 'color', 'black', 'linewidth', 0.8)
         self.set_common_axis_props()
 
     def scatter(self):
@@ -413,7 +428,7 @@ class AxisPlot:
                         NotImplementedError
 
         self.set_additional_kwargs_dict()
-        sc = self.axis.scatter(axis_data, scatter_data[:, 0], **additional_scatter_data, **self.label_dict)
+        sc = self.axis.scatter(axis_data, scatter_data[:, 0], **additional_scatter_data, **self.addition_dict)
         # If we used a colormap (i.e., 'c' in kwargs), add a colorbar:
         if 'c' in additional_scatter_data and 'cmap' in additional_scatter_data:
             self.add_colorbar(sc, label=self.figs_row.get('zlabel') or 'value')
@@ -491,7 +506,7 @@ class AxisPlot:
         hist_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
 
         self.set_additional_kwargs_dict()
-        self.axis.hist(hist_data, bins=30, edgecolor='black', **self.label_dict)
+        self.axis.hist(hist_data, bins=30, edgecolor='black', **self.addition_dict)
         self.set_common_axis_props()
 
     def hist2d(self):
@@ -499,7 +514,7 @@ class AxisPlot:
         hist_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
 
         self.set_additional_kwargs_dict()
-        H, xedges, yedges, im = self.axis.hist2d(hist_data[:, 0], hist_data[:, 1], bins=30, **self.label_dict)
+        H, xedges, yedges, im = self.axis.hist2d(hist_data[:, 0], hist_data[:, 1], bins=30, **self.addition_dict)
         self.add_colorbar(im, label='count')
         self.set_common_axis_props()
 
@@ -595,6 +610,7 @@ class PlotType:
     SCATTER     = "scatter"
     ERRORBAR    = "errorbar"
     STEP        = "step"
+    STEM        = "stem"
     FILLBETWEEN = "fillbetween"
 
     # --- 2D field / image ---
@@ -632,6 +648,7 @@ class PlotType:
             PlotType.SCATTER:     {"x": 1, "y": (1, None)},
             PlotType.ERRORBAR:    {"x": 1, "y": 1, "yerr": (1, None)},
             PlotType.STEP:        {"x": 1, "y": (1, None)},
+            PlotType.STEM:        {"x": 1, "y": (1, None)},
             PlotType.FILLBETWEEN: {"x": 1, "y": 2},           # y1 and y2 for shading
 
             PlotType.MESH2D:      {"x": 1, "y": 1, "z": 1},
