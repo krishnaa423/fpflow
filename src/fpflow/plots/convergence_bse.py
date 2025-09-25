@@ -163,7 +163,7 @@ class BgwConvergenceBsePlot(PlotBase):
             bse_nv: int = jmespath.search('bse.absorption.val_bands', inputdict)
             bse_nc: int = jmespath.search('bse.absorption.cond_bands', inputdict)
             def format_kgrid(kgrid):
-                return 'x'.join([f"{int(k):02d}" for k in kgrid])
+                return f"{max(kgrid):02d}x"
 
             bse_coarse_kgrid: str = format_kgrid(jmespath.search('wfn.kgrid', inputdict))
             bse_fine_grid: str = format_kgrid(jmespath.search('wfnfi.kgrid', inputdict))
