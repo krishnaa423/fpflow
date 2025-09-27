@@ -16,12 +16,10 @@
 structures:
   active_idx: 0
   list:
-    - name: 'Cs2AgInCl6'
+    - name: 'LiF'
       file:
-        # type: 'mpapi-formula'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
-        # value: 'Cs2AgInCl6'
-        type: 'localfile'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
-        value: '/pscratch/sd/k/krishnaa/Simulations/Cs2AgInCl6/conv/atoms.xsf'
+        # type: 'localfile'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
+        # value: '/pscratch/sd/k/krishnaa/Simulations/LiF/conv/atoms.xsf'
       cell:
         unit: angstrom  # angstrom, bohr, alat. 
         read_if_relaxed: true
@@ -32,21 +30,13 @@ structures:
             # - [ 5.102704622,   5.102704622,  -0.000000000]
         bravais_lattice_info:
           ibrav: 'fcc'
-          A: 10.68
+          A: 4.08  # in angstrom if cell.unit is angstrom
       positions:
         unit: angstrom   # angstrom, bohr, crystal, alat. 
         read_if_relaxed: true
         coords:
-          - ["Cs",  0.25, 0.25, 0.25]
-          - ["Cs",  0.75, 0.75, 0.75]
-          - ['Ag', 0.50, 0.50, 0.50]
-          - ['In', 0.00, 0.00, 0.00]
-          - ['Cl', 0.25, 0.25, 0.75]
-          - ['Cl', 0.25, 0.75, 0.25]
-          - ['Cl', 0.75, 0.25, 0.25]
-          - ['Cl', 0.75, 0.75, 0.25]
-          - ['Cl', 0.75, 0.25, 0.75]
-          - ['Cl', 0.25, 0.75, 0.75]
+          - ['Li', 0.00, 0.00, 0.00]
+          - ['F', 0.50, 0.50, 0.50]
         # vca:    # Virtual crystal approximation. 
         #   - ['Si', 'Ag', 0.2]
       # supercell_size: [2, 2, 2]
@@ -181,8 +171,8 @@ generator:
   # #  - ste
   # #  - esf
   # #  - esr
-  #  - convergence_scf_qe
-   - convergence_dfpt_qe
+   - convergence_scf_qe
+  #  - convergence_dfpt_qe
   #  - convergence_gw_qe
   #  - convergence_bse_qe
   post_steps:
@@ -195,9 +185,9 @@ generator:
 manager:
   dest_dir: ./
   steps:
-    - convergence_dfpt_qe
+    - convergence_scf_qe
   plots:
-    - convergence_dfpt_qe
+    - convergence_scf_qe
 
 #endregion: basic info
 
@@ -480,71 +470,95 @@ mldftqe:
 convergence:
   qescf:
     dir_list:
-      # dset_0
-      - dirname: dset_0
+      # dset_00
+      - dirname: dset_00
         params:
           - path: 'scf.ecut'
             value: 20.0
           - path: 'scf.kgrid'
-            value: [4, 4, 4]
+            value: [2, 2, 2]
         link_inodes:
         generator:
           pre_steps: ['pseudos_qe']
           steps: ['scf_qe', 'dftelbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_1
-      - dirname: dset_1
-        params:
-          - path: 'scf.ecut'
-            value: 30.0
-          - path: 'scf.kgrid'
-            value: [4, 4, 4]
-        link_inodes:
-        generator:
-          pre_steps: ['pseudos_qe']
-          steps: ['scf_qe', 'dftelbands_qe']
-          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_2
-      - dirname: dset_2
+      # dset_01
+      - dirname: dset_01
         params:
           - path: 'scf.ecut'
             value: 40.0
           - path: 'scf.kgrid'
-            value: [4, 4, 4]
+            value: [2, 2, 2]
         link_inodes:
         generator:
           pre_steps: ['pseudos_qe']
           steps: ['scf_qe', 'dftelbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_3
-      - dirname: dset_3
+      # dset_02
+      - dirname: dset_02
         params:
           - path: 'scf.ecut'
-            value: 50.0
+            value: 40.0
           - path: 'scf.kgrid'
-            value: [4, 4, 4]
+            value: [2, 2, 2]
         link_inodes:
         generator:
           pre_steps: ['pseudos_qe']
           steps: ['scf_qe', 'dftelbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_4
-      - dirname: dset_4
+      # dset_03
+      - dirname: dset_03
         params:
           - path: 'scf.ecut'
             value: 60.0
           - path: 'scf.kgrid'
-            value: [4, 4, 4]
+            value: [2, 2, 2]
         link_inodes:
         generator:
           pre_steps: ['pseudos_qe']
           steps: ['scf_qe', 'dftelbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_5
-      - dirname: dset_5
+      # dset_04
+      - dirname: dset_04
         params:
           - path: 'scf.ecut'
-            value: 70.0
+            value: 80.0
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+        link_inodes:
+        generator:
+          pre_steps: ['pseudos_qe']
+          steps: ['scf_qe', 'dftelbands_qe']
+          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+      # dset_05
+      - dirname: dset_05
+        params:
+          - path: 'scf.ecut'
+            value: 100.0
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+        link_inodes:
+        generator:
+          pre_steps: ['pseudos_qe']
+          steps: ['scf_qe', 'dftelbands_qe']
+          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+      # dset_06
+      - dirname: dset_06
+        params:
+          - path: 'scf.ecut'
+            value: 120.0
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+        link_inodes:
+        generator:
+          pre_steps: ['pseudos_qe']
+          steps: ['scf_qe', 'dftelbands_qe']
+          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+      # dset_07
+      - dirname: dset_07
+        params:
+          - path: 'scf.ecut'
+            value: 100.0
           - path: 'scf.kgrid'
             value: [4, 4, 4]
         link_inodes:
@@ -552,8 +566,8 @@ convergence:
           pre_steps: ['pseudos_qe']
           steps: ['scf_qe', 'dftelbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_6
-      - dirname: dset_6
+      # dset_08
+      - dirname: dset_08
         params:
           - path: 'scf.ecut'
             value: 50.0
@@ -564,46 +578,10 @@ convergence:
           pre_steps: ['pseudos_qe']
           steps: ['scf_qe', 'dftelbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_7
-      - dirname: dset_7
-        params:
-          - path: 'scf.ecut'
-            value: 50.0
-          - path: 'scf.kgrid'
-            value: [8, 8, 8]
-        link_inodes:
-        generator:
-          pre_steps: ['pseudos_qe']
-          steps: ['scf_qe', 'dftelbands_qe']
-          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_8
-      - dirname: dset_8
-        params:
-          - path: 'scf.ecut'
-            value: 50.0
-          - path: 'scf.kgrid'
-            value: [10, 10, 10]
-        link_inodes:
-        generator:
-          pre_steps: ['pseudos_qe']
-          steps: ['scf_qe', 'dftelbands_qe']
-          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_9
-      - dirname: dset_9
-        params:
-          - path: 'scf.ecut'
-            value: 50.0
-          - path: 'scf.kgrid'
-            value: [2, 2, 2]
-        link_inodes:
-        generator:
-          pre_steps: ['pseudos_qe']
-          steps: ['scf_qe', 'dftelbands_qe']
-          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
     job_info:
       <<: *big_para
     plot:
-      dirs: [dset_0, dset_1, dset_2, dset_3, dset_4, dset_5]
+      dirs: [dset_00, dset_01, dset_02, dset_03, dset_04, dset_05, dset_06, dset_07, dset_08]
   qedfpt:
     dir_list:
       # dset_00

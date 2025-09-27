@@ -498,8 +498,22 @@ convergence:
           pre_steps: ['pseudos_qe']
           steps: ['scf_qe', 'dftelbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+      # dset_2
+      - dirname: 'dset_2'
+        params:
+          - path: 'scf.ecut'
+            value: 20.0
+          - path: 'scf.kgrid'
+            value: [4, 4, 4]
+        link_inodes:
+        generator:
+          pre_steps: ['pseudos_qe']
+          steps: ['scf_qe', 'dftelbands_qe']
+          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
     job_info:
       <<: *big_para
+    plot:
+      dirs: ['dset_1', 'dset_2']
   qedfpt:
     dir_list:
       # dset_0
