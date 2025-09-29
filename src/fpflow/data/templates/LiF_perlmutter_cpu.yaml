@@ -1,17 +1,3 @@
-# # For custom job info.
-# job_info:
-#  name: 'custom_scheduler_name'
-#  is_interactive: false
-#  header:
-#   non_interactive:
-#     account: m3571
-#     qos: regular
-#     constraint: cpu
-#     job-name: struct_job
-#  nodes: 1
-#  ntasks: 128
-#  time: "02:45:00"
-
 #region: basic info 
 structures:
   active_idx: 0
@@ -52,16 +38,21 @@ kpath:
   npoints_segment: 10  
 
 common:
-  sym: &sym true
-  kgrid: &kgrid [2, 2, 2]
-  nkpts: &nkpts 8
-  big_kgrid: &big_kgrid [2, 2, 2]
-  big_nkpts: &big_nkpts 64
-  qgrid: &qgrid [2, 2, 2]
   qshift: &qshift [0.000, 0.000, 0.001]
+  
+  coarse_sym: &coarse_sym true
+  coarse_kgrid: &coarse_kgrid [2, 2, 2]
+  coarse_nk: &coarse_nk 8
+
+  fine_sym: &fine_sym true
+  fine_kgrid: &fine_kgrid [2, 2, 2]
+  fine_nk: &fine_nk 8
+  
+  qgrid: &qgrid [2, 2, 2]
   dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign true 
   epw_nodes: &epw_nodes 1
   epw_nk: &epw_nk 8
+  
   dft:
     ecut: &dft_ecut 50.0
     kgrid: &scf_kgrid [2, 2, 2]
@@ -171,7 +162,7 @@ generator:
   # #  - ste
   # #  - esf
   # #  - esr
-   - convergence_scf_qe
+  #  - convergence_scf_qe
   #  - convergence_dfpt_qe
   #  - convergence_gw_qe
   #  - convergence_bse_qe
@@ -294,7 +285,7 @@ phmodes:
   job_info:
     <<: *single_node
 dos:
-  kgrid: *kgrid
+  kgrid: *coarse_kgrid
   cond_bands: *dft_condbands
   wfn_args:
   args:
@@ -318,7 +309,7 @@ kpdos:
   job_info:
     <<: *para
 wannier:
-  kgrid: *kgrid
+  kgrid: *coarse_kgrid
   val_bands: *dft_valbands
   cond_bands: *dft_condbands
   args:
@@ -328,8 +319,8 @@ phonopy:
   job_info:
     <<: *big_para
 wfn:
-  kgrid: *kgrid
-  sym: *sym
+  kgrid: *coarse_kgrid
+  sym: *coarse_sym
   cond_bands: *gw_condbands
   parabands_cond_bands: *gw_para_condbands
   is_pseudobands: *is_pseudobands
@@ -351,8 +342,8 @@ elph:
     <<: *big_para
 wfnq:
   qshift: *qshift
-  kgrid: *kgrid
-  sym: *sym
+  kgrid: *coarse_kgrid
+  sym: *coarse_sym
   cond_bands: *gw_condbands
   pw2bgw_args:
   args:
@@ -361,8 +352,8 @@ wfnq:
   job_info:
     <<: *big_para
 wfnfi:
-  kgrid: *big_kgrid
-  sym: *sym
+  kgrid: *fine_kgrid
+  sym: *fine_sym
   cond_bands: *gw_condbands
   pw2bgw_args:
   args:
@@ -371,8 +362,8 @@ wfnfi:
   job_info:
     <<: *big_para
 wfnqfi:
-  kgrid: *big_kgrid
-  sym: *sym
+  kgrid: *fine_kgrid
+  sym: *fine_sym
   cond_bands: *gw_condbands
   pw2bgw_args:
   args:
@@ -433,8 +424,8 @@ bse:
     job_info:
       <<: *big_para
 bseq:
-  sym: *sym
-  qgrid: *kgrid
+  sym: *coarse_sym
+  qgrid: *coarse_kgrid
   job_info:
     <<: *big_para
 xctph:
@@ -498,7 +489,7 @@ convergence:
       - dirname: dset_02
         params:
           - path: 'scf.ecut'
-            value: 40.0
+            value: 60.0
           - path: 'scf.kgrid'
             value: [2, 2, 2]
         link_inodes:
@@ -510,7 +501,7 @@ convergence:
       - dirname: dset_03
         params:
           - path: 'scf.ecut'
-            value: 60.0
+            value: 80.0
           - path: 'scf.kgrid'
             value: [2, 2, 2]
         link_inodes:
@@ -522,7 +513,7 @@ convergence:
       - dirname: dset_04
         params:
           - path: 'scf.ecut'
-            value: 80.0
+            value: 100.0
           - path: 'scf.kgrid'
             value: [2, 2, 2]
         link_inodes:
@@ -534,7 +525,7 @@ convergence:
       - dirname: dset_05
         params:
           - path: 'scf.ecut'
-            value: 100.0
+            value: 120.0
           - path: 'scf.kgrid'
             value: [2, 2, 2]
         link_inodes:
@@ -546,9 +537,9 @@ convergence:
       - dirname: dset_06
         params:
           - path: 'scf.ecut'
-            value: 120.0
+            value: 100.0
           - path: 'scf.kgrid'
-            value: [2, 2, 2]
+            value: [4, 4, 4]
         link_inodes:
         generator:
           pre_steps: ['pseudos_qe']
@@ -560,18 +551,6 @@ convergence:
           - path: 'scf.ecut'
             value: 100.0
           - path: 'scf.kgrid'
-            value: [4, 4, 4]
-        link_inodes:
-        generator:
-          pre_steps: ['pseudos_qe']
-          steps: ['scf_qe', 'dftelbands_qe']
-          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
-      # dset_08
-      - dirname: dset_08
-        params:
-          - path: 'scf.ecut'
-            value: 50.0
-          - path: 'scf.kgrid'
             value: [6, 6, 6]
         link_inodes:
         generator:
@@ -581,7 +560,7 @@ convergence:
     job_info:
       <<: *big_para
     plot:
-      dirs: [dset_00, dset_01, dset_02, dset_03, dset_04, dset_05, dset_06, dset_07, dset_08]
+      dirs: [dset_00, dset_01, dset_02, dset_03, dset_04, dset_05, dset_06, dset_07]
   qedfpt:
     dir_list:
       # dset_00
@@ -1881,3 +1860,18 @@ convergence:
       dirs: [dset_05, dset_08, dset_09]   # For comparing coarse grid only. 
       # dirs: [dset_00, dset_01, dset_02, dset_03, dset_04, dset_05]   # For comparing fine grid only.
       eigs: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  
+
+
+# # For custom job info.
+# job_info:
+#  name: 'custom_scheduler_name'
+#  is_interactive: false
+#  header:
+#   non_interactive:
+#     account: m3571
+#     qos: regular
+#     constraint: cpu
+#     job-name: struct_job
+#  nodes: 1
+#  ntasks: 128
+#  time: "02:45:00"

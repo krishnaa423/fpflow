@@ -1,5 +1,6 @@
 #region modules
-from typing import List 
+from typing import List
+import yaml 
 from fpflow.io.read_write import str_2_f
 import os 
 from fpflow.steps.step import Step 
@@ -11,6 +12,7 @@ from fpflow.schedulers.scheduler import Scheduler
 from importlib.util import find_spec
 import copy 
 import glom 
+from benedict import benedict
 from fpflow.inputs.inputyaml import InputYaml
 from fpflow.io.change_dir import change_dir
 #endregion
@@ -84,19 +86,19 @@ python ./script_conv{self.subdir}.py
         - Creates the input.yaml file there. 
         - Runs the generator to create the step files. 
         '''
-        inputdict_local: dict = copy.deepcopy(self.inputdict)
+        inputdict_local: dict = benedict(copy.deepcopy(self.inputdict))
         params: list = jmespath.search(f'convergence.{self.subdir}.dir_list[{dir_list_idx}].params', inputdict_local)
         link_inodes: list = jmespath.search(f'convergence.{self.subdir}.dir_list[{dir_list_idx}].link_inodes', inputdict_local)
         generator_steps: list = jmespath.search(f'convergence.{self.subdir}.dir_list[{dir_list_idx}].generator', inputdict_local)
 
         # Update values. 
         for param in params:
-            glom.assign(inputdict_local, param['path'], param['value'])
-        glom.assign(inputdict_local, 'generator.dest_dir', './')
-        glom.assign(inputdict_local, 'generator.pre_steps', generator_steps['pre_steps'])
-        glom.assign(inputdict_local, 'generator.steps', generator_steps['steps'])
-        glom.assign(inputdict_local, 'generator.post_steps', generator_steps['post_steps'])
-        glom.assign(inputdict_local, 'manager.steps', generator_steps['steps'])
+            inputdict_local.set(param['path'], param['value'])
+        inputdict_local.set('generator.dest_dir', './')
+        inputdict_local.set('generator.pre_steps', generator_steps['pre_steps'])
+        inputdict_local.set('generator.steps', generator_steps['steps'])
+        inputdict_local.set('generator.post_steps', generator_steps['post_steps'])
+        inputdict_local.set('manager.steps', generator_steps['steps'])
 
         # Set link files. 
         if link_inodes is not None and len(link_inodes)>0:
@@ -104,7 +106,7 @@ python ./script_conv{self.subdir}.py
                 os.system(f'ln -sf {link_inode["source"]} {link_inode["dest"]}')
 
         # Write input yaml file. 
-        InputYaml.to_yaml_file('./input.yaml', inputdict_local)
+        yaml.safe_dump(dict(inputdict_local), open("input.yaml", "w"))
 
         # Run generator in the subdirectory. 
         generator = self.generatorclass.from_inputyaml('./input.yaml')

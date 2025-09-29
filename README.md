@@ -27,8 +27,6 @@ Steps, post-processsing, and (Plots):
 - ml_dftabacus
 - ml_dftsiesta
 - dfpt_qe
-- pp_dvscf_dfpt
-- elph_dfpt  
 - phbands_qe 
 - phdos_qe 
 - phmodes_qe 
@@ -38,9 +36,7 @@ Steps, post-processsing, and (Plots):
 - kpdos_qe 
 - wannier_qe 
 - tbmodels
-- wfn_qe.  
-- pp_wfnqe
-- pp_wfnqesym
+- wfn_qe
 - wfn_abacus
 - wfn_siesta
 - epw_qe
@@ -51,13 +47,8 @@ Steps, post-processsing, and (Plots):
 - wfnfi_qe
 - wfnqfi_qe
 - phonopy_qe 
-- pp_dvscf_phonopy
-- elph_phonopy
-- phonopy_abacus
-- phonopy_siesta
 - epsilon_bgw 
 - sigmasc_bgw. Repeat this and below as many times as needed for scGW. 
-- epsilonsc_bgw
 - sigma_bgw
 - ml_gwqe
 - gwelbands_bgw 
@@ -68,10 +59,11 @@ Steps, post-processsing, and (Plots):
 - bseq_bgw 
 - bseq_fp 
 - ml_bseqe
-- xctwannier_bgw
+- wannier_bgw
 - xctph_bowen 
 - xctph_fp 
 - xctpol_fp 
+- xctpol_dmc_fp
 - ste_fp 
 - esf_fp
 - esr_fp 

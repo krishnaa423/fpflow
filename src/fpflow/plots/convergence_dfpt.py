@@ -48,10 +48,12 @@ class QeConvergenceDfptPlot(PlotBase):
         inputdict: dict = InputYaml.from_yaml_file('./input.yaml').inputdict
         active_idx: int = jmespath.search('structures.active_idx', inputdict)
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
-        dfpt_ecut = 'e' + str(jmespath.search('scf.ecut', inputdict))
+        scf_ecut = 'e' + str(jmespath.search('scf.ecut', inputdict))
         dfpt_qgrid = 'x'.join(list(map(str, jmespath.search('dfpt.qgrid', inputdict))))
         dfpt_conv_thr: str = 'tr' + str(jmespath.search('dfpt.conv_thr', inputdict))
-        dset_name: str = f'dset_{dfpt_ecut}_{dfpt_conv_thr}_{dfpt_qgrid}'
+        relax_force_thr: str = 'r' + jmespath.search('relax.args.control.forc_conv_thr', inputdict) if jmespath.search('relax.args.control.forc_conv_thr', inputdict) is not None else '---'
+        scf_conv_thr: str = 's' + jmespath.search('scf.args.electrons.conv_thr', inputdict) if jmespath.search('scf.args.electrons.conv_thr', inputdict) is not None else '---'
+        dset_name: str = f'dset_{relax_force_thr}_{scf_conv_thr}_{scf_ecut}_{dfpt_conv_thr}_{dfpt_qgrid}'
 
         # Create column names: y1, y2, ..., yN
         self.data_colnames = [f"y{i+1}" for i in range(self.phbands.shape[1])]
@@ -86,7 +88,7 @@ class QeConvergenceDfptPlot(PlotBase):
                 'linewidth': 1, 
                 'xgrid': True,
                 'ygrid': False,
-                'legend_label': f'{dfpt_ecut}_{dfpt_conv_thr}_{dfpt_qgrid}' if ib==0 else None,
+                'legend_label': f'{relax_force_thr}_{scf_conv_thr}_{scf_ecut}_{dfpt_conv_thr}_{dfpt_qgrid}' if ib==0 else None,
             }])
 
             self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)      
