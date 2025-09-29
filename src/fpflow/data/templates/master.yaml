@@ -186,9 +186,9 @@ generator:
   #  - ste
   #  - esf
   #  - esr
-  #  - convergence_scf_qe
+   - convergence_scf_qe
   #  - convergence_dfpt_qe
-  #  - convergence_gw_qe
+   - convergence_gw_qe
   #  - convergence_bse_qe
   post_steps:
     - create_script
@@ -199,8 +199,12 @@ generator:
 
 manager:
   dest_dir: ./
-  steps: *gen_steps
-  plots: *gen_steps
+  steps: 
+    - convergence_scf_qe
+    - convergence_gw_qe
+  plots:
+    - convergence_scf_qe
+    - convergence_gw_qe
 #endregion: basic info
 
 job_types:

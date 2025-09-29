@@ -72,7 +72,7 @@ class BgwConvergenceGwPlot(PlotBase):
             gw_ecut = float(jmespath.search('gw.sigma.ecut', inputdict))
             gw_bands = int(jmespath.search('gw.sigma.conv_cond_bands', inputdict))
             gw_kgrid = 'x'.join(map(str, jmespath.search('wfn.kgrid', inputdict)))
-            gw_val_bands: int = jmespath.search('gw.sigma.val_bands', inputdict)
+            gw_val_bands: int = jmespath.search('gw.gwelbands.val_bands', inputdict)
 
             # Get axis info.
             self.xaxis, self.xticks, self.xtick_labels = Kpath.from_yamlfile().even_spaced_axis
