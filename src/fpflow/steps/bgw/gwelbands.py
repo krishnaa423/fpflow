@@ -22,14 +22,14 @@ from fpflow.plots.gwelbands import GwelbandsPlot
 class BgwGwelbandsStep(Step):
     @property
     def inteqp(self):
-        cond_bands: int = jmespath.search('dftelbands.cond_bands', self.inputdict)
-        val_bands: int = jmespath.search('dftelbands.val_bands', self.inputdict)
+        cond_bands: int = jmespath.search('gw.gwelbands.cond_bands', self.inputdict)
+        val_bands: int = jmespath.search('gw.gwelbands.val_bands', self.inputdict)
 
         epsilondict: dict = {
-            'number_val_bands_coarse': val_bands-1,
-            'number_cond_bands_coarse': cond_bands-1,
-            'number_val_bands_fine': val_bands-1,
-            'number_cond_bands_fine': cond_bands-1,
+            'number_val_bands_coarse': val_bands,
+            'number_cond_bands_coarse': cond_bands,
+            'number_val_bands_fine': val_bands,
+            'number_cond_bands_fine': cond_bands,
             'degeneracy_check_override': '',
             'use_symmetries_coarse_grid': '',
             'no_symmetries_fine_grid': '',

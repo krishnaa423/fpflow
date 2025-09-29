@@ -88,6 +88,9 @@ common:
     para_cond_bands: &gw_para_condbands 201
     is_pseudobands: &is_pseudobands true
     conv_cond_bands: &gw_conv_condbands 200
+  gwelbands:
+    val_bands: &gwelbands_valbands 1
+    cond_bands: &gwelbands_condbands 2
   bse:
     val_bands: &bse_valbands 2
     cond_bands: &bse_condbands 2
@@ -139,10 +142,10 @@ generator:
   #  - ml_dnvscqe
   #  - ml_dftabacus
   #  - ml_dftsiesta
-   - dfpt_qe
+  #  - dfpt_qe
   #  - pp_dvsc_dfpt
   #  - elph_dfpt
-   - phbands_qe
+  #  - phbands_qe
   #  - phdos_qe
   #  - phmodes_qe
   #  - dos_qe
@@ -172,9 +175,9 @@ generator:
    - sigma_bgw
   #  - ml_gwqe
    - gwelbands_bgw
-   - kernel_bgw
-   - absorption_bgw
-   - plotxct_bgw
+  #  - kernel_bgw
+  #  - absorption_bgw
+  #  - plotxct_bgw
   #  - bseq_bgw
   #  - ml_bseqe
   #  - xctwannier_bgw
@@ -408,6 +411,8 @@ gw:
     job_info:
       <<: *big_para
   gwelbands:
+    val_bands: *gwelbands_valbands
+    cond_bands: *gwelbands_condbands
     wfnco_link: 'WFN_coo'
     wfnfi_link: 'WFN_dftelbands'
     args:
