@@ -26,9 +26,9 @@ class BgwGwelbandsStep(Step):
         val_bands: int = jmespath.search('dftelbands.val_bands', self.inputdict)
 
         epsilondict: dict = {
-            'number_val_bands_coarse': val_bands,
+            'number_val_bands_coarse': val_bands-1,
             'number_cond_bands_coarse': cond_bands-1,
-            'number_val_bands_fine': val_bands,
+            'number_val_bands_fine': val_bands-1,
             'number_cond_bands_fine': cond_bands-1,
             'degeneracy_check_override': '',
             'use_symmetries_coarse_grid': '',

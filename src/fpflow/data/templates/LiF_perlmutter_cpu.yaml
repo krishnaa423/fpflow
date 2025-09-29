@@ -56,20 +56,20 @@ common:
   dft:
     ecut: &dft_ecut 50.0
     kgrid: &scf_kgrid [2, 2, 2]
-    val_bands: &dft_valbands 4
-    cond_bands: &dft_condbands 2
+    val_bands: &dft_valbands 5
+    cond_bands: &dft_condbands 7
     xc: &dft_xc 'pbe'  # pbe, lda. 
     is_spinorbit: &dft_spinorbit true
   gw:
     ecut: &gwecut 30.0
-    val_bands: &gw_valbands 4
-    cond_bands: &gw_condbands 2
+    val_bands: &gw_valbands 5
+    cond_bands: &gw_condbands 7
     para_cond_bands: &gw_para_condbands 6001
     is_pseudobands: &is_pseudobands true
     conv_cond_bands: &gw_conv_condbands 6001
   bse:
-    val_bands: &bse_valbands 4
-    cond_bands: &bse_condbands 2
+    val_bands: &bse_valbands 5
+    cond_bands: &bse_condbands 7
     nxct: &bse_nxct 10
     supercell_size: &xct_supercell_size [2, 2, 2]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
@@ -163,7 +163,7 @@ generator:
   # #  - esf
   # #  - esr
   #  - convergence_scf_qe
-  #  - convergence_dfpt_qe
+   - convergence_dfpt_qe
   #  - convergence_gw_qe
   #  - convergence_bse_qe
   post_steps:
@@ -240,7 +240,7 @@ cdft:
   job_info:
     <<: *para
 md:
-  kgrid: *kgrid
+  kgrid: *coarse_kgrid
   type: 'md'      # Can be md or vc-md. 
   time_step: 20   # 20 a.u. a.u = 48 as. 
   nsteps: 100
@@ -564,10 +564,14 @@ convergence:
   qedfpt:
     dir_list:
       # dset_00
-      - dirname: dset_00
+      - dirname: 'dset_00'
         params:
+          - path: 'relax.args.control.forc_conv_thr'
+            value: '1.0d-3'
           - path: 'scf.ecut'
-            value: 50.0
+            value: 40.0
+          - path: 'scf.args.electrons.conv_thr'
+            value: '1.0d-6'
           - path: 'scf.kgrid'
             value: [2, 2, 2]
           - path: 'dfpt.conv_thr'
@@ -575,47 +579,89 @@ convergence:
           - path: 'dfpt.qgrid'
             value: [2, 2, 2]
         link_inodes:
-          - source: ../../qescf/dset_0/pseudos
-            dest: ./pseudos
         generator:
-          pre_steps: []
-          steps: ['scf_qe', 'dfpt_qe', 'phbands_qe']
+          pre_steps: ['pseudos_qe']
+          steps: ['relax_qe', 'scf_qe', 'dfpt_qe', 'phbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       # dset_01
-      - dirname: dset_01
+      - dirname: 'dset_01'
         params:
+          - path: 'relax.args.control.forc_conv_thr'
+            value: '1.0d-6'
           - path: 'scf.ecut'
-            value: 50.0
+            value: 40.0
+          - path: 'scf.args.electrons.conv_thr'
+            value: '1.0d-6'
           - path: 'scf.kgrid'
-            value: [4, 4, 4]
+            value: [2, 2, 2]
           - path: 'dfpt.conv_thr'
             value: '1.0d-14'
           - path: 'dfpt.qgrid'
-            value: [4, 4, 4]
+            value: [2, 2, 2]
         link_inodes:
-          - source: ../../qescf/dset_0/pseudos
-            dest: ./pseudos
         generator:
-          pre_steps: []
-          steps: ['scf_qe', 'dfpt_qe', 'phbands_qe']
+          pre_steps: ['pseudos_qe']
+          steps: ['relax_qe', 'scf_qe', 'dfpt_qe', 'phbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
       # dset_02
-      - dirname: dset_02
+      - dirname: 'dset_02'
         params:
+          - path: 'relax.args.control.forc_conv_thr'
+            value: '1.0d-3'
           - path: 'scf.ecut'
-            value: 50.0
+            value: 40.0
+          - path: 'scf.args.electrons.conv_thr'
+            value: '1.0d-8'
           - path: 'scf.kgrid'
-            value: [6, 6, 6]
+            value: [2, 2, 2]
           - path: 'dfpt.conv_thr'
             value: '1.0d-14'
           - path: 'dfpt.qgrid'
-            value: [6, 6, 6]
+            value: [2, 2, 2]
         link_inodes:
-          - source: ../../qescf/dset_0/pseudos
-            dest: ./pseudos
         generator:
-          pre_steps: []
-          steps: ['scf_qe', 'dfpt_qe', 'phbands_qe']
+          pre_steps: ['pseudos_qe']
+          steps: ['relax_qe', 'scf_qe', 'dfpt_qe', 'phbands_qe']
+          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+      # dset_03
+      - dirname: 'dset_03'
+        params:
+          - path: 'relax.args.control.forc_conv_thr'
+            value: '1.0d-6'
+          - path: 'scf.ecut'
+            value: 80.0
+          - path: 'scf.args.electrons.conv_thr'
+            value: '1.0d-6'
+          - path: 'scf.kgrid'
+            value: [2, 2, 2]
+          - path: 'dfpt.conv_thr'
+            value: '1.0d-14'
+          - path: 'dfpt.qgrid'
+            value: [2, 2, 2]
+        link_inodes:
+        generator:
+          pre_steps: ['pseudos_qe']
+          steps: ['relax_qe', 'scf_qe', 'dfpt_qe', 'phbands_qe']
+          post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
+      # dset_04
+      - dirname: 'dset_04'
+        params:
+          - path: 'relax.args.control.forc_conv_thr'
+            value: '1.0d-6'
+          - path: 'scf.ecut'
+            value: 80.0
+          - path: 'scf.args.electrons.conv_thr'
+            value: '1.0d-8'
+          - path: 'scf.kgrid'
+            value: [4, 4, 4]
+          - path: 'dfpt.conv_thr'
+            value: '1.0d-14'
+          - path: 'dfpt.qgrid'
+            value: [4, 4, 4]
+        link_inodes:
+        generator:
+          pre_steps: ['pseudos_qe']
+          steps: ['relax_qe', 'scf_qe', 'dfpt_qe', 'phbands_qe']
           post_steps: ['create_script', 'run_script', 'remove_script', 'plot_script', 'interactive_script']
     job_info:
       <<: *big_para
