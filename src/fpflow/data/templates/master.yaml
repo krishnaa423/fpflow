@@ -148,7 +148,7 @@ generator:
   #  - phmodes_qe
    - dos_qe
    - pdos_qe 
-  #  - dftelbands_qe
+   - dftelbands_qe
   #  - kpdos_qe
   #  - wannier_qe
   #  - tbmodels
