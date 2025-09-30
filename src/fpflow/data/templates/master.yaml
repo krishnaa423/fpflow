@@ -149,7 +149,7 @@ generator:
    - dos_qe
    - pdos_qe 
    - dftelbands_qe
-  #  - kpdos_qe
+   - kpdos_qe
   #  - wannier_qe
   #  - tbmodels
   #  - wfn_qe
@@ -325,6 +325,8 @@ dftelbands:
   job_info:
     <<: *para
 kpdos:
+  plot:
+    scatter_scale_factor: 1.0
   args:
   job_info:
     <<: *para

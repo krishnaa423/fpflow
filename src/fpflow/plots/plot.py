@@ -324,6 +324,7 @@ class AxisPlot:
         plot_type: str = self.figs_row['plot_type']
         
         if self.figs_row['legend_label'] is not None: self.addition_dict['label'] = self.figs_row['legend_label']
+        
         if plot_type=='line':
             color = self.figs_row['color']
             if color is not None:
@@ -332,6 +333,12 @@ class AxisPlot:
             linewidth = self.figs_row['linewidth']
             if linewidth is not None and pd.notna(linewidth):
                 self.addition_dict['linewidth'] = linewidth
+
+        if plot_type=='scatter':
+            color = self.figs_row['color']
+            if color is not None:
+                self.addition_dict['color'] = color
+                self.addition_dict['alpha'] = 0.5
 
     def set_common_axis_props(self):
         keys_and_functions: dict = {

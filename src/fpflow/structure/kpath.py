@@ -98,9 +98,12 @@ class Kpath:
     def even_spaced_axis(self):
         nseg = len(self.special_points) - 1
         n = nseg * self.npoints_segment + 1
-        xaxis = np.arange(n, dtype=float) / self.npoints_segment
-        xticks = np.arange(nseg + 1, dtype=float)
+        xaxis = np.arange(n, dtype=float)
+        
+        # xticks at the indices of each special point
+        xticks = [i * self.npoints_segment for i in range(nseg)] + [n - 1]
         xlabels = list(self.special_points)
+        
         return xaxis, xticks, xlabels
     
     @property
