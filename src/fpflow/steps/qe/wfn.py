@@ -28,10 +28,10 @@ class QeWfnStep(Step):
     def wfn(self) -> str:
         # Qestruct.
         qestruct = QeStruct.from_inputdict(self.inputdict)
-        max_val_bands: int = qestruct.max_val(
+        max_val_bands: int = int(qestruct.max_val(
             xc=jmespath.search('scf.xc', self.inputdict),
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
-        )
+        ))
         cond_bands: int = jmespath.search('wfn.cond_bands', self.inputdict)
 
         # Kpts.

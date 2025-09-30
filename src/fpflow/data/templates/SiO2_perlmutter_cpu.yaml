@@ -2,10 +2,10 @@
 structures:
   active_idx: 0
   list:
-    - name: 'LiF'
+    - name: 'SiO2'
       file:
         type: 'localfile'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
-        value: '/pscratch/sd/k/krishnaa/Simulations/LiF/conv/atoms.xsf' 
+        value: '/pscratch/sd/k/krishnaa/Simulations/SiO2/conv/atoms.xsf' 
       cell:
         unit: angstrom  # angstrom, bohr, alat. 
         read_if_relaxed: true
@@ -68,9 +68,9 @@ common:
     ecut: &gwecut 30.0
     val_bands: &gw_valbands 5
     cond_bands: &gw_condbands 7
-    para_cond_bands: &gw_para_condbands 1001
+    para_cond_bands: &gw_para_condbands 10001
     is_pseudobands: &is_pseudobands true
-    conv_cond_bands: &gw_conv_condbands 1000
+    conv_cond_bands: &gw_conv_condbands 10000
   gwelbands:
     val_bands: &gwelbands_valbands 4
     cond_bands: &gwelbands_condbands 5

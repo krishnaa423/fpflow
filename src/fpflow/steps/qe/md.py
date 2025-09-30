@@ -83,6 +83,14 @@ class QeMdStep(Step):
 {scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < md.in &> md.in.out
 
 cp ./tmp/struct.save/data-file-schema.xml ./md.xml
+
+write_to_h5="
+from fpflow.analysis.md import MdXml
+md = MdXml('md.xml')
+md.write_h5()
+"
+
+python -c "$write_to_h5" &> md_pp.out
 '''
         return file_string
 
@@ -109,6 +117,8 @@ cp ./tmp/struct.save/data-file-schema.xml ./md.xml
             './tmp',
             './md.in.out',
             './md.xml',
+            './md.h5',
+            './md_pp.out',
             './pseudos/qe',
             './atoms_*.xsf',        # Removes structure files created by Struct object. 
         ]

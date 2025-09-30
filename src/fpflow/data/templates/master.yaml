@@ -83,25 +83,25 @@ common:
     is_spinorbit: &dft_spinorbit true
   gw:
     ecut: &gwecut 10.0
-    val_bands: &gw_valbands 2
-    cond_bands: &gw_condbands 3
-    para_cond_bands: &gw_para_condbands 201
+    val_bands: &gw_valbands 4
+    cond_bands: &gw_condbands 4
+    para_cond_bands: &gw_para_condbands 1001
     is_pseudobands: &is_pseudobands true
-    conv_cond_bands: &gw_conv_condbands 200
+    conv_cond_bands: &gw_conv_condbands 1000
   gwelbands:
-    val_bands: &gwelbands_valbands 1
+    val_bands: &gwelbands_valbands 2
     cond_bands: &gwelbands_condbands 2
   bse:
-    val_bands: &bse_valbands 2
-    cond_bands: &bse_condbands 2
-    nxct: &bse_nxct 5
+    val_bands: &bse_valbands 4
+    cond_bands: &bse_condbands 4
+    nxct: &bse_nxct 10
     supercell_size: &xct_supercell_size [2, 2, 2]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
     elec_position: &xct_elec_position [0.25, 0.25, 0.25]
     xct_state: &xct_state 1
     spinor: &plotxct_spinor # Only activated in spin orbit coupling mode. 1 is up, 2 is down.
-      electron_spin: 2      
-      hole_spin: 1
+      electron_spin: 1      
+      hole_spin: 2
   job_types:
     scheduler: &scheduler_dict
       name: &scheduler_name 'mac_mini_parallel'
@@ -128,7 +128,7 @@ generator:
     - pseudos_qe
   steps: &gen_steps
   #  - esr_gen
-   - relax_qe
+  #  - relax_qe
   #  - cdft_qe
   #  - md_qe
   #  - ml_deepmd
@@ -143,52 +143,49 @@ generator:
   #  - ml_dftabacus
   #  - ml_dftsiesta
   #  - dfpt_qe
-  #  - pp_dvsc_dfpt
-  #  - elph_dfpt
   #  - phbands_qe
   #  - phdos_qe
   #  - phmodes_qe
-  #  - dos_qe
-  #  - pdos_qe 
-   - dftelbands_qe
+   - dos_qe
+   - pdos_qe 
+  #  - dftelbands_qe
   #  - kpdos_qe
   #  - wannier_qe
   #  - tbmodels
-   - wfn_qe
-  #  - pp_wfnqe
-  #  - pp_wfnqesym
+  #  - wfn_qe
   #  - wfn_abacus
   #  - wfn_siesta
   #  - epw_qe
   #  - elph_epw
-   - wfnq_qe
+  #  - pol_fp
+  #  - wfnq_qe
   #  - wfnq_abacus
   #  - wfnq_siesta
-   - wfnfi_qe
-   - wfnqfi_qe
+  #  - wfnfi_qe
+  #  - wfnqfi_qe
   #  - phonopy_qe
-  #  - pp_dvscf_phonopy
-  #  - elph_phonopy
-   - epsilon_bgw
+  #  - epsilon_bgw
   #  - sigmasc_bgw
-  #  - epsilonsc_bgw
-   - sigma_bgw
+  #  - sigma_bgw
   #  - ml_gwqe
-   - gwelbands_bgw
+  #  - gwelbands_bgw
   #  - kernel_bgw
   #  - absorption_bgw
+  #  - bse_waninterp_bgw
   #  - plotxct_bgw
   #  - bseq_bgw
+  #  - bseq_waninterp_bgw
   #  - ml_bseqe
-  #  - xctwannier_bgw
-  #  - xctph
-  #  - xctpol
-  #  - ste
-  #  - esf
-  #  - esr
-   - convergence_scf_qe
+  #  - wannier_bgw
+  #  - xctph_fp
+  #  - xctpol_fp
+  #  - xctpol_dmc_fp
+  #  - ste_fp
+  #  - esf_fp
+  #  - esr_fp
+  #  - convergence_scf_qe
   #  - convergence_dfpt_qe
-   - convergence_gw_qe
+  #  - convergence_gw_qe
   #  - convergence_bse_qe
   post_steps:
     - create_script
@@ -199,12 +196,8 @@ generator:
 
 manager:
   dest_dir: ./
-  steps: 
-    - convergence_scf_qe
-    - convergence_gw_qe
-  plots:
-    - convergence_scf_qe
-    - convergence_gw_qe
+  steps: *gen_steps
+  plots: *gen_steps
 #endregion: basic info
 
 job_types:
@@ -314,6 +307,8 @@ dos:
   cond_bands: *dft_condbands
   wfn_args:
   args:
+  job_wfndos_info:
+    <<: *para
   job_info:
     <<: *para
 pdos:

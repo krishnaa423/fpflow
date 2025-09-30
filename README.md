@@ -18,6 +18,7 @@ Steps, post-processsing, and (Plots):
 - md_qe
 - ml_deepmd
 - scf_qe. Use qe, abacus or siesta. 
+- scf_pw2bgw_qe
 - scf_abacus
 - scf_siesta
 - ml_dftqe
@@ -41,6 +42,7 @@ Steps, post-processsing, and (Plots):
 - wfn_siesta
 - epw_qe
 - elph_epw 
+- pol_fp
 - wfnq_qe
 - wfnq_abacus
 - wfnq_siesta
@@ -54,13 +56,14 @@ Steps, post-processsing, and (Plots):
 - gwelbands_bgw 
 - kernel_bgw
 - absorption_bgw 
+- bse_waninterp_bgw
 - plotxct_bgw 
 - bse_fp 
 - bseq_bgw 
+- bseq_waninterp_bgw
 - bseq_fp 
 - ml_bseqe
 - wannier_bgw
-- xctph_bowen 
 - xctph_fp 
 - xctpol_fp 
 - xctpol_dmc_fp
