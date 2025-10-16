@@ -94,7 +94,7 @@ exec &> xctph.out
             './script_xctph.py',
             './job_xctph.sh',
             './xct.h5',
-            './elph*.h5',
+            # './elph*.h5',
             './xctph*.h5',
             './xctph.out',
             './script_xctph.py.out',

@@ -14,10 +14,11 @@ from fpflow.steps.qe.dos import QeDosStep
 from fpflow.steps.qe.pdos import QePdosStep
 from fpflow.steps.qe.dftelbands import QeDftelbandsStep
 from fpflow.steps.qe.kpdos import QeKpdosStep
+from fpflow.steps.qe.wfnwannier import QeWfnWannierStep
 from fpflow.steps.qe.wannier import QeWannierStep
 from fpflow.steps.qe.wfn import QeWfnStep
 from fpflow.steps.qe.epw import QeEpwStep
-from fpflow.steps.qe.elph import QeElphStep
+from fpflow.steps.qe.elph import QeElphEpwStep
 from fpflow.steps.qe.wfnq import QeWfnqStep
 from fpflow.steps.qe.wfnfi import QeWfnfiStep
 from fpflow.steps.qe.wfnqfi import QeWfnqfiStep
@@ -75,19 +76,20 @@ step_class_map: dict = {
     'phbands_qe': QePhbandsStep,
     'phdos_qe': QePhdosStep, #TODO
     'phmodes_qe': QePhmodesStep,
-    'dos_qe': QeDosStep, #TODO
-    'pdos_qe': QePdosStep, #TODO
+    'dos_qe': QeDosStep, 
+    'pdos_qe': QePdosStep, 
     'dftelbands_qe': QeDftelbandsStep,
-    'kpdos_qe': QeKpdosStep, #TODO
-    'wannier_qe': QeWannierStep, #TODO
-    'tbmodels': QeWannierStep, #TODO
+    'kpdos_qe': QeKpdosStep, 
+    'wfnwannier_qe': QeWfnWannierStep, 
+    'wannier_qe': QeWannierStep,
     'wfn_qe': QeWfnStep,
     'pp_wfnqe': QeWfnStep, #TODO
     'pp_wfnqesym': QeWfnStep, #TODO
     'wfn_abacus': QeWfnStep, #TODO
     'wfn_siesta': QeWfnStep, #TODO
     'epw_qe': QeEpwStep, 
-    'elph_epw': QeElphStep, #TODO
+    'elph_epw': QeElphEpwStep, #TODO
+    'pol_fp': QeElphEpwStep, #TODO
     'wfnq_qe': QeWfnqStep,
     'wfnq_abacus': QeWfnqStep, #TODO
     'wfnq_siesta': QeWfnqStep, #TODO
@@ -98,7 +100,6 @@ step_class_map: dict = {
     'elph_phonopy': QePhonopyStep, #TODO
     'epsilon_bgw': BgwEpsilonStep,
     'sigmasc_bgw': BgwSigmaStep, #TODO
-    'epsilonsc_bgw': BgwSigmaStep, #TODO
     'sigma_bgw': BgwSigmaStep, 
     'ml_gwqe': MlQeGwStep, #TODO
     'gwelbands_bgw': BgwGwelbandsStep,

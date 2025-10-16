@@ -353,6 +353,8 @@ wfn:
    ntasks: 64
    time: "02:45:00"
 epw:
+  val_bands: *bse_valbands
+  cond_bands: *bse_condbands
   args:
   job_info:
     <<: *para_epwk

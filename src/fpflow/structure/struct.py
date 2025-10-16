@@ -140,7 +140,7 @@ class Struct:
         return cls(atoms=ase_atoms, **kwargs)
 
     @classmethod
-    def from_yaml_file(cls, filename: str, **kwargs):
+    def from_yaml_file(cls, filename: str='./input.yaml', **kwargs):
         inputdict: dict = InputYaml.from_yaml_file(filename).inputdict
         atoms: List[Atoms] = cls.get_atoms_from_inputdict(inputdict)
         return cls(atoms=atoms, **kwargs)

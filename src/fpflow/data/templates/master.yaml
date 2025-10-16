@@ -56,16 +56,21 @@ kpath:
     - 'L'
     - 'G'
     - 'X'
+    - 'W'
+    - 'U'
+    - 'L'
+    - 'K'
+    - 'G'
   npoints_segment: 10  
 
 common:
   qshift: &qshift [0.000, 0.000, 0.001]
   
-  coarse_sym: &coarse_sym true
+  coarse_sym: &coarse_sym false
   coarse_kgrid: &coarse_kgrid [2, 2, 2]
   coarse_nk: &coarse_nk 8
 
-  fine_sym: &fine_sym true
+  fine_sym: &fine_sym false
   fine_kgrid: &fine_kgrid [2, 2, 2]
   fine_nk: &fine_nk 8
   
@@ -77,8 +82,8 @@ common:
   dft:
     ecut: &dft_ecut 20.0
     kgrid: &scf_kgrid [2, 2, 2]
-    val_bands: &dft_valbands 2
-    cond_bands: &dft_condbands 3
+    val_bands: &dft_valbands 4
+    cond_bands: &dft_condbands 4
     xc: &dft_xc 'pbe'  # pbe, lda. 
     is_spinorbit: &dft_spinorbit true
   gw:
@@ -89,8 +94,8 @@ common:
     is_pseudobands: &is_pseudobands true
     conv_cond_bands: &gw_conv_condbands 1000
   gwelbands:
-    val_bands: &gwelbands_valbands 2
-    cond_bands: &gwelbands_condbands 2
+    val_bands: &gwelbands_valbands 3
+    cond_bands: &gwelbands_condbands 3
   bse:
     val_bands: &bse_valbands 4
     cond_bands: &bse_condbands 4
@@ -142,20 +147,20 @@ generator:
   #  - ml_dnvscqe
   #  - ml_dftabacus
   #  - ml_dftsiesta
-  #  - dfpt_qe
-  #  - phbands_qe
+   - dfpt_qe
+   - phbands_qe
   #  - phdos_qe
   #  - phmodes_qe
-   - dos_qe
-   - pdos_qe 
-   - dftelbands_qe
-   - kpdos_qe
+  #  - dos_qe
+  #  - pdos_qe 
+  #  - dftelbands_qe
+  #  - kpdos_qe
+  #  - wfnwannier_qe
   #  - wannier_qe
-  #  - tbmodels
-  #  - wfn_qe
+   - wfn_qe
   #  - wfn_abacus
   #  - wfn_siesta
-  #  - epw_qe
+   - epw_qe
   #  - elph_epw
   #  - pol_fp
   #  - wfnq_qe
@@ -179,6 +184,7 @@ generator:
   #  - wannier_bgw
   #  - xctph_fp
   #  - xctpol_fp
+  #  - xctpol_dai
   #  - xctpol_dmc_fp
   #  - ste_fp
   #  - esf_fp
@@ -312,6 +318,8 @@ dos:
   job_info:
     <<: *para
 pdos:
+  plot:
+    filter_regex: '2\(Si\)'
   args:
   job_info:
     <<: *para
@@ -327,6 +335,7 @@ dftelbands:
 kpdos:
   plot:
     scatter_scale_factor: 1.0
+    filter_regex: '2\(Si\)'
   args:
   job_info:
     <<: *para
@@ -334,7 +343,21 @@ wannier:
   kgrid: *coarse_kgrid
   val_bands: *dft_valbands
   cond_bands: *dft_condbands
+  eig_filename: './wfnwan.xml'
+  
+  wfn_args:
+  pw2bgw_args:
+  pw2wan_args:
   args:
+  
+  job_wfnwan_info:
+    <<: *para
+  job_pw2bgw_info:
+    <<: *single_node
+  job_wanpp_info:
+    <<: *single_task
+  job_pw2wan_info:
+    <<: *single_node
   job_info:
     <<: *single_node
 phonopy:
@@ -356,6 +379,8 @@ wfn:
   job_info:
     <<: *big_para
 epw:
+  val_bands: *bse_valbands
+  cond_bands: *bse_condbands
   args:
   job_info:
     <<: *para_epwk

@@ -46,7 +46,18 @@ class KpdosPlot(PlotBase):
         self.infile_scf: str = infile_scf
         self.kpdos_glob: str = kpdos_glob
         self.outfile_prefix: str = outfile_prefix
-        self.kpdos_files = sorted(glob.glob(self.kpdos_glob))
+        
+        # Get kpdos files. Filter if needed.
+        self.kpdos_files: list = []
+        pattern = jmespath.search('kpdos.plot.filter_regex', self.inputdict)
+        for file in glob.glob(self.kpdos_glob):
+            if pattern is not None:
+                if re.search(rf'{pattern}', file):
+                    self.kpdos_files.append(file)
+            else:
+                self.kpdos_files.append(file)
+        self.kpdos_files = sorted(self.kpdos_files)
+        
         self.get_data()
         self.set_figures()
 

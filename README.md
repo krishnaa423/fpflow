@@ -35,8 +35,8 @@ Steps, post-processsing, and (Plots):
 - pdos_qe 
 - dftelbands_qe 
 - kpdos_qe 
+- wfnwannier_qe 
 - wannier_qe 
-- tbmodels
 - wfn_qe
 - wfn_abacus
 - wfn_siesta
@@ -66,6 +66,7 @@ Steps, post-processsing, and (Plots):
 - wannier_bgw
 - xctph_fp 
 - xctpol_fp 
+- xctpol_dai
 - xctpol_dmc_fp
 - ste_fp 
 - esf_fp

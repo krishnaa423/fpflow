@@ -11,6 +11,7 @@ from fpflow.schedulers.scheduler import Scheduler
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.io.logging import get_logger
+
 #endregion
 
 #region variables
@@ -38,17 +39,17 @@ class QeEpwStep(Step):
         # Populate list.
         if bands_skipped is None:
             bands_skipped = []
-            abs_val_bands = jmespath.search('bse.absorption.val_bands', self.inputdict)
+            epw_val_bands = jmespath.search('epw.val_bands', self.inputdict)
             total_val_bands = max_val_bands
-            abs_cond_bands = jmespath.search('bse.absorption.cond_bands', self.inputdict)
+            epw_cond_bands = jmespath.search('epw.cond_bands', self.inputdict)
             wfn_cond = jmespath.search('wfn.cond_bands', self.inputdict)
 
-            if abs_val_bands!= total_val_bands:
-                temp = (1, total_val_bands - abs_val_bands)
+            if epw_val_bands!= total_val_bands:
+                temp = (1, total_val_bands - epw_val_bands)
                 bands_skipped.append(temp)
 
-            if abs_cond_bands!= wfn_cond and abs_cond_bands < wfn_cond:
-                temp = (total_val_bands+ abs_cond_bands + 1, wfn_cond + total_val_bands)
+            if epw_cond_bands!= wfn_cond and epw_cond_bands < wfn_cond:
+                temp = (total_val_bands+ epw_cond_bands + 1, wfn_cond + total_val_bands)
                 bands_skipped.append(temp)
 
             if len(bands_skipped)==0:
@@ -89,7 +90,7 @@ class QeEpwStep(Step):
                 'nqf1': jmespath.search('dfpt.qgrid[0]', self.inputdict),
                 'nqf2': jmespath.search('dfpt.qgrid[1]', self.inputdict),
                 'nqf3': jmespath.search('dfpt.qgrid[2]', self.inputdict),
-                'nbndsub': jmespath.search('bse.absorption.val_bands', self.inputdict) + jmespath.search('bse.absorption.cond_bands', self.inputdict),
+                'nbndsub': jmespath.search('epw.val_bands', self.inputdict) + jmespath.search('epw.cond_bands', self.inputdict),
                 'dvscf_dir': "'./save'",
                 'elph': '.true.',
                 'epbwrite': '.true.',
@@ -121,7 +122,7 @@ class QeEpwStep(Step):
 {scheduler.get_script_header()}
 
 {scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < epw.in  &> epw.in.out 
-cp ./wfn.xml ./save/wfn.xml
+cp ./tmp/struct.xml ./save/wfn_epw.xml
 cp ./tmp/*epb* ./save/
 '''
         return file_string

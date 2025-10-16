@@ -36,6 +36,16 @@ class QeStruct(Struct):
         return data 
 
     @property
+    def scaled_atomic_positions(self):
+        numbers = self.atoms[self.struct_idx].get_atomic_numbers()
+        data = self.atoms[self.struct_idx].get_scaled_positions().tolist()
+
+        for symbol, pos in zip(numbers, data):
+            pos.insert(0, chemical_symbols[symbol])
+
+        return {'unit': 'crystal', 'data': data}
+    
+    @property
     def atomic_positions(self):
         numbers = self.atoms[self.struct_idx].get_atomic_numbers()
         data = self.atoms[self.struct_idx].get_positions().tolist()

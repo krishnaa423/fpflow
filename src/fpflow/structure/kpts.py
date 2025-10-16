@@ -118,6 +118,18 @@ class Kpts:
         kpts = self.kpts.tolist()
 
         return kpts
+    
+    @property
+    def wannier_kpts(self):
+        kpts = self.kpts.tolist()
+
+        return kpts
+    
+    @property
+    def epw_kpts(self):
+        kpts = self.kpts.tolist()
+
+        return kpts
 
 class IbzKpts(Kpts):
     def populate_kpts(self, **kwargs):

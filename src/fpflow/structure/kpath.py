@@ -158,6 +158,27 @@ class Kpath:
 
         return output
         
+    @property
+    def wannierpath_list(self):
+        output = []
 
-        
+        for sp_idx in range(len(self.special_points)-1):
+            from_sp = self.special_points[sp_idx]
+            to_sp = self.special_points[sp_idx+1]
+            from_coord = get_special_points(self.atoms.cell)[from_sp]
+            to_coord = get_special_points(self.atoms.cell)[to_sp]
+            output.append([
+                from_sp,
+                from_coord[0],
+                from_coord[1],
+                from_coord[2],
+                to_sp,
+                to_coord[0],
+                to_coord[1],
+                to_coord[2],
+            ])
+
+        return output
+
+
 #endregion

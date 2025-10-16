@@ -22,28 +22,28 @@ from fpflow.structure.kpts import Kpts
 #endregion
 
 #region classes
-class QeWfnfiStep(Step):
+class QeWfnWannierStep(Step):
     @property
-    def wfnfi(self) -> str:
+    def wfnfwan(self) -> str:
         # Qestruct.
         qestruct = QeStruct.from_inputdict(self.inputdict)
-        max_val_bands: int = qestruct.max_val(
+        max_val_bands: int = int(qestruct.max_val(
             xc=jmespath.search('scf.xc', self.inputdict),
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
-        )
-        cond_bands: int = jmespath.search('wfnfi.cond_bands', self.inputdict)
+        ))
+        cond_bands: int = jmespath.search('wannier.cond_bands', self.inputdict)
 
         # Kpts.
         kpts: Kpts = Kpts.from_kgrid(
             kgrid=[
-                jmespath.search('wfnfi.kgrid[0]', self.inputdict),
-                jmespath.search('wfnfi.kgrid[1]', self.inputdict),
-                jmespath.search('wfnfi.kgrid[2]', self.inputdict),
+                jmespath.search('wannier.kgrid[0]', self.inputdict),
+                jmespath.search('wannier.kgrid[1]', self.inputdict),
+                jmespath.search('wannier.kgrid[2]', self.inputdict),
             ],
-            is_reduced=jmespath.search('wfnfi.sym', self.inputdict),
+            is_reduced=False,
         )
 
-        wfndict: dict = {
+        wfnwandict: dict = {
             'control': {
                 'outdir': './tmp',
                 'prefix': 'struct',
@@ -71,38 +71,39 @@ class QeWfnfiStep(Step):
             }
         }
         if jmespath.search('scf.is_spinorbit', self.inputdict):
-            wfndict['system']['noncolin'] = True
-            wfndict['system']['lspinorb'] = True
+            wfnwandict['system']['noncolin'] = True
+            wfnwandict['system']['lspinorb'] = True
 
         # Update if needed. 
-        update_dict(wfndict, jmespath.search('wfnfi.args', self.inputdict))
+        update_dict(wfnwandict, jmespath.search('wannier.wfn_args', self.inputdict))
 
-        return QeGrammar().write(wfndict)
+        return QeGrammar().write(wfnwandict)
 
     @property
-    def job_wfnfi(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wfnfi.job_info')
+    def job_wfnwan(self) -> str:
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wannier.job_wfnwan_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfnfi.in &> wfnfi.in.out
+{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfnwan.in &> wfnwan.in.out
+cp ./tmp/struct.xml ./wfnwan.xml
 '''
         return file_string
 
     @property
-    def wfnfi_pw2bgw(self) -> str:
+    def wfnwan_pw2bgw(self) -> str:
         pw2bgwdict: dict = {
             'input_pw2bgw': {
                 'outdir': "'./tmp'",
                 'prefix': "'struct'",
                 'real_or_complex': '2',
                 'wfng_flag': '.true.',
-                'wfng_file': "'WFN_fii'",
+                'wfng_file': "'WFN_wannier'",
                 'wfng_kgrid': '.true.',
-                'wfng_nk1': jmespath.search('wfnfi.kgrid[0]', self.inputdict),
-                'wfng_nk2': jmespath.search('wfnfi.kgrid[1]', self.inputdict),
-                'wfng_nk3': jmespath.search('wfnfi.kgrid[2]', self.inputdict),
+                'wfng_nk1': jmespath.search('wannier.kgrid[0]', self.inputdict),
+                'wfng_nk2': jmespath.search('wannier.kgrid[1]', self.inputdict),
+                'wfng_nk3': jmespath.search('wannier.kgrid[2]', self.inputdict),
                 'wfng_dk1': 0.0,
                 'wfng_dk2': 0.0,
                 'wfng_dk3': 0.0,
@@ -110,38 +111,37 @@ class QeWfnfiStep(Step):
         }
 
         # Update if needed. 
-        update_dict(pw2bgwdict, jmespath.search('wfnfi.pw2bgw_args', self.inputdict))
+        update_dict(pw2bgwdict, jmespath.search('wannier.pw2bgw_args', self.inputdict))
 
         return NamelistGrammar().write(pw2bgwdict)
 
     @property
-    def job_wfnfi_pw2bgw(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wfnfi.job_pw2bgw_info')
+    def job_wfnwan_pw2bgw(self) -> str:
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wannier.job_pw2bgw_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}pw2bgw.x -pd .true. < wfnfi_pw2bgw.in &> wfnfi_pw2bgw.in.out
-cp ./tmp/WFN_fii ./
-cp ./tmp/struct.xml ./wfnfi.xml
-wfn2hdf.x BIN WFN_fii WFN_fii.h5
+{scheduler.get_exec_prefix()}pw2bgw.x -pd .true. < wfnwan_pw2bgw.in &> wfnwan_pw2bgw.in.out
+cp ./tmp/WFN_wannier ./
+wfn2hdf.x BIN WFN_wannier WFN_wannier.h5
 '''
         return file_string
 
     @property
     def file_contents(self) -> dict:
         return {
-            'wfnfi.in': self.wfnfi,
-            'job_wfnfi.sh': self.job_wfnfi,
-            'wfnfi_pw2bgw.in': self.wfnfi_pw2bgw,
-            'job_wfnfi_pw2bgw.sh': self.job_wfnfi_pw2bgw,
+            'wfnwan.in': self.wfnfwan,
+            'job_wfnwan.sh': self.job_wfnwan,
+            'wfnwan_pw2bgw.in': self.wfnwan_pw2bgw,
+            'job_wfnwan_pw2bgw.sh': self.job_wfnwan_pw2bgw,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_wfnfi.sh',
-            './job_wfnfi_pw2bgw.sh',
+            './job_wfnwan.sh',
+            './job_wfnwan_pw2bgw.sh',
         ]
 
     @property
@@ -151,16 +151,15 @@ wfn2hdf.x BIN WFN_fii WFN_fii.h5
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './wfnfi.in',
-            './job_wfnfi.sh',
-            './wfnfi_pw2bgw.in',
-            './job_wfnfi_pw2bgw.sh',
-            './tmp',
-            './wfnfi.xml',
-            './WFN_fii',
-            './WFN_fii.h5',
-            './wfnfi.in.out',
-            './wfnfi_pw2bgw.in.out',
+            './wfnwan.in',
+            './job_wfnwan.sh',
+            './wfnwan_pw2bgw.in',
+            './job_wfnwan_pw2bgw.sh',
+            './wfnwan.xml',
+            './WFN_wannier',
+            './WFN_wannier.h5',
+            './wfnwan.in.out',
+            './wfnwan_pw2bgw.in.out',
         ]
 
 #endregion

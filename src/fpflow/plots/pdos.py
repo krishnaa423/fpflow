@@ -45,7 +45,18 @@ class PdosPlot(PlotBase):
         self.infile_scf: str = infile_scf
         self.pdos_glob: str = pdos_glob
         self.outfile_prefix: str = outfile_prefix
-        self.pdos_files = sorted(glob.glob(self.pdos_glob))
+
+        # Get pdos files. Filter if needed.
+        self.pdos_files: list = []
+        pattern = jmespath.search('pdos.plot.filter_regex', self.inputdict)
+        for file in glob.glob(self.pdos_glob):
+            if pattern is not None:
+                if re.search(rf'{pattern}', file):
+                    self.pdos_files.append(file)
+            else:
+                self.pdos_files.append(file)
+        self.pdos_files = sorted(self.pdos_files)
+
         self.get_data()
         self.set_figures()
 
