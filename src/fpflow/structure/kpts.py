@@ -120,6 +120,12 @@ class Kpts:
         return kpts
     
     @property
+    def bseq_epw_qpts(self):
+        kpts = (-self.kpts).tolist()
+
+        return kpts
+    
+    @property
     def wannier_kpts(self):
         kpts = self.kpts.tolist()
 

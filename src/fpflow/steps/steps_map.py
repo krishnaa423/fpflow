@@ -31,8 +31,11 @@ from fpflow.steps.bgw.kernel import BgwKernelStep
 from fpflow.steps.bgw.absorption import BgwAbsorptionStep
 from fpflow.steps.bgw.plotxct import BgwPlotxctStep
 from fpflow.steps.bgw.bseq import BgwBseqStep
+from fpflow.steps.bgw.bseq_epw import EpwBseqStep
 from fpflow.steps.xctph import XctphStep
+from fpflow.steps.bgw.xctph_epw import EpwXctphStep
 from fpflow.steps.xctpol import XctpolStep
+from fpflow.steps.bgw.ste_epw import EpwSteStep
 from fpflow.steps.ste import SteStep
 from fpflow.steps.esf import EsfStep
 from fpflow.steps.esr import EsrStep
@@ -107,13 +110,16 @@ step_class_map: dict = {
     'absorption_bgw': BgwAbsorptionStep,
     'plotxct_bgw': BgwPlotxctStep,
     'bseq_bgw': BgwBseqStep,
+    'bseq_epw': EpwBseqStep,
     'ml_bseqe': MlQeBseStep, #TODO
     'xctwannier_bgw': MlQeBseStep, #TODO
-    'xctph': XctphStep, #TODO
-    'xctpol': XctpolStep, #TODO
-    'ste': SteStep, #TODO
-    'esf': EsfStep, #TODO
-    'esr': EsrStep,
+    'xctph_fp': XctphStep, #TODO
+    'xctph_epw': EpwXctphStep,
+    'xctpol_fp': XctpolStep, #TODO
+    'ste_epw': EpwSteStep, 
+    'ste_fp': SteStep, #TODO
+    'esf_fp': EsfStep, #TODO
+    'esr_fp': EsrStep,  #TODO
     'convergence_scf_qe': QeConvergenceScfStep, 
     'convergence_dfpt_qe': QeConvergenceDfptStep, 
     'convergence_gw_qe': BgwConvergenceGwStep, 

@@ -22,7 +22,7 @@ logger = get_logger()
 #endregion
 
 #region classes
-class QeEpwStep(Step):
+class EpwXctphStep(Step):
     @property
     def bands_skipped_string(self) -> str:
         #TODO: Copied this code, but need to refactor to make it simple. 
@@ -39,9 +39,9 @@ class QeEpwStep(Step):
         # Populate list.
         if bands_skipped is None:
             bands_skipped = []
-            epw_val_bands = jmespath.search('epw.val_bands', self.inputdict)
+            epw_val_bands = jmespath.search('xctph.val_bands', self.inputdict)
             total_val_bands = max_val_bands
-            epw_cond_bands = jmespath.search('epw.cond_bands', self.inputdict)
+            epw_cond_bands = jmespath.search('xctph.cond_bands', self.inputdict)
             wfn_cond = jmespath.search('wfn.cond_bands', self.inputdict)
 
             if epw_val_bands!= total_val_bands:
@@ -73,36 +73,47 @@ class QeEpwStep(Step):
         return exclude_bands_str
 
     @property
-    def epw(self) -> str:
+    def xctph_epw(self) -> str:
         epwdict: dict = {
             'inputepw': {
                 'outdir': "'./tmp_epw'",
                 'prefix': "'struct'",
                 'dvscf_dir': "'./save'",
                 
-                'nk1': jmespath.search('epw.kgrid[0]', self.inputdict),
-                'nk2': jmespath.search('epw.kgrid[1]', self.inputdict),
-                'nk3': jmespath.search('epw.kgrid[2]', self.inputdict),
-                'nq1': jmespath.search('epw.qgrid[0]', self.inputdict),
-                'nq2': jmespath.search('epw.qgrid[1]', self.inputdict),
-                'nq3': jmespath.search('epw.qgrid[2]', self.inputdict),
-                'nkf1': jmespath.search('epw.kgrid[0]', self.inputdict),
-                'nkf2': jmespath.search('epw.kgrid[1]', self.inputdict),
-                'nkf3': jmespath.search('epw.kgrid[2]', self.inputdict),
-                'nqf1': jmespath.search('epw.qgrid[0]', self.inputdict),
-                'nqf2': jmespath.search('epw.qgrid[1]', self.inputdict),
-                'nqf3': jmespath.search('epw.qgrid[2]', self.inputdict),
-                'nbndsub': jmespath.search('epw.val_bands', self.inputdict) + jmespath.search('epw.cond_bands', self.inputdict),
-
+                'nk1': jmespath.search('xctph.kgrid[0]', self.inputdict),
+                'nk2': jmespath.search('xctph.kgrid[1]', self.inputdict),
+                'nk3': jmespath.search('xctph.kgrid[2]', self.inputdict),
+                'nq1': jmespath.search('xctph.qgrid[0]', self.inputdict),
+                'nq2': jmespath.search('xctph.qgrid[1]', self.inputdict),
+                'nq3': jmespath.search('xctph.qgrid[2]', self.inputdict),
+                'nkf1': jmespath.search('xctph.kgrid[0]', self.inputdict),
+                'nkf2': jmespath.search('xctph.kgrid[1]', self.inputdict),
+                'nkf3': jmespath.search('xctph.kgrid[2]', self.inputdict),
+                'nqf1': jmespath.search('xctph.qgrid[0]', self.inputdict),
+                'nqf2': jmespath.search('xctph.qgrid[1]', self.inputdict),
+                'nqf3': jmespath.search('xctph.qgrid[2]', self.inputdict),
+                'nbndsub': jmespath.search('xctph.val_bands', self.inputdict) + jmespath.search('xctph.cond_bands', self.inputdict),
                 
                 'elph': '.true.',
-                'epbwrite': '.true.',
-                'epbread': '.false.',
+                # 'epbwrite': '.true.',
+                # 'epbread': '.false.',
+                'epwwrite': '.true.',
+                'epwread': '.false.',
                 'lpolar': '.true.',
+
+                'exciton': '.true.',
+                'explrn': '.false.',
+                'negnv_explrn': jmespath.search('xctph.nxct', self.inputdict),
+                'nbndv_explrn': jmespath.search('xctph.val_bands', self.inputdict),
+                'nbndc_explrn': jmespath.search('xctph.cond_bands', self.inputdict),
                 
                 'wannierize': '.true.',
+                'wannier_plot':'.true.',
+                'wannier_plot_supercell': f"{jmespath.search('xctph.qgrid[0]', self.inputdict)} {jmespath.search('xctph.qgrid[1]', self.inputdict)} {jmespath.search('xctph.qgrid[2]', self.inputdict)}",
                 'auto_projections': '.true.',
                 'scdm_proj': '.true.',
+                
+                'iprint': 2,
             }
         }
 
@@ -112,20 +123,18 @@ class QeEpwStep(Step):
             epwdict['inputepw']['bands_skipped'] = self.bands_skipped_string
 
         # Update if needed. 
-        update_dict(epwdict, jmespath.search('epw.args', self.inputdict))
+        update_dict(epwdict, jmespath.search('xctph.args', self.inputdict))
 
         return NamelistGrammar().write(epwdict)
 
     @property
-    def job_epw(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'epw.job_info')
+    def job_xctph_epw(self) -> str:
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'xctph.job_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < epw.in  &> epw.in.out 
-cp ./tmp_epw/struct.xml ./save/wfn_epw.xml
-cp ./tmp_epw/*epb* ./save/
+{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < xctph_epw.in  &> xctph_epw.in.out 
 '''
         return file_string
 
@@ -133,14 +142,14 @@ cp ./tmp_epw/*epb* ./save/
     @property
     def file_contents(self) -> dict:
         return {
-            'epw.in': self.epw,
-            'job_epw.sh': self.job_epw,
+            'xctph_epw.in': self.xctph_epw,
+            'job_xctph_epw.sh': self.job_xctph_epw,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_epw.sh'
+            './job_xctph_epw.sh'
         ]
 
     @property
@@ -150,8 +159,8 @@ cp ./tmp_epw/*epb* ./save/
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './epw.in',
-            './job_epw.sh',
+            './xctph_epw.in',
+            './job_xctph_epw.sh',
             './tmp_epw',
             './struct*',
             './decay*',
@@ -159,8 +168,8 @@ cp ./tmp_epw/*epb* ./save/
             './epwdata.fmt',
             './selecq.fmt',
             './vmedata.fmt',
-            './epw.in.out',
-            './epw.out',
+            './xctph_epw.in.out',
+            './xctph_epw.out',
             './crystal.fmt',
         ]
 #endregion

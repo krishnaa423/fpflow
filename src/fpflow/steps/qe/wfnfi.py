@@ -87,6 +87,10 @@ class QeWfnfiStep(Step):
 {scheduler.get_script_header()}
 
 {scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfnfi.in &> wfnfi.in.out
+
+# Copy for epw. 
+rm -rf ./tmp_epw
+cp -r ./tmp ./tmp_epw
 '''
         return file_string
 

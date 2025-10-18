@@ -160,33 +160,35 @@ generator:
    - wfn_qe
   #  - wfn_abacus
   #  - wfn_siesta
-   - epw_qe
   #  - elph_epw
-  #  - pol_fp
-  #  - wfnq_qe
+  #  - pol_epw
+   - wfnq_qe
   #  - wfnq_abacus
   #  - wfnq_siesta
   #  - wfnfi_qe
+  #  - epw_qe
   #  - wfnqfi_qe
   #  - phonopy_qe
-  #  - epsilon_bgw
+   - epsilon_bgw
   #  - sigmasc_bgw
-  #  - sigma_bgw
+   - sigma_bgw
   #  - ml_gwqe
   #  - gwelbands_bgw
-  #  - kernel_bgw
-  #  - absorption_bgw
+   - kernel_bgw
+   - absorption_bgw
   #  - bse_waninterp_bgw
   #  - plotxct_bgw
   #  - bseq_bgw
+  #  - wannier_bgw
+   - bseq_epw
   #  - bseq_waninterp_bgw
   #  - ml_bseqe
-  #  - wannier_bgw
   #  - xctph_fp
+   - xctph_epw
   #  - xctpol_fp
-  #  - xctpol_dai
-  #  - xctpol_dmc_fp
+   - ste_epw
   #  - ste_fp
+  #  - dmc_xctph_fp
   #  - esf_fp
   #  - esr_fp
   #  - convergence_scf_qe
@@ -379,6 +381,8 @@ wfn:
   job_info:
     <<: *big_para
 epw:
+  kgrid: *fine_kgrid
+  qgrid: *qgrid
   val_bands: *bse_valbands
   cond_bands: *bse_condbands
   args:
@@ -473,26 +477,34 @@ bse:
     job_info:
       <<: *big_para
 bseq:
-  sym: *coarse_sym
-  qgrid: *coarse_kgrid
+  sym: *fine_sym
+  qgrid: *fine_kgrid
   job_info:
     <<: *big_para
 xctph:
+  val_bands: *bse_valbands
+  cond_bands: *bse_condbands
+  kgrid: *fine_kgrid
+  qgrid: *qgrid
   nxct: *bse_nxct
   job_info:
     <<: *big_para
 xctpol:
-  temp: 300
   nxct: *bse_nxct
-  max_error: 1e-1
+  temp: 300
+  max_error: 1e-2
   max_steps: 10
   job_info:
     <<: *big_para
 ste:
-  temp: 300
+  val_bands: *bse_valbands
+  cond_bands: *bse_condbands
+  kgrid: *fine_kgrid
+  qgrid: *qgrid
   nxct: *bse_nxct
-  max_error: 1e-1
-  max_steps: 10
+  max_error: 1e-2
+  max_steps: 30
+  temp: 300
   job_info:
     <<: *big_para
 esf:

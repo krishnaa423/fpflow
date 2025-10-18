@@ -90,6 +90,10 @@ class QeWfnStep(Step):
 {scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfn.in &> wfn.in.out 
 
 cp ./tmp/struct.xml ./wfn.xml
+
+# Copy for epw. 
+rm -rf ./tmp_epw
+cp -r ./tmp ./tmp_epw
 '''
         return file_string
     
