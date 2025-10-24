@@ -244,5 +244,16 @@ class EpwSteStep(Step):
             './ste_epw_plrn_plot.out',
             './ste_epw.out',
             './crystal.fmt',
+            './wigner.fmt',
+            './dmedata.fmt',
+            './A_mp_ck.plrn',
+            './A_mp_vk.plrn',
+            './Asq.plrn',
+            './bmat.band.plrn',
+            './bmat.plrn',
+            './dtau.plrn',
+            './dtau.plrn.xsf',
+            './e_psir_plrn.xsf',
+            './h_psir_plrn.xsf',
         ]
 #endregion

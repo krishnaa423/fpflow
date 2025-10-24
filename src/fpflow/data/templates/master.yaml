@@ -173,7 +173,7 @@ generator:
   #  - sigmasc_bgw
    - sigma_bgw
   #  - ml_gwqe
-  #  - gwelbands_bgw
+   - gwelbands_bgw
    - kernel_bgw
    - absorption_bgw
   #  - bse_waninterp_bgw

@@ -56,26 +56,26 @@ common:
   epw_nk: &epw_nk 8
 
   dft:
-    ecut: &dft_ecut 150.0
+    ecut: &dft_ecut 60.0
     kgrid: &scf_kgrid [2, 2, 2]
-    val_bands: &dft_valbands 3
-    cond_bands: &dft_condbands 7
+    val_bands: &dft_valbands 4
+    cond_bands: &dft_condbands 4
     xc: &dft_xc 'pbe'  # pbe, lda. 
     is_spinorbit: &dft_spinorbit false
   gw:
     ecut: &gwecut 10.0
-    val_bands: &gw_valbands 3
-    cond_bands: &gw_condbands 7
-    para_cond_bands: &gw_para_condbands 201
-    is_pseudobands: &is_pseudobands false
-    conv_cond_bands: &gw_conv_condbands 200
+    val_bands: &gw_valbands 4
+    cond_bands: &gw_condbands 4
+    para_cond_bands: &gw_para_condbands 1001
+    is_pseudobands: &is_pseudobands true
+    conv_cond_bands: &gw_conv_condbands 1000
   gwelbands:
-    val_bands: &gwelbands_valbands 2
-    cond_bands: &gwelbands_condbands 6
+    val_bands: &gwelbands_valbands 3
+    cond_bands: &gwelbands_condbands 3
   bse:
-    val_bands: &bse_valbands 3
-    cond_bands: &bse_condbands 7
-    nxct: &bse_nxct 30
+    val_bands: &bse_valbands 4
+    cond_bands: &bse_condbands 4
+    nxct: &bse_nxct 20
     supercell_size: &xct_supercell_size [2, 2, 2]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
     elec_position: &xct_elec_position [0.25, 0.25, 0.25]
@@ -85,22 +85,22 @@ common:
       hole_spin: 2
   job_types:
     scheduler: &scheduler_dict
-      name: &scheduler_name 'perlmutter_cpu'
+      name: &scheduler_name 'mac_mini_parallel'
       is_interactive: true
     interactive:
       nodes: &interactive_nodes 1
       time: &interactive_time 03:40:00
     single:
       nodes: &single_nodes 1
-      ntasks: &single_ntasks 128
+      ntasks: &single_ntasks 1
       time: &single_time "02:45:00"
     para:
       nodes: &para_nodes 1
-      ntasks: &para_ntasks 128
+      ntasks: &para_ntasks 1
       time: &para_time "02:45:00"
     big:
       nodes: &big_nodes 1
-      ntasks: &big_ntasks 128
+      ntasks: &big_ntasks 1
       time: &big_time "02:45:00"
 
 generator:
@@ -297,7 +297,7 @@ dos:
     <<: *para
 pdos:
   plot:
-    filter_regex: 
+    filter_regex:
   args:
   job_info:
     <<: *para
@@ -313,7 +313,7 @@ dftelbands:
 kpdos:
   plot:
     scatter_scale_factor: 1.0
-    filter_regex:
+    filter_regex: 
   args:
   job_info:
     <<: *para

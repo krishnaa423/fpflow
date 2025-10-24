@@ -109,7 +109,7 @@ class EpwXctphStep(Step):
                 
                 'wannierize': '.true.',
                 'wannier_plot':'.true.',
-                'wannier_plot_supercell': f"{jmespath.search('xctph.qgrid[0]', self.inputdict)} {jmespath.search('xctph.qgrid[1]', self.inputdict)} {jmespath.search('xctph.qgrid[2]', self.inputdict)}",
+                'wannier_plot_supercell': f"{jmespath.search('xctph.qgrid[0]', self.inputdict)*2} {jmespath.search('xctph.qgrid[1]', self.inputdict)*2} {jmespath.search('xctph.qgrid[2]', self.inputdict)*2}",
                 'auto_projections': '.true.',
                 'scdm_proj': '.true.',
                 
@@ -171,5 +171,8 @@ class EpwXctphStep(Step):
             './xctph_epw.in.out',
             './xctph_epw.out',
             './crystal.fmt',
+            './wigner.fmt',
+            './dmedata.fmt',
+            './G_full_epmatq',
         ]
 #endregion

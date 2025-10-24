@@ -27,7 +27,7 @@ class BgwKernelStep(Step):
         qshift: list[int] = jmespath.search('bse.kernel.qshift[*]', self.inputdict)
 
         kerneldict: dict = {
-            'exciton_Q_shift': f"2 {qshift[0]} {qshift[1]} {qshift[2]}",
+            'exciton_Q_shift': f"2 {qshift[0]:15.10f} {qshift[1]:15.10f} {qshift[2]:15.10f}",
             'use_symmetries_coarse_grid': '',
             'number_val_bands': jmespath.search('bse.absorption.val_bands', self.inputdict),
             'number_cond_bands': jmespath.search('bse.absorption.cond_bands', self.inputdict),

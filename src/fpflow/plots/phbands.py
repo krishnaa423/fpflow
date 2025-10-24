@@ -36,6 +36,7 @@ class PhbandsPlot(PlotBase):
     def get_data(self):
         data = np.loadtxt(self.infilename)
         self.phbands = data[:, 1:]
+        self.phbands *= 0.123984   # Convert to meV. 1 cm-1 = 0.123984 meV
         self.numbands: int = self.phbands.shape[1]
 
         self.xaxis, self.xticks, self.xtick_labels = Kpath.from_yamlfile().even_spaced_axis
@@ -69,7 +70,7 @@ class PhbandsPlot(PlotBase):
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
                 'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                'ylabel': r'Energy ($cm^{-1}$)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                'ylabel': r'Energy ($meV$)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                 'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                 'z_inc': None, 'z_azim': None,
                 'title': f'{self.struct_name} Phonon Bandstructure',

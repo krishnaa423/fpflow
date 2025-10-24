@@ -100,10 +100,10 @@ cp -r ./tmp ./tmp_epw
     @property
     def wfn_pw2bgw(self) -> str:
         # Qestruct.
-        max_val_bands: int = QeStruct.from_inputdict(self.inputdict).max_val(
+        max_val_bands: int = int(QeStruct.from_inputdict(self.inputdict).max_val(
             xc=jmespath.search('scf.xc', self.inputdict),
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
-        )
+        ))
 
         pw2bgwdict: dict = {
             'input_pw2bgw': {

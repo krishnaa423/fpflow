@@ -29,7 +29,7 @@ class BgwAbsorptionStep(Step):
         pol_dir: list[int] = jmespath.search('bse.absorption.pol_dir[*]', self.inputdict)
 
         absorptiondict: dict = {
-            'exciton_Q_shift': f"2 {qshift[0]} {qshift[1]} {qshift[2]}",
+            'exciton_Q_shift': f"2 {qshift[0]:15.10f} {qshift[1]:15.10f} {qshift[2]:15.10f}",
             'use_symmetries_coarse_grid': '',
             'use_symmetries_fine_grid': '',
             'use_symmetries_shifted_grid': '',

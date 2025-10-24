@@ -40,9 +40,10 @@ class BseAbsorptionPlot(PlotBase):
     def get_data(self):
         abs_eh_data = np.loadtxt(self.eh_filename, dtype='f8', skiprows=4)
         abs_noeh_data = np.loadtxt(self.noeh_filename, dtype='f8', skiprows=4)
-        axis = abs_eh_data[:, 0]
-        noeh_data = abs_noeh_data[:, 1]
+        eh_axis = abs_eh_data[:, 0]
         eh_data = abs_eh_data[:, 1]
+        noeh_axis = abs_noeh_data[:, 0]
+        noeh_data = abs_noeh_data[:, 1]
 
         # Get name.
         inputdict: dict = self.inputdict
@@ -50,11 +51,19 @@ class BseAbsorptionPlot(PlotBase):
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
 
         append_dset_df: pd.DataFrame = pd.DataFrame({
-            "name": ["dset_bse_absorption"],
+            "name": ["dset_bse_absorption_eh"],
             "data": [pd.DataFrame({
-                "x": axis,
-                "y_noeh": noeh_data,
+                "x_eh": eh_axis,
                 "y_eh": eh_data,
+            })]
+        })
+        self.dsets_df = pd.concat([self.dsets_df, append_dset_df], ignore_index=True)
+
+        append_dset_df: pd.DataFrame = pd.DataFrame({
+            "name": ["dset_bse_absorption_noeh"],
+            "data": [pd.DataFrame({
+                "x_noeh": noeh_axis,
+                "y_noeh": noeh_data,
             })]
         })
 
@@ -71,8 +80,8 @@ class BseAbsorptionPlot(PlotBase):
                 'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                 'z_inc': None, 'z_azim': None,
                 'title': f'{self.struct_name} BSE Absorption',
-                'dset_name': 'dset_bse_absorption',
-                'dset_axis_cols': 'x',        
+                'dset_name': 'dset_bse_absorption_noeh',
+                'dset_axis_cols': 'x_noeh',        
                 'dset_data_cols': ['y_noeh'],
                 'color': 'blue', 
                 'xgrid': True,
@@ -88,8 +97,8 @@ class BseAbsorptionPlot(PlotBase):
                 'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                 'z_inc': None, 'z_azim': None,
                 'title': f'{self.struct_name} BSE Absorption',
-                'dset_name': 'dset_bse_absorption',
-                'dset_axis_cols': 'x',        
+                'dset_name': 'dset_bse_absorption_eh',
+                'dset_axis_cols': 'x_eh',        
                 'dset_data_cols': ['y_eh'],
                 'color': 'red', 
                 'xgrid': True,
