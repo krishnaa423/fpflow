@@ -82,7 +82,6 @@ class Generator:
     @change_dir
     def create_presteps(self):
         for prestep in self._presteps:
-            # print(f'Creating {prestep} in dir: {os.getcwd()}', flush=True)
             prestep.create()
 
     @change_dir
@@ -93,15 +92,14 @@ class Generator:
     @change_dir
     def create_steps(self):
         for step in self._steps:
-            # print(f'Creating {step} in dir: {os.getcwd()}', flush=True)
             step.create()
 
+        # Set permissions for all .sh files.
         os.system('find ./ -type f -name "*.sh" -exec chmod +x {} \\;')
 
     @change_dir
     def create_poststeps(self):
         for poststep in self._poststeps:
-            # print(f'Creating {poststep} in dir: {os.getcwd()}', flush=True)
             poststep.create()
 
     @change_dir

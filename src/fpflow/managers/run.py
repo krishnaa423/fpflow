@@ -13,12 +13,13 @@ def subprocess_run(script, **kwargs):
     Run each script and write out some logging info. 
     '''
 
+    # # dest_dir. 
+    # dest_dir: str = None 
+    # if 'dest_dir' in kwargs.keys(): dest_dir = kwargs['dest_dir']
+    dest_dir: str = os.path.dirname(script) if os.path.dirname(script) != '' else None
     current_dir = os.getcwd()
-    
-    # dest_dir. 
-    dest_dir: str = None 
-    if 'dest_dir' in kwargs.keys(): dest_dir = kwargs['dest_dir']
     if dest_dir is not None: os.chdir(dest_dir)
+    basename = os.path.basename(script)
 
     #total_time.
     total_time: float = 0.0
@@ -26,8 +27,7 @@ def subprocess_run(script, **kwargs):
 
     # Run and time. 
     start_time = time.time()
-    print(f'Starting {script}.', flush=True)
-    ps_result = subprocess.run(f'{script}')
+    ps_result = subprocess.run(f'./{basename}')
     stop_time = time.time()
     elapsed_time = stop_time - start_time
     total_time += elapsed_time

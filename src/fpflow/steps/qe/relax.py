@@ -28,7 +28,7 @@ class QeRelaxStep(Step):
             'control': {
                 'outdir': './tmp',
                 'prefix': 'struct',
-                'pseudo_dir': './pseudos/qe',
+                'pseudo_dir': './pseudos',
                 'calculation': jmespath.search('relax.type', self.inputdict),
                 'tprnfor': True,
             },
@@ -69,13 +69,14 @@ class QeRelaxStep(Step):
     def job_relax(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'relax.job_info')
 
-        save_final_cell_parameters_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /CELL_PARAMETERS/ {cell_flag=1; next} /End final coordinates/ {end_flag=0} end_flag && cell_flag {print; if (length==0) cell_flag=0 }' relax.in.out > relaxed_cell_parameters.txt"
-        save_final_atomic_positions_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /ATOMIC_POSITIONS/ {pos_flag=1; next} /End final coordinates/ {end_flag=0}  end_flag && pos_flag { print $1, $2, $3, $4 }' relax.in.out > relaxed_atomic_positions.txt"
+        save_final_cell_parameters_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /CELL_PARAMETERS/ {cell_flag=1; next} /End final coordinates/ {end_flag=0} end_flag && cell_flag {print; if (length==0) cell_flag=0 }' relax.in.out > ../relaxed_cell_parameters.txt"
+        save_final_atomic_positions_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /ATOMIC_POSITIONS/ {pos_flag=1; next} /End final coordinates/ {end_flag=0}  end_flag && pos_flag { print $1, $2, $3, $4 }' relax.in.out > ../relaxed_atomic_positions.txt"
         update_coord: bool = jmespath.search('relax.update_coord', self.inputdict)
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+ln -sf ../pseudos/qe ./pseudos
 {scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < relax.in &> relax.in.out
 
 cp ./tmp/struct.save/data-file-schema.xml ./relax.xml
@@ -85,7 +86,9 @@ cp ./tmp/struct.save/data-file-schema.xml ./relax.xml
 {save_final_atomic_positions_str if update_coord else ""}
 
 # Update from relax.
+cd ../
 {"fpflow generator --create" if update_coord else ""}
+cd ./relax
 '''
         
         return file_string
@@ -93,13 +96,13 @@ cp ./tmp/struct.save/data-file-schema.xml ./relax.xml
     @property
     def file_contents(self) -> dict:
         return {
-            'relax.in': self.relax,
-            'job_relax.sh': self.job_relax,
+            './relax/relax.in': self.relax,
+            './relax/job_relax.sh': self.job_relax,
         }
     
     @property
     def job_scripts(self) -> List[str]:
-        return ['./job_relax.sh']
+        return ['./relax/job_relax.sh']
 
     @property
     def save_inodes(self) -> List[str]:
@@ -108,14 +111,7 @@ cp ./tmp/struct.save/data-file-schema.xml ./relax.xml
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './relax.in',
-            './job_relax.sh',
-            './tmp',
-            './relax.out',
-            './relax.in.out',
-            './relax.xml',
-            './relaxed_cell_parameters.txt',
-            './relaxed_atomic_positions.txt',
+            './relax',
         ]
 
 #endregion

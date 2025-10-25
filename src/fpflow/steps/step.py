@@ -37,11 +37,17 @@ class Step:
 
     def create(self):
         for filename, filecontents in self.file_contents.items():
+            # Create the folders if needed. 
+            foldername = os.path.dirname(filename)
+            if foldername != '' and not os.path.exists(foldername):
+                os.makedirs(foldername, exist_ok=True)
+
+            # Write the file.
             str_2_f(filecontents, filename)
 
-            # Set permissions for the destination file. 
-            if filename[-3:]=='.sh':
-                os.system(f'chmod u+x {filename}')
+            # If file is a script, make it executable. 
+            if filename.endswith('.sh'):
+                os.system(f'chmod +x {filename}')
 
     def run(self, **kwargs):
         total_time: float = 0.0 if not 'total_time' in kwargs.keys() else kwargs['total_time']

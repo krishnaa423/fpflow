@@ -202,11 +202,11 @@ class Struct:
             # Append the structure. 
             atoms.append(structure)
 
-            # Write structure file. 
-            write(f'atoms_{struct_idx}.xsf', structure)
-
         return atoms
     
+    def write_structure_files(self, prefix: str='atoms'):
+        for idx, atom in enumerate(self.atoms):
+            write(f'{prefix}_{idx}.xsf', atom)
     
     def ntyp(self, idx:int=0):
         return len(np.unique(self.atoms[idx].get_atomic_numbers()))

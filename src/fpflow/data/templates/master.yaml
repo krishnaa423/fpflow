@@ -133,11 +133,11 @@ generator:
     - pseudos_qe
   steps: &gen_steps
   #  - esr_gen
-  #  - relax_qe
+   - relax_qe
   #  - cdft_qe
   #  - md_qe
   #  - ml_deepmd
-   - scf_qe
+  #  - scf_qe
   #  - scf_pw2bgw_qe
   #  - scf_abacus
   #  - scf_siesta
@@ -148,6 +148,7 @@ generator:
   #  - ml_dftabacus
   #  - ml_dftsiesta
   #  - dfpt_qe
+  #  - pp_dfpt_qe
   #  - phbands_qe
   #  - phdos_qe
   #  - phmodes_qe
@@ -155,19 +156,19 @@ generator:
   #  - pdos_qe 
   #  - dftelbands_qe
   #  - kpdos_qe
-  #  - wfnwannier_qe
-  #  - wannier_qe
   #  - wfn_qe
   #  - wfn_abacus
   #  - wfn_siesta
-  #  - elph_epw
-  #  - pol_epw
   #  - wfnq_qe
   #  - wfnq_abacus
   #  - wfnq_siesta
   #  - wfnfi_qe
-  #  - epw_qe
   #  - wfnqfi_qe
+  #  - wfnwannier_qe
+  #  - wannier_qe
+  #  - epw_qe
+  #  - elph_epw
+  #  - pol_epw
   #  - phonopy_qe
   #  - epsilon_bgw
   #  - sigmasc_bgw
@@ -186,9 +187,9 @@ generator:
   #  - xctph_fp
   #  - xctph_epw
   #  - xctpol_fp
-  #  - ste_epw
-   - zd_epw
   #  - ste_fp
+  #  - ste_epw
+  #  - zd_epw
   #  - dmc_xctph_fp
   #  - esf_fp
   #  - esr_fp
