@@ -1,0 +1,53 @@
+--------
+&inputepw
+  prefix                 = 'struct'
+  outdir                 = './'
+
+  elph                   = .true.
+  epwwrite               = .true.
+  epwread                = .false.
+
+  lpolar                 = .true.
+  nbndsub                =  10 
+  dvscf_dir              = './save/'
+
+  bands_skipped          = 'exclude_bands = 1:2, 13:18'
+  wannierize             = .true.
+  num_iter               = 500
+  iprint                 = 2
+
+  proj(1)                = 'F:p'
+  proj(2)                = 'F:s'
+  proj(3)                = 'F:d'
+  proj(4)                = 'Li:s'
+
+  exciton                = .true.
+  explrn                 = .false.
+
+  negnv_explrn           = 20 
+  nbndv_explrn           = 3   ! Match the valence band in BSE calcs. 
+  nbndc_explrn           = 7   ! Match the conduction band in BSE calcs. 
+
+ 
+	
+  wannier_plot           = .true.
+  wannier_plot_supercell = 4 4 4
+  wannier_plot_radius    = 3.5d0 
+
+  nk1                    = 2 
+  nk2                    = 2 
+  nk3                    = 2 
+  nq1                    = 2 
+  nq2                    = 2 
+  nq3                    = 2 
+  nkf1                    = 2 
+  nkf2                    = 2 
+  nkf3                    = 2 
+  nqf1                    = 2 
+  nqf2                    = 2 
+  nqf3                    = 2 
+
+  band_plot              = .false.
+  !filkf                  = './path.kpt'
+  !filqf                  = './path.kpt'
+/

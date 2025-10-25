@@ -1,0 +1,14 @@
+--
+&inputph
+  prefix      = 'struct'
+  outdir      = './'
+  epsil       = .true.
+  zeu         = .true.
+  ldisp       = .true.
+  fildyn      = 'struct.dyn'
+  fildvscf    = 'dvscf'
+  tr2_ph      =  1.0d-14,
+  nq1         = 2 
+  nq2         = 2 
+  nq3         = 2 
+/

@@ -66,7 +66,7 @@ kpath:
 common:
   qshift: &qshift [0.000, 0.000, 0.001]
   
-  coarse_sym: &coarse_sym false
+  coarse_sym: &coarse_sym true
   coarse_kgrid: &coarse_kgrid [2, 2, 2]
   coarse_nk: &coarse_nk 8
 
@@ -85,14 +85,14 @@ common:
     val_bands: &dft_valbands 4
     cond_bands: &dft_condbands 4
     xc: &dft_xc 'pbe'  # pbe, lda. 
-    is_spinorbit: &dft_spinorbit true
+    is_spinorbit: &dft_spinorbit false
   gw:
     ecut: &gwecut 10.0
     val_bands: &gw_valbands 4
     cond_bands: &gw_condbands 4
-    para_cond_bands: &gw_para_condbands 1001
+    para_cond_bands: &gw_para_condbands 201
     is_pseudobands: &is_pseudobands true
-    conv_cond_bands: &gw_conv_condbands 1000
+    conv_cond_bands: &gw_conv_condbands 200
   gwelbands:
     val_bands: &gwelbands_valbands 3
     cond_bands: &gwelbands_condbands 3
@@ -147,8 +147,8 @@ generator:
   #  - ml_dnvscqe
   #  - ml_dftabacus
   #  - ml_dftsiesta
-   - dfpt_qe
-   - phbands_qe
+  #  - dfpt_qe
+  #  - phbands_qe
   #  - phdos_qe
   #  - phmodes_qe
   #  - dos_qe
@@ -157,36 +157,37 @@ generator:
   #  - kpdos_qe
   #  - wfnwannier_qe
   #  - wannier_qe
-   - wfn_qe
+  #  - wfn_qe
   #  - wfn_abacus
   #  - wfn_siesta
   #  - elph_epw
   #  - pol_epw
-   - wfnq_qe
+  #  - wfnq_qe
   #  - wfnq_abacus
   #  - wfnq_siesta
   #  - wfnfi_qe
   #  - epw_qe
   #  - wfnqfi_qe
   #  - phonopy_qe
-   - epsilon_bgw
+  #  - epsilon_bgw
   #  - sigmasc_bgw
-   - sigma_bgw
+  #  - sigma_bgw
   #  - ml_gwqe
-   - gwelbands_bgw
-   - kernel_bgw
-   - absorption_bgw
+  #  - gwelbands_bgw
+  #  - kernel_bgw
+  #  - absorption_bgw
   #  - bse_waninterp_bgw
   #  - plotxct_bgw
   #  - bseq_bgw
   #  - wannier_bgw
-   - bseq_epw
+  #  - bseq_epw
   #  - bseq_waninterp_bgw
   #  - ml_bseqe
   #  - xctph_fp
-   - xctph_epw
+  #  - xctph_epw
   #  - xctpol_fp
-   - ste_epw
+  #  - ste_epw
+   - zd_epw
   #  - ste_fp
   #  - dmc_xctph_fp
   #  - esf_fp
@@ -487,6 +488,7 @@ xctph:
   kgrid: *fine_kgrid
   qgrid: *qgrid
   nxct: *bse_nxct
+  args:
   job_info:
     <<: *big_para
 xctpol:
@@ -505,8 +507,16 @@ ste:
   max_error: 1e-2
   max_steps: 30
   temp: 300
+  args:
   job_info:
     <<: *big_para
+zd:
+  args_xctph:
+  args_ste:
+  job_info:
+    <<: *big_para
+  job_epw_info:
+    <<: *para_epwk
 esf:
   job_info:
     <<: *big_para

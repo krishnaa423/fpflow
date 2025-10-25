@@ -96,6 +96,8 @@ class Generator:
             # print(f'Creating {step} in dir: {os.getcwd()}', flush=True)
             step.create()
 
+        os.system('find ./ -type f -name "*.sh" -exec chmod +x {} \\;')
+
     @change_dir
     def create_poststeps(self):
         for poststep in self._poststeps:

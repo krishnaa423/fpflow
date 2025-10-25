@@ -37,6 +37,7 @@ from fpflow.steps.bgw.xctph_epw import EpwXctphStep
 from fpflow.steps.xctpol import XctpolStep
 from fpflow.steps.bgw.ste_epw import EpwSteStep
 from fpflow.steps.ste import SteStep
+from fpflow.steps.qe.zd_epw import EpwZdStep
 from fpflow.steps.esf import EsfStep
 from fpflow.steps.esr import EsrStep
 from fpflow.steps.qe.convergence_scf import QeConvergenceScfStep
@@ -118,6 +119,7 @@ step_class_map: dict = {
     'xctpol_fp': XctpolStep, #TODO
     'ste_epw': EpwSteStep, 
     'ste_fp': SteStep, #TODO
+    'zd_epw': EpwZdStep,
     'esf_fp': EsfStep, #TODO
     'esr_fp': EsrStep,  #TODO
     'convergence_scf_qe': QeConvergenceScfStep, 

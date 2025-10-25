@@ -38,6 +38,8 @@ class QeDfptStep(Step):
             'inputph': {
                 'outdir': "'./tmp'",
                 'prefix': "'struct'",
+                'epsil': '.true.',
+                'zeu': '.true.',
                 'ldisp': '.true.',
                 'nq1': jmespath.search('dfpt.qgrid[0]', self.inputdict),
                 'nq2': jmespath.search('dfpt.qgrid[1]', self.inputdict),

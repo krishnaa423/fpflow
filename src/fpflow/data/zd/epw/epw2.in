@@ -1,0 +1,43 @@
+--------
+&inputepw
+  prefix                 = 'struct'
+  outdir                 = './'
+
+  elph                   = .true.
+  epwwrite               = .false.
+  epwread                = .true.
+
+  lpolar                 = .true.
+  nbndsub                =  10 
+  dvscf_dir              = './save/'
+  
+  wannierize             = .false.
+
+  exciton                = .true.
+  explrn                 = .true.
+
+  negnv_explrn           = 20 
+  nbndv_explrn           = 3   ! Match the valence band in BSE calcs. 
+  nbndc_explrn           = 7   ! Match the conduction band in BSE calcs. 
+
+  init_plrn              = 5 
+  niter_plrn             = 500
+	
+  nk1                    = 2 
+  nk2                    = 2 
+  nk3                    = 2 
+  nq1                    = 2 
+  nq2                    = 2 
+  nq3                    = 2 
+  nkf1                    = 2 
+  nkf2                    = 2 
+  nkf3                    = 2 
+  nqf1                    = 2 
+  nqf2                    = 2 
+  nqf3                    = 2 
+
+  !band_plot              = .true.
+  !filkf                  = './path.kpt'
+  !filqf                  = './path.kpt'
+/
+

@@ -1,0 +1,8 @@
+epsilon_cutoff 10.0
+degeneracy_check_override
+
+begin qpoints
+0.0 0.0 0.001 1.0 1
+0.0 0.0 0.5 1.0 0
+0.0 0.5 0.5 1.0 0
+end
