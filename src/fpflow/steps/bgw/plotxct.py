@@ -47,44 +47,47 @@ class BgwPlotxctStep(Step):
 
         return BgwGrammar().write(plotxctdict)
     
+    def get_link(self, path: str) -> str:
+        wfnlink: str = jmespath.search(path, self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfnlink)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+        wfnlink_str: str = os.path.join(
+            '..',
+            jmespath.search(path, self.inputdict),
+            'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
+        )
+
+        return wfnlink_str
+
     @property
     def job_plotxct(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.plotxct.job_info')
-        link_dir_prefix: str = jmespath.search('bse.absorption.link_dir_prefix', self.inputdict)
 
-        if link_dir_prefix is not None:
-            file_string = f'''#!/bin/bash
+        file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnfi_link', self.inputdict))} ./WFN_fi.h5 
-ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnqfi_link', self.inputdict))} ./WFNq_fi.h5 
+ln -sf {self.get_link('bse.absorption.wfnfi_link')} ./WFN_fi.h5 
+ln -sf {self.get_link('bse.absorption.wfnqfi_link')} ./WFNq_fi.h5 
+ln -sf ../absorption/eigenvectors.h5 ./
 {scheduler.get_exec_prefix()}plotxct.cplx.x &> plotxct.inp.out 
-volume.py {os.path.join(link_dir_prefix, './scf.in')} espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
+volume.py ../scf/scf.in espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
 rm -rf *.a3Dr
 '''
-        else:
-            file_string = f'''#!/bin/bash
-{scheduler.get_script_header()}
-
-ln -sf {jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 
-ln -sf {jmespath.search('bse.absorption.wfnqfi_link', self.inputdict)} ./WFNq_fi.h5 
-{scheduler.get_exec_prefix()}plotxct.cplx.x &> plotxct.inp.out 
-volume.py ./scf.in espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
-rm -rf *.a3Dr
-'''
+        
         return file_string
 
     @property
     def file_contents(self) -> dict:
         return {
-            'plotxct.inp': self.plotxct,
-            'job_plotxct.sh': self.job_plotxct,
+            './plotxct/plotxct.inp': self.plotxct,
+            './plotxct/job_plotxct.sh': self.job_plotxct,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_plotxct.sh'
+            './plotxct/job_plotxct.sh'
         ]
 
     @property
@@ -94,14 +97,6 @@ rm -rf *.a3Dr
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './plotxct.inp',
-            './job_plotxct.sh',
-            './*.a3Dr',
-            './plotxcf.xsf',
-            './plotxct_elec*.xsf',
-            './plotxct_hole*.xsf',
-            './plotxct.inp.out',
-            './WFN_fi.h5',
-            './WFNq_fi.h5',
+            './plotxct',
         ]
 #endregion

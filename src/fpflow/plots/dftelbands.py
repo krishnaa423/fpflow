@@ -24,19 +24,15 @@ from ase.units import Hartree, eV
 class DftelbandsPlot(PlotBase):
     def __init__(
         self,
-        infile='./dftelbands.xml',
-        outfile_prefix='dftelbands',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.infilename: str = infile
-        self.outfile_prefix: str = outfile_prefix
         
         self.get_data()
         self.set_figures()
 
     def get_data(self):
-        tree = ET.parse(self.infilename)
+        tree = ET.parse('./dftelbands/dftelbands.xml')
         root = tree.getroot()
 
         eig_nodes = root.findall('.//ks_energies/eigenvalues')
@@ -77,7 +73,7 @@ class DftelbandsPlot(PlotBase):
     def set_figures(self):
         for ib in range(self.numbands):
             append_fig_df: pd.DataFrame = pd.DataFrame([{
-                'fig_name': self.outfile_prefix,
+                'fig_name': 'dftelbands',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
                 'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,

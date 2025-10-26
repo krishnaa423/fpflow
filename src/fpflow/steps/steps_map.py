@@ -5,23 +5,20 @@ from fpflow.steps.qe.relax import QeRelaxStep
 from fpflow.steps.qe.cdft import QeCdftStep
 from fpflow.steps.qe.md import QeMdStep
 from fpflow.steps.qe.scf import QeScfStep
-from fpflow.steps.qe.scf_pw2bgw import QeScfPw2bgwStep
+from fpflow.steps.qe.dftelbands import QeDftelbandsStep
+from fpflow.steps.qe.nscf import QeNscfStep
+
+
 from fpflow.steps.qe.dfpt import QeDfptStep
 from fpflow.steps.qe.phbands import QePhbandsStep
 from fpflow.steps.qe.phdos import QePhdosStep
 from fpflow.steps.qe.phmodes import QePhmodesStep
 from fpflow.steps.qe.dos import QeDosStep
 from fpflow.steps.qe.pdos import QePdosStep
-from fpflow.steps.qe.dftelbands import QeDftelbandsStep
 from fpflow.steps.qe.kpdos import QeKpdosStep
-from fpflow.steps.qe.wfnwannier import QeWfnWannierStep
 from fpflow.steps.qe.wannier import QeWannierStep
-from fpflow.steps.qe.wfn import QeWfnStep
 from fpflow.steps.qe.epw import QeEpwStep
 from fpflow.steps.qe.elph import QeElphEpwStep
-from fpflow.steps.qe.wfnq import QeWfnqStep
-from fpflow.steps.qe.wfnfi import QeWfnfiStep
-from fpflow.steps.qe.wfnqfi import QeWfnqfiStep
 from fpflow.steps.qe.phonopy import QePhonopyStep
 from fpflow.steps.qe.phonopy_nested import QePhonopyNestedStep
 from fpflow.steps.bgw.epsilon import BgwEpsilonStep
@@ -63,56 +60,40 @@ step_class_map: dict = {
     'relax_qe': QeRelaxStep,
     'cdft_qe': QeCdftStep,
     'md_qe': QeMdStep,
-    'ml_deepmd': MlDeepmdStep, #TODO
     'scf_qe': QeScfStep,
-    'scf_pw2bgw_qe': QeScfPw2bgwStep,
     'scf_abacus': QeScfStep, #TODO
     'scf_siesta': QeScfStep, #TODO
-    'ml_dftqe': MlQeDftStep,
-    'ml_dfptqe': MlQeDftStep, #TODO
-    'ml_dvscqe': MlQeDftStep, #TODO
-    'ml_dnvscqe': MlQeDftStep, #TODO
-    'ml_dftabacus': MlQeDftStep, #TODO
-    'ml_dftsiesta': MlQeDftStep, #TODO
+    'dftelbands_qe': QeDftelbandsStep,
+    'nscf_qe': QeNscfStep,
+    'nscf_abacus': QeNscfStep, #TODO
+    'nscf_siesta': QeNscfStep, #TODO
+    'dos_qe': QeDosStep, 
+    'pdos_qe': QePdosStep, 
+    'kpdos_qe': QeKpdosStep, 
+    'wannier_qe': QeWannierStep,
     'dfpt_qe': QeDfptStep,
-    'pp_dvscf_dfpt': QeDfptStep, #TODO
-    'elph_dfpt': QeDfptStep, #TODO
+    'pp_dfpt_qe': QeDfptStep, #TODO
     'phbands_qe': QePhbandsStep,
     'phdos_qe': QePhdosStep, #TODO
     'phmodes_qe': QePhmodesStep,
-    'dos_qe': QeDosStep, 
-    'pdos_qe': QePdosStep, 
-    'dftelbands_qe': QeDftelbandsStep,
-    'kpdos_qe': QeKpdosStep, 
-    'wfnwannier_qe': QeWfnWannierStep, 
-    'wannier_qe': QeWannierStep,
-    'wfn_qe': QeWfnStep,
-    'pp_wfnqe': QeWfnStep, #TODO
-    'pp_wfnqesym': QeWfnStep, #TODO
-    'wfn_abacus': QeWfnStep, #TODO
-    'wfn_siesta': QeWfnStep, #TODO
+    
     'epw_qe': QeEpwStep, 
     'elph_epw': QeElphEpwStep, #TODO
     'pol_fp': QeElphEpwStep, #TODO
-    'wfnq_qe': QeWfnqStep,
-    'wfnq_abacus': QeWfnqStep, #TODO
-    'wfnq_siesta': QeWfnqStep, #TODO
-    'wfnfi_qe': QeWfnfiStep,
-    'wfnqfi_qe': QeWfnqfiStep,
     'phonopy_qe': QePhonopyNestedStep,
-    'pp_dvscf_phonopy': QePhonopyStep, #TODO
-    'elph_phonopy': QePhonopyStep, #TODO
+
     'epsilon_bgw': BgwEpsilonStep,
     'sigmasc_bgw': BgwSigmaStep, #TODO
     'sigma_bgw': BgwSigmaStep, 
-    'ml_gwqe': MlQeGwStep, #TODO
     'gwelbands_bgw': BgwGwelbandsStep,
     'kernel_bgw': BgwKernelStep, 
     'absorption_bgw': BgwAbsorptionStep,
     'plotxct_bgw': BgwPlotxctStep,
+    
+    
     'bseq_bgw': BgwBseqStep,
     'bseq_epw': EpwBseqStep,
-    'ml_bseqe': MlQeBseStep, #TODO
+    
     'xctwannier_bgw': MlQeBseStep, #TODO
     'xctph_fp': XctphStep, #TODO
     'xctph_epw': EpwXctphStep,
@@ -122,6 +103,18 @@ step_class_map: dict = {
     'zd_epw': EpwZdStep,
     'esf_fp': EsfStep, #TODO
     'esr_fp': EsrStep,  #TODO
+
+    'ml_deepmd': MlDeepmdStep, #TODO
+    'ml_dftqe': MlQeDftStep,
+    'ml_dfptqe': MlQeDftStep, #TODO
+    'ml_dvscqe': MlQeDftStep, #TODO
+    'ml_dnvscqe': MlQeDftStep, #TODO
+    'ml_dftabacus': MlQeDftStep, #TODO
+    'ml_dftsiesta': MlQeDftStep, #TODO
+    'ml_gwqe': MlQeGwStep, #TODO
+    'ml_bseqe': MlQeBseStep, #TODO
+
+
     'convergence_scf_qe': QeConvergenceScfStep, 
     'convergence_dfpt_qe': QeConvergenceDfptStep, 
     'convergence_gw_qe': BgwConvergenceGwStep, 

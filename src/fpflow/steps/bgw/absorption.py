@@ -56,35 +56,35 @@ class BgwAbsorptionStep(Step):
 
         return BgwGrammar().write(absorptiondict)
     
+    def get_link(self, path: str) -> str:
+        wfnlink: str = jmespath.search(path, self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfnlink)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+        wfnlink_str: str = os.path.join(
+            '..',
+            jmespath.search(path, self.inputdict),
+            'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
+        )
+
+        return wfnlink_str
+
     @property
     def job_absorption(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.absorption.job_info')
-        link_dir_prefix: str = jmespath.search('bse.absorption.link_dir_prefix', self.inputdict)
 
-        if link_dir_prefix is not None:
-            file_string = f'''#!/bin/bash
+        file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
 
-ln -sf {os.path.join(link_dir_prefix, 'epsmat.h5')} ./epsmat.h5 
-ln -sf {os.path.join(link_dir_prefix, 'eps0mat.h5')} ./eps0mat.h5 
-ln -sf {os.path.join(link_dir_prefix, 'eqp1.dat')} ./eqp_co.dat 
-ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnco_link', self.inputdict))} ./WFN_co.h5 
-ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnqco_link', self.inputdict))} ./WFNq_co.h5 
-ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnfi_link', self.inputdict))} ./WFN_fi.h5 
-ln -sf {os.path.join(link_dir_prefix, jmespath.search('bse.absorption.wfnqfi_link', self.inputdict))} ./WFNq_fi.h5 
-{scheduler.get_exec_prefix()}absorption.cplx.x &> absorption.inp.out
-mv bandstructure.dat bandstructure_absorption.dat
-'''
-        else:
-            file_string = f'''#!/bin/bash
-{scheduler.get_script_header()}
-
-ln -sf {jmespath.search('bse.absorption.wfnco_link', self.inputdict)} ./WFN_co.h5 
-ln -sf {jmespath.search('bse.absorption.wfnqco_link', self.inputdict)} ./WFNq_co.h5 
-ln -sf {jmespath.search('bse.absorption.wfnfi_link', self.inputdict)} ./WFN_fi.h5 
-ln -sf {jmespath.search('bse.absorption.wfnqfi_link', self.inputdict)} ./WFNq_fi.h5 
-ln -sf eqp1.dat eqp_co.dat 
+ln -sf ../epsilon/epsmat.h5 ./
+ln -sf ../epsilon/eps0mat.h5 ./
+ln -sf ../sigma/eqp1.dat ./eqp_co.dat
+ln -sf ../kernel/bsemat.h5 ./
+ln -sf {self.get_link('bse.absorption.wfnco_link')} ./WFN_co.h5 
+ln -sf {self.get_link('bse.absorption.wfnqco_link')} ./WFNq_co.h5 
+ln -sf {self.get_link('bse.absorption.wfnfi_link')} ./WFN_fi.h5 
+ln -sf {self.get_link('bse.absorption.wfnqfi_link')} ./WFNq_fi.h5 
 {scheduler.get_exec_prefix()}absorption.cplx.x &> absorption.inp.out
 mv bandstructure.dat bandstructure_absorption.dat
 '''
@@ -93,14 +93,14 @@ mv bandstructure.dat bandstructure_absorption.dat
     @property
     def file_contents(self) -> dict:
         return {
-            'absorption.inp': self.absorption,
-            'job_absorption.sh': self.job_absorption,
+            './absorption/absorption.inp': self.absorption,
+            './absorption/job_absorption.sh': self.job_absorption,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_absorption.sh'
+            './absorption/job_absorption.sh'
         ]
 
     @property
@@ -110,29 +110,7 @@ mv bandstructure.dat bandstructure_absorption.dat
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './absorption.inp',
-            './job_absorption.sh',
-            './WFN_co.h5',
-            './WFNq_co.h5',
-            './WFN_fi.h5',
-            './WFNq_fi.h5',
-            './eigenvalues.dat',
-            './eigenvalues_noeh.dat',
-            './absorption_eh.dat',
-            './absorption_noeh.dat',
-            './dvmat_norm.dat',
-            './dcmat_norm.dat',
-            './eqp_co.dat',
-            './eqp.dat',
-            './eqp_q.dat',
-            './bandstructure_absorption.dat',
-            './eigenvectors.h5',
-            './hbse*.h5',
-            './x.dat',
-            './epsdiag.dat',
-            './dtmat',
-            './vmtxel',
-            './absorption.inp.out',
+            './absorption',
         ]
     
     def plot(self, **kwargs):

@@ -47,25 +47,24 @@ class BgwGwelbandsStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-ln -sf {jmespath.search('gw.gwelbands.wfnco_link', self.inputdict)} ./WFN_co 
-ln -sf {jmespath.search('gw.gwelbands.wfnfi_link', self.inputdict)} ./WFN_fi 
-ln -sf ./eqp1.dat ./eqp_co.dat 
+ln -sf ../{jmespath.search('gw.gwelbands.wfnco_link', self.inputdict)}/wfn ./WFN_co 
+ln -sf ../{jmespath.search('gw.gwelbands.wfnfi_link', self.inputdict)}/wfn ./WFN_fi 
+ln -sf ../sigma/eqp1.dat ./eqp_co.dat 
 {scheduler.get_exec_prefix()}inteqp.cplx.x &> inteqp.inp.out 
-mv bandstructure.dat bandstructure_inteqp.dat 
 '''
         return file_string
     
     @property
     def file_contents(self) -> dict:
         return {
-            'inteqp.inp': self.inteqp,
-            'job_inteqp.sh': self.job_inteqp,
+            './gwelbands/inteqp.inp': self.inteqp,
+            './gwelbands/job_inteqp.sh': self.job_inteqp,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_inteqp.sh',   
+            './gwelbands/job_inteqp.sh',   
         ]
 
     @property
@@ -75,17 +74,7 @@ mv bandstructure.dat bandstructure_inteqp.dat
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './inteqp.inp',
-            './inteqp.inp.out',
-            './job_inteqp.sh',
-            './bandstructure_inteqp.dat',
-            './eqp.dat',
-            './eqp_q.dat',
-            './dvmat_norm.dat',
-            './dcmat_norm.dat',
-            'WFN_co',
-            'WFN_fi',
-            'eqp_co.dat',
+            './gwelbands',
         ]
     
     def plot(self, **kwargs):

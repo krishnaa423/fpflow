@@ -40,7 +40,7 @@ class QeDftelbandsStep(Step):
             'control': {
                 'outdir': './tmp',
                 'prefix': 'struct',
-                'pseudo_dir': './pseudos/qe',
+                'pseudo_dir': './pseudos',
                 'calculation': 'bands',
                 'tprnfor': True,
             },
@@ -80,7 +80,7 @@ class QeDftelbandsStep(Step):
                 'prefix': "'struct'",
                 'real_or_complex': '2',
                 'wfng_flag': '.true.',
-                'wfng_file': "'WFN_dftelbands'",
+                'wfng_file': "'wfn'",
                 'wfng_kgrid': '.true.',
                 'wfng_nk1': 0,
                 'wfng_nk2': 0,
@@ -103,6 +103,8 @@ class QeDftelbandsStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+rm -rf ./tmp
+cp -r ../scf/tmp ./tmp
 {scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < dftelbands.in &> dftelbands.in.out
 
 cp ./tmp/struct.xml ./dftelbands.xml
@@ -116,26 +118,26 @@ cp ./tmp/struct.xml ./dftelbands.xml
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_infix()}pw2bgw.x -pd .true. < dftelbands_pw2bgw.in &> dftelbands_pw2bgw.in.out 
-cp ./tmp/WFN_dftelbands ./
-wfn2hdf.x BIN WFN_dftelbands WFN_dftelbands.h5
+{scheduler.get_exec_infix()}pw2bgw.x -pd .true. < pw2bgw.in &> pw2bgw.in.out 
+cp ./tmp/wfn ./
+wfn2hdf.x BIN wfn wfn.h5
 '''
         return file_string
 
     @property
     def file_contents(self) -> dict:
         return {
-            'dftelbands.in': self.dftelbands,
-            'dftelbands_pw2bgw.in': self.dftelbands_pw2bgw,
-            'job_dftelbands.sh': self.job_dftelbands,
-            'job_dftelbands_pw2bgw.sh': self.job_dftelbands_pw2bgw,
+            './dftelbands/dftelbands.in': self.dftelbands,
+            './dftelbands/pw2bgw.in': self.dftelbands_pw2bgw,
+            './dftelbands/job_dftelbands.sh': self.job_dftelbands,
+            './dftelbands/job_pw2bgw.sh': self.job_dftelbands_pw2bgw,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_dftelbands.sh',
-            './job_dftelbands_pw2bgw.sh',
+            './dftelbands/job_dftelbands.sh',
+            './dftelbands/job_pw2bgw.sh',
         ]
 
     @property
@@ -145,15 +147,7 @@ wfn2hdf.x BIN WFN_dftelbands WFN_dftelbands.h5
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './dftelbands.in',
-            './dftelbands.in.out',
-            './job_dftelbands.sh',
-            './dftelbands_pw2bgw.in',
-            './dftelbands_pw2bgw.in.out',
-            './job_dftelbands_pw2bgw.sh',
-            './dftelbands.xml',
-            './WFN_dftelbands',
-            './WFN_dftelbands.h5',
+            './dftelbands',
         ]
     
     def plot(self, **kwargs):

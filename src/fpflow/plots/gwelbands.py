@@ -24,24 +24,20 @@ from ase.units import Hartree, eV
 class GwelbandsPlot(PlotBase):
     def __init__(
         self,
-        infile='./bandstructure_inteqp.dat',
-        outfile_prefix='gwelbands',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.infilename: str = infile
-        self.outfile_prefix: str = outfile_prefix
         
         self.get_data()
         self.set_figures()
 
     def get_data(self):
         # Get fermi energy. 
-        tree = ET.parse('./dftelbands.xml')
+        tree = ET.parse('./dftelbands/dftelbands.xml')
         root = tree.getroot()
         fermi_energy = float(root.findall('.//fermi_energy')[0].text)*Hartree
 
-        data = np.loadtxt(self.infilename, skiprows=2)
+        data = np.loadtxt('./gwelbands/bandstructure.dat', skiprows=2)
         num_bands = np.unique(data[:, 1]).size
         emf = data[:, 5].reshape(num_bands, -1).T
         eqp = data[:, 6].reshape(num_bands, -1).T
@@ -88,7 +84,7 @@ class GwelbandsPlot(PlotBase):
         for ib in range(self.num_bands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
-                    'fig_name': self.outfile_prefix,
+                    'fig_name': 'gwelbands',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
@@ -105,7 +101,7 @@ class GwelbandsPlot(PlotBase):
                     'legend_label': 'DFT' if ib==0 else None,
                 },
                 {
-                    'fig_name': self.outfile_prefix,
+                    'fig_name': 'gwelbands',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,

@@ -28,7 +28,7 @@ class QeMdStep(Step):
             'control': {
                 'outdir': './tmp',
                 'prefix': 'struct',
-                'pseudo_dir': './pseudos/qe',
+                'pseudo_dir': './pseudos',
                 'calculation': jmespath.search('md.type', self.inputdict),
                 'tprnfor': True,
                 'dt': jmespath.search('md.time_step', self.inputdict),
@@ -80,6 +80,7 @@ class QeMdStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+ln -sf ../pseudos/qe ./pseudos
 {scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < md.in &> md.in.out
 
 cp ./tmp/struct.save/data-file-schema.xml ./md.xml
@@ -97,13 +98,13 @@ python -c "$write_to_h5" &> md_pp.out
     @property
     def file_contents(self) -> dict:
         return {
-            'md.in': self.md,
-            'job_md.sh': self.job_md,
+            './md/md.in': self.md,
+            './md/job_md.sh': self.job_md,
         }
     
     @property
     def job_scripts(self) -> List[str]:
-        return ['./job_md.sh']
+        return ['./md/job_md.sh']
 
     @property
     def save_inodes(self) -> List[str]:
@@ -112,14 +113,6 @@ python -c "$write_to_h5" &> md_pp.out
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './md.in',
-            './job_md.sh',
-            './tmp',
-            './md.in.out',
-            './md.xml',
-            './md.h5',
-            './md_pp.out',
-            './pseudos/qe',
-            './atoms_*.xsf',        # Removes structure files created by Struct object. 
+            './md',
         ]
 #endregion

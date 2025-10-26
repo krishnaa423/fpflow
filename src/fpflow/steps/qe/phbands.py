@@ -43,6 +43,7 @@ class QePhbandsStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+
 {scheduler.get_exec_prefix()}q2r.x < q2r_bands.in &> q2r_bands.in.out
 '''
         return file_string
@@ -76,6 +77,7 @@ class QePhbandsStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+
 {scheduler.get_exec_prefix()}matdyn.x < matdyn_bands.in &> matdyn_bands.in.out 
 '''
         return file_string
@@ -83,17 +85,17 @@ class QePhbandsStep(Step):
     @property
     def file_contents(self) -> dict:
         return {
-            'q2r_bands.in': self.q2r_bands,
-            'job_q2r_bands.sh': self.job_q2r_bands,
-            'matdyn_bands.in': self.matdyn_bands,
-            'job_matdyn_bands.sh': self.job_matdyn_bands,
+            './dfpt/q2r_bands.in': self.q2r_bands,
+            './dfpt/job_q2r.sh': self.job_q2r_bands,
+            './dfpt/matdyn_bands.in': self.matdyn_bands,
+            './dfpt/job_matdyn.sh': self.job_matdyn_bands,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_q2r_bands.sh',
-            './job_matdyn_bands.sh',
+            './dfpt/job_q2r.sh',
+            './dfpt/job_matdyn.sh',
         ]
 
     @property
@@ -103,18 +105,7 @@ class QePhbandsStep(Step):
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './q2r_bands.in',
-            './q2r_bands.in.out',
-            './job_q2r_bands.sh',
-            './matdyn_bands.in',
-            './matdyn_bands.in.out',
-            './job_matdyn_bands.sh',
-            './struct.dyn*',
-            './struct.fc',
-            './struct.freq',
-            './struct.freq.gp',
-            './struct.modes',
-            'plot_phbands.h5'
+            './dfpt',
         ]
     
     def plot(self, **kwargs):

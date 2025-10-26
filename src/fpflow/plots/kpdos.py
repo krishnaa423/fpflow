@@ -19,7 +19,7 @@ from fpflow.structure.kpath import Kpath
 
 #region functions
 def kpdos_label_from_filename(filename):
-    pattern = r'.*?struct_kpdos.dat.pdos_atm#(?P<idx>\d+)\((?P<symbol>\w+)\)_wfc#\d+\((?P<orbital>.*)\)'
+    pattern = r'.*?kpdos.dat.pdos_atm#(?P<idx>\d+)\((?P<symbol>\w+)\)_wfc#\d+\((?P<orbital>.*)\)'
 
     match = re.match(pattern, filename)
     if match:
@@ -37,20 +37,14 @@ def kpdos_label_from_filename(filename):
 class KpdosPlot(PlotBase):
     def __init__(
         self,
-        infile_scf='./scf.xml',
-        kpdos_glob='./struct_kpdos.dat.pdos_atm*',
-        outfile_prefix='kpdos',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.infile_scf: str = infile_scf
-        self.kpdos_glob: str = kpdos_glob
-        self.outfile_prefix: str = outfile_prefix
         
         # Get kpdos files. Filter if needed.
         self.kpdos_files: list = []
         pattern = jmespath.search('kpdos.plot.filter_regex', self.inputdict)
-        for file in glob.glob(self.kpdos_glob):
+        for file in glob.glob('./kpdos/kpdos.dat.pdos_atm*'):
             if pattern is not None:
                 if re.search(rf'{pattern}', file):
                     self.kpdos_files.append(file)
@@ -63,7 +57,7 @@ class KpdosPlot(PlotBase):
 
     def get_data(self):
         # Get fermi energy
-        tree = ET.parse(self.infile_scf)
+        tree = ET.parse('./scf/scf.xml')
         root = tree.getroot()
         fermi_energy = float(root.findall('.//fermi_energy')[0].text) * Hartree
 

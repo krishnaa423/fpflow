@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 #region functions
 def pdos_label_from_filename(filename):
-    pattern = r'.*?struct_pdos.dat.pdos_atm#(?P<idx>\d+)\((?P<symbol>\w+)\)_wfc#\d+\((?P<orbital>.*)\)'
+    pattern = r'.*?pdos.dat.pdos_atm#(?P<idx>\d+)\((?P<symbol>\w+)\)_wfc#\d+\((?P<orbital>.*)\)'
 
     match = re.match(pattern, filename)
     if match:
@@ -36,20 +36,14 @@ def pdos_label_from_filename(filename):
 class PdosPlot(PlotBase):
     def __init__(
         self,
-        infile_scf='./scf.xml',
-        pdos_glob='./struct_pdos.dat.pdos_atm*',
-        outfile_prefix='pdos',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.infile_scf: str = infile_scf
-        self.pdos_glob: str = pdos_glob
-        self.outfile_prefix: str = outfile_prefix
 
         # Get pdos files. Filter if needed.
         self.pdos_files: list = []
         pattern = jmespath.search('pdos.plot.filter_regex', self.inputdict)
-        for file in glob.glob(self.pdos_glob):
+        for file in glob.glob('./pdos/pdos.dat.pdos_atm*'):
             if pattern is not None:
                 if re.search(rf'{pattern}', file):
                     self.pdos_files.append(file)
@@ -62,7 +56,7 @@ class PdosPlot(PlotBase):
 
     def get_data(self):
         # Get fermi energy
-        tree = ET.parse(self.infile_scf)
+        tree = ET.parse('./scf/scf.xml')
         root = tree.getroot()
         fermi_energy = float(root.findall('.//fermi_energy')[0].text) * Hartree
 

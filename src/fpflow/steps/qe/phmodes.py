@@ -26,7 +26,7 @@ class QePhmodesStep(Step):
             'input': {
                 'asr': "'crystal'",
                 'fildyn': f"'struct.dyn{qpt_idx}'",
-                'filxsf': "'struct_phmodes.axsf'",
+                'filxsf': "'phmodes.axsf'",
             }
         }
 
@@ -49,14 +49,14 @@ class QePhmodesStep(Step):
     @property
     def file_contents(self) -> dict:
         return {
-            'dynmat.in': self.dynmat,
-            'job_dynmat.sh': self.job_dynmat,
+            './dfpt/dynmat.in': self.dynmat,
+            './dfpt/job_dynmat.sh': self.job_dynmat,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_dynmat.sh'
+            './dfpt/job_dynmat.sh'
         ]
 
     @property
@@ -66,13 +66,6 @@ class QePhmodesStep(Step):
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './dynmat.in',
-            './dynmat.out',
-            './dynmat.in.out',
-            './dynmat.mold',
-            './input_tmp.in',
-            './job_dynmat.sh',
-            './struct.dyn*',
-            './struct_phmodes.axsf',
+            './dfpt',
         ]
 #endregion

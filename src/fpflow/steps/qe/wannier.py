@@ -114,10 +114,12 @@ class QeWannierStep(Step):
     @property
     def job_wanpp(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wannier.job_wanpp_info')
+        link_dir: str = jmespath.search('wannier.nscflink_dir', self.inputdict)
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+ln -sf {link_dir} ./tmp
 {scheduler.get_exec_prefix()}wannier90.x {scheduler.get_exec_infix()} -pp wan &> wan.win.pp.out
 '''
         return file_string
@@ -158,7 +160,7 @@ model = tbmodels.Model.from_wannier_files(
     xyz_file="./wan_centres.xyz",
     win_file="./wan.win",
 )
-model.to_hdf5_file("wannierqe_tbmodel.hdf5")
+model.to_hdf5_file("./wannier_tbmodel.hdf5")
 '
 
 python -c "$wannierqe_pp" &> wannierqe_pp.out 
@@ -169,11 +171,11 @@ python -c "$tbmodels_pp" &> wannierqe_pp_tbmodels.out
     @property
     def file_contents(self) -> dict:
         file_list = {
-            'wan.win': self.wan,
-            'pw2wan.in': self.pw2wan,
-            'job_wanpp.sh': self.job_wanpp,
-            'job_pw2wan.sh': self.job_pw2wan,
-            'job_wan.sh': self.job_wan,
+            './wan/wan.win': self.wan,
+            './wan/pw2wan.in': self.pw2wan,
+            './wan/job_wanpp.sh': self.job_wanpp,
+            './wan/job_pw2wan.sh': self.job_pw2wan,
+            './wan/job_wan.sh': self.job_wan,
         }
 
         return file_list
@@ -181,9 +183,9 @@ python -c "$tbmodels_pp" &> wannierqe_pp_tbmodels.out
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_wanpp.sh',
-            './job_pw2wan.sh',
-            './job_wan.sh',
+            './wan/job_wanpp.sh',
+            './wan/job_pw2wan.sh',
+            './wan/job_wan.sh',
         ]
 
     @property
@@ -193,17 +195,7 @@ python -c "$tbmodels_pp" &> wannierqe_pp_tbmodels.out
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './pw2wan.in*',
-            './wan.*',
-            './wan_*',
-            './UNK*',
-            './job_wanpp.sh',
-            './job_pw2wan.sh',
-            './job_wan.sh',
-            './wannierqe.h5',
-            './wannierqe_tbmodel.h5',
-            './wannierqe_pp.out',
-            './wannierqe_pp_tbmodels.out',
+            './wan',
         ]
 
     def plot(self, **kwargs):

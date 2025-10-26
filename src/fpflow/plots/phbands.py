@@ -22,19 +22,18 @@ import pandas as pd
 class PhbandsPlot(PlotBase):
     def __init__(
         self,
-        infile='./struct.freq.gp',
-        outfile_prefix='phbands_ph',
+        outfile_prefix='phbands',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.infilename: str = infile
-        self.outfile_prefix: str = outfile_prefix
+
+        self.outfile_prefix = outfile_prefix
         
         self.get_data()
         self.set_figures()
 
     def get_data(self):
-        data = np.loadtxt(self.infilename)
+        data = np.loadtxt('./dfpt/struct.freq.gp')
         self.phbands = data[:, 1:]
         self.phbands *= 0.123984   # Convert to meV. 1 cm-1 = 0.123984 meV
         self.numbands: int = self.phbands.shape[1]
@@ -88,14 +87,12 @@ class PhbandsPlot(PlotBase):
 class PhonopyPlot(PhbandsPlot):
     def __init__(
         self,
-        infile='./phonopy_band.yaml',
-        outfile_prefix='phbands_phonopy',
         **kwargs
     ):
-        super().__init__(infile=infile, outfile_prefix=outfile_prefix, **kwargs)
+        super().__init__(outfile_prefix='phonopy', **kwargs)
 
     def get_data(self):
-        with open(self.infilename) as f: data = yaml.safe_load(f)
+        with open('./phonopy/phonopy_band.yaml') as f: data = yaml.safe_load(f)
 
         nk = len(data['phonon'])
         nb = len(data['phonon'][0]['band'])

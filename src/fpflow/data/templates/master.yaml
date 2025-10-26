@@ -91,7 +91,7 @@ common:
     val_bands: &gw_valbands 4
     cond_bands: &gw_condbands 4
     para_cond_bands: &gw_para_condbands 201
-    is_pseudobands: &is_pseudobands true
+    use_pseudobands: &use_pseudobands true
     conv_cond_bands: &gw_conv_condbands 200
   gwelbands:
     val_bands: &gwelbands_valbands 3
@@ -133,66 +133,49 @@ generator:
     - pseudos_qe
   steps: &gen_steps
   #  - esr_gen
-   - relax_qe
+  #  - relax_qe
   #  - cdft_qe
   #  - md_qe
-  #  - ml_deepmd
-  #  - scf_qe
-  #  - scf_pw2bgw_qe
+   - scf_qe
   #  - scf_abacus
   #  - scf_siesta
-  #  - ml_dftqe
-  #  - ml_dfptqe
-  #  - ml_dvscqe
-  #  - ml_dnvscqe
-  #  - ml_dftabacus
-  #  - ml_dftsiesta
+  #  - dftelbands_qe
+   - nscf_qe
+  #  - nscf_abacus
+  #  - nscf_siesta
+  #  - dos_qe 
+  #  - pdos_qe 
+  #  - kpdos_qe 
+  #  - wannier_qe
   #  - dfpt_qe
   #  - pp_dfpt_qe
-  #  - phbands_qe
-  #  - phdos_qe
-  #  - phmodes_qe
-  #  - dos_qe
-  #  - pdos_qe 
-  #  - dftelbands_qe
-  #  - kpdos_qe
-  #  - wfn_qe
-  #  - wfn_abacus
-  #  - wfn_siesta
-  #  - wfnq_qe
-  #  - wfnq_abacus
-  #  - wfnq_siesta
-  #  - wfnfi_qe
-  #  - wfnqfi_qe
-  #  - wfnwannier_qe
-  #  - wannier_qe
+  #  - phbands_qe 
+  #  - phdos_qe 
+  #  - phmodes_qe  
   #  - epw_qe
-  #  - elph_epw
+  #  - elph_epw 
   #  - pol_epw
-  #  - phonopy_qe
-  #  - epsilon_bgw
-  #  - sigmasc_bgw
-  #  - sigma_bgw
-  #  - ml_gwqe
-  #  - gwelbands_bgw
-  #  - kernel_bgw
-  #  - absorption_bgw
-  #  - bse_waninterp_bgw
-  #  - plotxct_bgw
+  #  - phonopy_qe 
+   - epsilon_bgw 
+  #  - sigmasc_bgw. Repeat this and below as many times as needed for scGW. 
+   - sigma_bgw
+  #  - gwelbands_bgw 
+   - kernel_bgw
+   - absorption_bgw 
+   - plotxct_bgw 
   #  - bseq_bgw
-  #  - wannier_bgw
   #  - bseq_epw
+  #  - wannier_bgw 
   #  - bseq_waninterp_bgw
-  #  - ml_bseqe
-  #  - xctph_fp
+  #  - xctph_fp 
   #  - xctph_epw
   #  - xctpol_fp
-  #  - ste_fp
+  #  - ste_fp  
   #  - ste_epw
   #  - zd_epw
   #  - dmc_xctph_fp
   #  - esf_fp
-  #  - esr_fp
+  #  - esr_fp 
   #  - convergence_scf_qe
   #  - convergence_dfpt_qe
   #  - convergence_gw_qe
@@ -282,13 +265,152 @@ scf:
   ecut: *dft_ecut
   is_spinorbit: *dft_spinorbit
   xc: *dft_xc
+  run_pw2bgw: true
+  args:
+  pw2bgw_args:
+  job_info:
+    <<: *para
+  job_pw2bgw_info:
+    <<: *single_node
+dftelbands:
+  val_bands: *dft_valbands
+  cond_bands: *dft_condbands
+  pw2bgw_args:
+  job_pw2bgw_info:
+    <<: *para
   args:
   job_info:
     <<: *para
-scf_pw2bgw:
+nscf:
+  list:
+    - name: 'wfn'
+      kgrid: *coarse_kgrid
+      qshift: [0.0, 0.0, 0.0]
+      sym: *coarse_sym
+      cond_bands: *gw_condbands
+      extract_rho_vxc_vsc_vkb: true
+      parabands:
+        enabled: true
+        cond_bands: *gw_para_condbands
+        use_pseudobands: *use_pseudobands
+        parabands_args:
+        job_parabands_info:
+          <<: *para
+      pw2bgw_args:
+      args:
+      job_pw2bgw_info:
+        <<: *para
+      job_info:
+        <<: *para
+    - name: 'wfnq'
+      kgrid: *coarse_kgrid
+      qshift: *qshift
+      sym: *coarse_sym
+      cond_bands: *gw_condbands
+      extract_rho_vxc_vsc_vkb: false
+      parabands:
+        enabled: false
+        cond_bands: 
+        use_pseudobands:
+        parabands_args:
+        job_parabands_info:
+      pw2bgw_args:
+      args:
+      job_pw2bgw_info:
+        <<: *para
+      job_info:
+        <<: *para
+    - name: 'wfnfi'
+      kgrid: *fine_kgrid
+      qshift: [0.0, 0.0, 0.0]
+      sym: *fine_sym
+      cond_bands: *gw_condbands
+      extract_rho_vxc_vsc_vkb: false
+      parabands:
+        enabled: false
+        cond_bands: 
+        use_pseudobands:
+        parabands_args:
+        job_parabands_info:
+      pw2bgw_args:
+      args:
+      job_pw2bgw_info:
+        <<: *para
+      job_info:
+        <<: *para
+    - name: 'wfnqfi'
+      kgrid: *fine_kgrid
+      qshift: *qshift
+      sym: *fine_sym
+      cond_bands: *gw_condbands
+      extract_rho_vxc_vsc_vkb: false
+      parabands:
+        enabled: false
+        cond_bands: 
+        use_pseudobands:
+        parabands_args:
+        job_parabands_info:
+      pw2bgw_args:
+      args:
+      job_pw2bgw_info:
+        <<: *para
+      job_info:
+        <<: *para
+    - name: 'wfnwannier'
+      kgrid: *fine_kgrid
+      qshift: [0.0, 0.0, 0.0]
+      sym: *fine_sym
+      cond_bands: *gw_condbands
+      extract_rho_vxc_vsc_vkb: false
+      parabands:
+        enabled: false
+        cond_bands: 
+        use_pseudobands:
+        parabands_args:
+        job_parabands_info:
+      pw2bgw_args:
+      args:
+      job_pw2bgw_info:
+        <<: *para
+      job_info:
+        <<: *para
+dos:
+  kgrid: *coarse_kgrid
+  cond_bands: *dft_condbands
+  wfn_args:
+  args:
+  job_wfndos_info:
+    <<: *para
+  job_info:
+    <<: *para
+pdos:
+  plot:
+    filter_regex: '2\(Si\)'
   args:
   job_info:
     <<: *para
+kpdos:
+  plot:
+    scatter_scale_factor: 1.0
+    filter_regex: '2\(Si\)'
+  args:
+  job_info:
+    <<: *para
+wannier:
+  nscflink_dir: ../wfnwannier/tmp
+  kgrid: *fine_kgrid
+  val_bands: *dft_valbands
+  cond_bands: *dft_condbands
+  
+  pw2wan_args:
+  args:
+
+  job_wanpp_info:
+    <<: *single_task
+  job_pw2wan_info:
+    <<: *single_node
+  job_info:
+    <<: *single_node
 dfpt:
   qgrid: *qgrid
   auto_assign_ni_and_nodes: *dfpt_ni_nodes_auto_assign
@@ -312,74 +434,7 @@ phmodes:
   args:
   job_info:
     <<: *single_node
-dos:
-  kgrid: *coarse_kgrid
-  cond_bands: *dft_condbands
-  wfn_args:
-  args:
-  job_wfndos_info:
-    <<: *para
-  job_info:
-    <<: *para
-pdos:
-  plot:
-    filter_regex: '2\(Si\)'
-  args:
-  job_info:
-    <<: *para
-dftelbands:
-  val_bands: *dft_valbands
-  cond_bands: *dft_condbands
-  pw2bgw_args:
-  job_pw2bgw_info:
-    <<: *para
-  args:
-  job_info:
-    <<: *para
-kpdos:
-  plot:
-    scatter_scale_factor: 1.0
-    filter_regex: '2\(Si\)'
-  args:
-  job_info:
-    <<: *para
-wannier:
-  kgrid: *coarse_kgrid
-  val_bands: *dft_valbands
-  cond_bands: *dft_condbands
-  eig_filename: './wfnwan.xml'
-  
-  wfn_args:
-  pw2bgw_args:
-  pw2wan_args:
-  args:
-  
-  job_wfnwan_info:
-    <<: *para
-  job_pw2bgw_info:
-    <<: *single_node
-  job_wanpp_info:
-    <<: *single_task
-  job_pw2wan_info:
-    <<: *single_node
-  job_info:
-    <<: *single_node
 phonopy:
-  job_info:
-    <<: *big_para
-wfn:
-  kgrid: *coarse_kgrid
-  sym: *coarse_sym
-  cond_bands: *gw_condbands
-  parabands_cond_bands: *gw_para_condbands
-  is_pseudobands: *is_pseudobands
-  pw2bgw_args:
-  parabands_args:
-  args:
-  job_pw2bgw_info:
-    <<: *para
-  job_parabands_info:
-    <<: *big_para
   job_info:
     <<: *big_para
 epw:
@@ -393,43 +448,12 @@ epw:
 elph:
   job_info:
     <<: *big_para
-wfnq:
-  qshift: *qshift
-  kgrid: *coarse_kgrid
-  sym: *coarse_sym
-  cond_bands: *gw_condbands
-  pw2bgw_args:
-  args:
-  job_pw2bgw_info:
-    <<: *big_para
-  job_info:
-    <<: *big_para
-wfnfi:
-  kgrid: *fine_kgrid
-  sym: *fine_sym
-  cond_bands: *gw_condbands
-  pw2bgw_args:
-  args:
-  job_pw2bgw_info:
-    <<: *big_para
-  job_info:
-    <<: *big_para
-wfnqfi:
-  kgrid: *fine_kgrid
-  sym: *fine_sym
-  cond_bands: *gw_condbands
-  pw2bgw_args:
-  args:
-  job_pw2bgw_info:
-    <<: *big_para
-  job_info:
-    <<: *big_para
 gw:
   epsilon:
     ecut: *gwecut
     cond_bands: *gw_conv_condbands
-    wfnlink: 'WFN_parabands.h5'
-    wfnqlink: 'WFNq_coo.h5'
+    wfnlink: 'wfn'
+    wfnqlink: 'wfnq'
     args:
     job_info:
       <<: *big_para
@@ -438,15 +462,15 @@ gw:
     conv_cond_bands: *gw_conv_condbands
     cond_bands: *gw_condbands
     val_bands: *gw_valbands
-    wfnlink: 'WFN_parabands.h5' 
+    wfnlink: 'wfn'
     args:
     job_info:
       <<: *big_para
   gwelbands:
     val_bands: *gwelbands_valbands
     cond_bands: *gwelbands_condbands
-    wfnco_link: 'WFN_coo'
-    wfnfi_link: 'WFN_dftelbands'
+    wfnco_link: 'wfn'
+    wfnfi_link: 'dftelbands'
     args:
     job_info:
       <<: *para
@@ -462,10 +486,10 @@ bse:
     cond_bands: *bse_condbands
     nxct: *bse_nxct
     pol_dir: *qshift
-    wfnco_link: 'WFN_parabands.h5'
-    wfnqco_link: 'WFNq_coo.h5'
-    wfnfi_link: 'WFN_parabands.h5'
-    wfnqfi_link: 'WFNq_coo.h5'
+    wfnco_link: 'wfn'
+    wfnqco_link: 'wfnq'
+    wfnfi_link: 'wfn'
+    wfnqfi_link: 'wfnq'
     args:
     job_info:
       <<: *para

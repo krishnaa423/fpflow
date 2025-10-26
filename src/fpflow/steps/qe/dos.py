@@ -37,7 +37,7 @@ class QeDosStep(Step):
             'control': {
                 'outdir': './tmp',
                 'prefix': 'struct',
-                'pseudo_dir': './pseudos/qe',
+                'pseudo_dir': './pseudos',
                 'calculation': 'bands',
             },
             'system': {
@@ -80,7 +80,7 @@ class QeDosStep(Step):
             'dos': {
                 'outdir': "'./tmp'",
                 'prefix': "'struct'",
-                'fildos': "'struct_dos.dat'",
+                'fildos': "'dos.dat'",
             }
         }
 
@@ -98,7 +98,9 @@ class QeDosStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfndos.in &> wfndos.in.out
+rm -rf ./tmp
+cp -r ../scf/tmp ./tmp
+{scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < wfn.in &> wfn.in.out
 '''
         return file_string
 
@@ -116,39 +118,27 @@ class QeDosStep(Step):
     @property
     def file_contents(self) -> dict:
         return {
-            'wfndos.in': self.wfndos,
-            'dos.in': self.dos,
-            'job_wfndos.sh': self.job_wfndos,
-            'job_dos.sh': self.job_dos,
+            './dos/wfn.in': self.wfndos,
+            './dos/dos.in': self.dos,
+            './dos/job_wfn.sh': self.job_wfndos,
+            './dos/job_dos.sh': self.job_dos,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_wfndos.sh',
-            './job_dos.sh',
+            './dos/job_wfn.sh',
+            './dos/job_dos.sh',
         ]
 
     @property
     def save_inodes(self) -> List[str]:
-        return [
-            'wfndos.in*',
-            'dos.in*',
-            'struct_dos.dat',
-            'job_dos.sh',
-            'job_wfndos.sh',
-        ]
+        return []
     
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './wfndos.in',
-            './dos.in',
-            './job_wfndos.sh',
-            './job_dos.sh',
-            './struct_dos.dat',
-            './dos.in.out',
-            './wfndos.in.out',
+            './dos',
         ]
     
     def plot(self, **kwargs):

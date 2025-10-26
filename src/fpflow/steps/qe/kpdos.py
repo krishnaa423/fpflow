@@ -30,7 +30,7 @@ class QeKpdosStep(Step):
                 'outdir': "'./tmp'",
                 'prefix': "'struct'",
                 'kresolveddos': '.true.',
-                'filpdos': "'struct_kpdos.dat'",
+                'filpdos': "'kpdos.dat'",
             }
         }
 
@@ -47,6 +47,7 @@ class QeKpdosStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+ln -sf ../dftelbands/tmp ./tmp
 {scheduler.get_exec_prefix()}projwfc.x -pd .true. {scheduler.get_exec_infix()} < kpdos.in &> kpdos.in.out
 '''
         return file_string
@@ -54,14 +55,14 @@ class QeKpdosStep(Step):
     @property
     def file_contents(self) -> dict:
         return {
-            'kpdos.in': self.kpdos,
-            'job_kpdos.sh': self.job_kpdos,
+            './kpdos/kpdos.in': self.kpdos,
+            './kpdos/job_kpdos.sh': self.job_kpdos,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_kpdos.sh',
+            './kpdos/job_kpdos.sh',
         ]
 
     @property
@@ -71,9 +72,7 @@ class QeKpdosStep(Step):
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './kpdos.in*',
-            './job_kpdos.sh',
-            './struct_kpdos.dat*',
+            './kpdos',
         ]
     
     def plot(self, **kwargs):

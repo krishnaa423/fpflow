@@ -95,7 +95,7 @@ class QeStruct(Struct):
         if not is_soc:
             total_val_bands /= 2
 
-        return total_val_bands
+        return int(total_val_bands)
     
     def get_ibrav(self, inputdict: dict) -> int:
         struct_dict: dict = jmespath.search('structures.list[*]', inputdict)[self.struct_idx]

@@ -25,20 +25,16 @@ from fpflow.analysis.wannierqe import WannierQeAnalysis
 class QeWannierPlot(PlotBase):
     def __init__(
         self,
-        infile='./wan_band.dat',
-        outfile_prefix='wannierqe',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.infilename: str = infile
-        self.outfile_prefix: str = outfile_prefix
         
         self.get_data()
         self.set_figures()
 
     def add_dft_data(self):
         # Read dft eigs.
-        tree = ET.parse('./dftelbands.xml')
+        tree = ET.parse('./dftelbands/dftelbands.xml')
         root = tree.getroot()
 
         eig_nodes = root.findall('.//ks_energies/eigenvalues')
@@ -108,7 +104,7 @@ class QeWannierPlot(PlotBase):
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
 
         # Add the data.
-        if os.path.exists('./dftelbands.xml'): self.add_dft_data()
+        if os.path.exists('./dftelbands/dftelbands.xml'): self.add_dft_data()
         self.add_wan_bands_data()
 
     def add_dft_bands_figure(self):
@@ -116,7 +112,7 @@ class QeWannierPlot(PlotBase):
         for ib in range(self.dft_num_bands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
-                    'fig_name': f'{self.outfile_prefix}_bands',
+                    'fig_name': f'wannier_bands',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.dft_axis[0], self.dft_axis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
@@ -140,7 +136,7 @@ class QeWannierPlot(PlotBase):
         for ib in range(self.wan_num_bands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
-                    'fig_name': f'{self.outfile_prefix}_bands',
+                    'fig_name': f'wannier_bands',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.dft_axis[0], self.dft_axis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
@@ -160,7 +156,7 @@ class QeWannierPlot(PlotBase):
             self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
 
     def add_hr_figure(self):
-        with h5py.File('wannierqe.h5', 'r') as hf:
+        with h5py.File('./wan/wannier.h5', 'r') as hf:
             hr = hf['hr'][:]
             rpts = hf['hr_R'][:]
 
@@ -201,7 +197,7 @@ class QeWannierPlot(PlotBase):
         # Add scatter and line plot to figure. 
         append_fig_df: pd.DataFrame = pd.DataFrame([
             {
-                'fig_name': f'{self.outfile_prefix}_hr',
+                'fig_name': f'wannier_hr',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.SCATTER, 'axis': None,
                 'xlabel': 'R (lattice units)', 'xlim': None, 'xticks': None, 'xtick_labels': None,
@@ -218,7 +214,7 @@ class QeWannierPlot(PlotBase):
                 'legend_label': None,
             },
             {
-                'fig_name': f'{self.outfile_prefix}_hr',
+                'fig_name': f'wannier_hr',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
                 'xlabel': 'R (lattice units)', 'xlim': None, 'xticks': None, 'xtick_labels': None,
@@ -238,7 +234,7 @@ class QeWannierPlot(PlotBase):
         self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
 
     def set_figures(self):
-        if os.path.exists('./dftelbands.xml'): self.add_dft_bands_figure()
+        if os.path.exists('./dftelbands/dftelbands.xml'): self.add_dft_bands_figure()
         self.add_wannier_bands_figure()
         self.add_hr_figure()
 

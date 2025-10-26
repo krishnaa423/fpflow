@@ -93,6 +93,8 @@ class QeDfptStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+rm -rf ./tmp
+cp -r ../scf/tmp ./tmp
 {scheduler.get_exec_prefix()}ph.x {scheduler.get_exec_infix()} < dfpt.in &> dfpt.in.out
 
 python3 ./create_save.py
@@ -102,14 +104,14 @@ python3 ./create_save.py
     @property
     def file_contents(self) -> dict:
         return {
-            'dfpt.in': self.dfpt,
-            'job_dfpt.sh': self.job_dfpt,
-            'create_save.py': self.create_save,
+            './dfpt/dfpt.in': self.dfpt,
+            './dfpt/job_dfpt.sh': self.job_dfpt,
+            './dfpt/create_save.py': self.create_save,
         }
     
     @property
     def job_scripts(self) -> List[str]:
-        return ['./job_dfpt.sh']
+        return ['./dfpt/job_dfpt.sh']
 
     @property
     def save_inodes(self) -> List[str]:
@@ -118,14 +120,7 @@ python3 ./create_save.py
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './dfpt*.in',
-            './dfpt*.in.out',
-            './create_save.py',
-            './job_dfpt.sh',
-            './tmp',
-            './out*',
-            './save',
-            './struct.dyn*',
+            './dfpt',
         ]
 
 #endregion

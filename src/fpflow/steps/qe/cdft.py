@@ -37,7 +37,7 @@ class QeCdftStep(Step):
             'control': {
                 'outdir': './tmp',
                 'prefix': 'struct',
-                'pseudo_dir': './pseudos/qe',
+                'pseudo_dir': './pseudos',
                 'calculation': jmespath.search('cdft.type', self.inputdict),
                 'tprnfor': True,
             },
@@ -94,14 +94,15 @@ class QeCdftStep(Step):
     def job_cdft(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'cdft.job_info')
 
-        save_final_cell_parameters_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /CELL_PARAMETERS/ {cell_flag=1; next} /End final coordinates/ {end_flag=0} end_flag && cell_flag {print; if (length==0) cell_flag=0 }' cdft.in.out > relaxed_cell_parameters.txt"
-        save_final_atomic_positions_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /ATOMIC_POSITIONS/ {pos_flag=1; next} /End final coordinates/ {end_flag=0}  end_flag && pos_flag { print $1, $2, $3, $4 }' cdft.in.out > relaxed_atomic_positions.txt"
+        save_final_cell_parameters_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /CELL_PARAMETERS/ {cell_flag=1; next} /End final coordinates/ {end_flag=0} end_flag && cell_flag {print; if (length==0) cell_flag=0 }' cdft.in.out > ../relaxed_cell_parameters.txt"
+        save_final_atomic_positions_str = "awk '/Begin final coordinates/ {end_flag=1; next} end_flag && /ATOMIC_POSITIONS/ {pos_flag=1; next} /End final coordinates/ {end_flag=0}  end_flag && pos_flag { print $1, $2, $3, $4 }' cdft.in.out > ../relaxed_atomic_positions.txt"
         update_coord: bool = jmespath.search('cdft.update_coord', self.inputdict)
 
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
+ln -sf ../pseudos/qe ./pseudos
 {scheduler.get_exec_prefix()}pw.x {scheduler.get_exec_infix()} < cdft.in &> cdft.in.out
 
 cp ./tmp/struct.save/data-file-schema.xml ./cdft.xml
@@ -110,8 +111,10 @@ cp ./tmp/struct.save/data-file-schema.xml ./cdft.xml
 {save_final_cell_parameters_str if update_coord else ""}
 {save_final_atomic_positions_str if update_coord else ""}
 
-# Update from relax.
+# Update from cdft. 
+cd ../
 {"fpflow generator --create" if update_coord else ""}
+cd ./cdft
 '''
         
         return file_string
@@ -119,13 +122,13 @@ cp ./tmp/struct.save/data-file-schema.xml ./cdft.xml
     @property
     def file_contents(self) -> dict:
         return {
-            'cdft.in': self.cdft,
-            'job_cdft.sh': self.job_cdft,
+            './cdft/cdft.in': self.cdft,
+            './cdft/job_cdft.sh': self.job_cdft,
         }
     
     @property
     def job_scripts(self) -> List[str]:
-        return ['./job_cdft.sh']
+        return ['./cdft/job_cdft.sh']
 
     @property
     def save_inodes(self) -> List[str]:
@@ -134,14 +137,7 @@ cp ./tmp/struct.save/data-file-schema.xml ./cdft.xml
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './cdft.in',
-            './job_cdft.sh',
-            './tmp',
-            './cdft.out',
-            './cdft.in.out',
-            './cdft.xml',
-            './relaxed_cell_parameters.txt',
-            './relaxed_atomic_positions.txt',
+            './cdft',
         ]
 
 #endregion

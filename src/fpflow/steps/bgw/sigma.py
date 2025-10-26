@@ -32,10 +32,13 @@ from fpflow.inputs.inputyaml import InputYaml
 from fpflow.steps.bgw.sigma import BgwSigmaStep
 from fpflow.structure.qe.qe_struct import QeStruct
 import jmespath
+import os
 
-inputdict: dict = InputYaml.from_yaml_file('./input.yaml').inputdict
+inputdict: dict = InputYaml.from_yaml_file('../input.yaml').inputdict
 num_pseudobands: int = 0
-with h5py.File(jmespath.search('gw.sigma.wfnlink', inputdict), 'r') as f:
+wfnlink: str = jmespath.search('gw.sigma.wfnlink', inputdict)
+parabands_file: str = os.path.join('..', wfnlink, 'wfn_parabands.h5')
+with h5py.File(parabands_file, 'r') as f:
     num_pseudobands = f['/parabands/pseudobands/nb_total'][()]
 # Qestruct.
 max_val_bands: int = int(QeStruct.from_inputdict(inputdict).max_val(
@@ -46,7 +49,9 @@ max_val_bands: int = int(QeStruct.from_inputdict(inputdict).max_val(
 num_gw_cond_bands: int = num_pseudobands - max_val_bands - 1
 glom.assign(inputdict, 'gw.sigma.conv_cond_bands', num_gw_cond_bands)
 sig_step = BgwSigmaStep(inputdict=inputdict)
+os.chdir('../')
 sig_step.create()
+os.chdir('./sigma')
 '''
     
     @property
@@ -57,14 +62,20 @@ sig_step.create()
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
         )
 
+        # wfnlink. 
+        wfn_link: str = jmespath.search('gw.sigma.wfnlink', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
         # Kpts.
         kpts: Kpts = Kpts.from_kgrid(
             kgrid = [
-                jmespath.search('wfn.kgrid[0]', self.inputdict),
-                jmespath.search('wfn.kgrid[1]', self.inputdict),
-                jmespath.search('wfn.kgrid[2]', self.inputdict),
+                jmespath.search('kgrid[0]', self.wfn_options),
+                jmespath.search('kgrid[1]', self.wfn_options),
+                jmespath.search('kgrid[2]', self.wfn_options),
             ],
-            is_reduced=jmespath.search('wfn.sym', self.inputdict),
+            is_reduced=jmespath.search('sym', self.wfn_options),
         )
 
         sigmadict: dict = {
@@ -87,12 +98,22 @@ sig_step.create()
     def job_sigma(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'gw.sigma.job_info')
 
+        wfnlink_str: str = os.path.join(
+            '..',
+            jmespath.search('gw.sigma.wfnlink', self.inputdict),
+            'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
+        )
+
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{'python ./script_update_sigma_from_pseudobands.py &> script_update_sigma_from_pseudobands.py.out' if jmespath.search('wfn.is_pseudobands', self.inputdict) else ''}
+{'python ./script_update_sigma_from_pseudobands.py &> script_update_sigma_from_pseudobands.py.out' if jmespath.search('parabands.enabled', self.wfn_options) else ''}
 
-ln -sf {jmespath.search('gw.sigma.wfnlink', self.inputdict)} ./WFN_inner.h5 
+ln -sf ../epsilon/epsmat.h5 ./
+ln -sf ../epsilon/eps0mat.h5 ./
+ln -sf ../{jmespath.search('gw.sigma.wfnlink', self.inputdict)}/rho ./RHO
+ln -sf ../{jmespath.search('gw.sigma.wfnlink', self.inputdict)}/vxc.dat ./
+ln -sf {wfnlink_str} ./WFN_inner.h5 
 {scheduler.get_exec_prefix()}sigma.cplx.x &> sigma.inp.out
 '''
         return file_string
@@ -100,20 +121,20 @@ ln -sf {jmespath.search('gw.sigma.wfnlink', self.inputdict)} ./WFN_inner.h5
     @property
     def file_contents(self) -> dict:
         output = {
-            'sigma.inp': self.sigma,
-            'job_sigma.sh': self.job_sigma
+            './sigma/sigma.inp': self.sigma,
+            './sigma/job_sigma.sh': self.job_sigma
         }
         
         # Add the script to from pseudobands if needed.
-        if jmespath.search('wfn.is_pseudobands', self.inputdict):
-            output['script_update_sigma_from_pseudobands.py'] = self.sigma_update_from_pseudobands
+        if jmespath.search('parabands.enabled', self.wfn_options):
+            output['./sigma/script_update_sigma_from_pseudobands.py'] = self.sigma_update_from_pseudobands
 
         return output
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_sigma.sh',
+            './sigma/job_sigma.sh',
         ]
 
     @property
@@ -123,18 +144,6 @@ ln -sf {jmespath.search('gw.sigma.wfnlink', self.inputdict)} ./WFN_inner.h5
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './sigma.inp',
-            './job_sigma.sh',
-            './WFN_inner.h5',
-            './eqp0.dat',
-            './eqp1.dat',
-            './sigma_hp.log',
-            './ch_converge.dat',
-            './sigma.inp.out',
-            './dtmat',
-            './vxc.dat',
-            './x.dat',
-            './script_update_sigma_from_pseudobands.py',
-            './script_update_sigma_from_pseudobands.py.out',
+            './sigma',
         ]
 #endregion

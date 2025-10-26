@@ -24,22 +24,16 @@ from ase.units import Hartree, eV
 class BseAbsorptionPlot(PlotBase):
     def __init__(
         self,
-        eh_filename='./absorption_eh.dat',
-        noeh_filename='absorption_noeh.dat',
-        outfile_prefix='bse_absorption',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.eh_filename: str = eh_filename
-        self.noeh_filename: str = noeh_filename
-        self.outfile_prefix: str = outfile_prefix
         
         self.get_data()
         self.set_figures()
 
     def get_data(self):
-        abs_eh_data = np.loadtxt(self.eh_filename, dtype='f8', skiprows=4)
-        abs_noeh_data = np.loadtxt(self.noeh_filename, dtype='f8', skiprows=4)
+        abs_eh_data = np.loadtxt('./absorption/absorption_eh.dat', dtype='f8', skiprows=4)
+        abs_noeh_data = np.loadtxt('./absorption/absorption_noeh.dat', dtype='f8', skiprows=4)
         eh_axis = abs_eh_data[:, 0]
         eh_data = abs_eh_data[:, 1]
         noeh_axis = abs_noeh_data[:, 0]
@@ -72,7 +66,7 @@ class BseAbsorptionPlot(PlotBase):
     def set_figures(self):
         append_fig_df: pd.DataFrame = pd.DataFrame([
             {
-                'fig_name': self.outfile_prefix,
+                'fig_name': 'bse_absorption',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
                 'xlabel': 'Energy (eV)', 'xlim': None, 'xticks': None, 'xtick_labels': None,
@@ -89,7 +83,7 @@ class BseAbsorptionPlot(PlotBase):
                 'legend_label': 'noeh',
             },
             {
-                'fig_name': self.outfile_prefix,
+                'fig_name': 'bse_absorption',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
                 'xlabel': 'Energy (eV)', 'xlim': None, 'xticks': None, 'xtick_labels': None,

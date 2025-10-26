@@ -18,26 +18,20 @@ import numpy as np
 class DosPlot(PlotBase):
     def __init__(
         self,
-        infile_scf='./scf.xml',
-        infile_dos='./struct_dos.dat',
-        outfile_prefix='dos',
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.infile_scf: str = infile_scf
-        self.infile_dos: str = infile_dos
-        self.outfile_prefix: str = outfile_prefix
         
         self.get_data()
         self.set_figures()
 
     def get_data(self):
         # Get fermi energy. 
-        tree = ET.parse(self.infile_scf)
+        tree = ET.parse('./scf/scf.xml')
         root = tree.getroot()
         fermi_energy = float(root.findall('.//fermi_energy')[0].text)*Hartree
 
-        data = np.loadtxt(self.infile_dos, skiprows=1)
+        data = np.loadtxt('./dos/dos.dat', skiprows=1)
         self.axis = (data[:, 0] - fermi_energy).reshape(-1, 1)
         self.dos = data[:, 1].reshape(-1, 1)
 
@@ -64,7 +58,7 @@ class DosPlot(PlotBase):
     def set_figures(self):
         append_fig_df: pd.DataFrame = pd.DataFrame([
             {
-                'fig_name': self.outfile_prefix,
+                'fig_name': 'dos',
                 'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                 'plot_type': PlotType.LINE, 'axis': None,
                 'xlabel': 'Energy (eV)', 'xlim': (-10, 10), 'xticks': None, 'xtick_labels': None,

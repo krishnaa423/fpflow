@@ -23,7 +23,7 @@ from fpflow.structure.kpts import Kpts
 #region classes
 class BgwEpsilonStep(Step):
     @property
-    def eps_update_from_pseuobands(self) -> str:
+    def eps_update_from_pseudobands(self) -> str:
         return f'''#!/usr/bin/env python
 
 import h5py
@@ -32,10 +32,13 @@ from fpflow.inputs.inputyaml import InputYaml
 from fpflow.steps.bgw.epsilon import BgwEpsilonStep
 from fpflow.structure.qe.qe_struct import QeStruct
 import jmespath
+import os
 
-inputdict: dict = InputYaml.from_yaml_file('./input.yaml').inputdict
+inputdict: dict = InputYaml.from_yaml_file('../input.yaml').inputdict
 num_pseudobands: int = 0
-with h5py.File(jmespath.search('gw.epsilon.wfnlink', inputdict), 'r') as f:
+wfnlink: str = jmespath.search('gw.epsilon.wfnlink', inputdict)
+parabands_file: str = os.path.join('..', wfnlink, 'wfn_parabands.h5')
+with h5py.File(parabands_file, 'r') as f:
     num_pseudobands = f['/parabands/pseudobands/nb_total'][()]
 # Qestruct.
 max_val_bands: int = int(QeStruct.from_inputdict(inputdict).max_val(
@@ -46,7 +49,9 @@ max_val_bands: int = int(QeStruct.from_inputdict(inputdict).max_val(
 num_gw_cond_bands: int = num_pseudobands - max_val_bands - 1
 glom.assign(inputdict, 'gw.epsilon.cond_bands', num_gw_cond_bands)
 eps_step = BgwEpsilonStep(inputdict=inputdict)
+os.chdir('../')
 eps_step.create()
+os.chdir('./epsilon')
 '''
 
     @property
@@ -57,19 +62,31 @@ eps_step.create()
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
         ))
 
+        # wfnlink. 
+        wfn_link: str = jmespath.search('gw.epsilon.wfnlink', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
+        # wfnqlink.
+        wfnq_link: str = jmespath.search('gw.epsilon.wfnqlink', self.inputdict)
+        wfnq_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfnq_index: int = wfnq_names.index(wfnq_link)
+        self.wfnq_options: dict = jmespath.search(f'nscf.list[{wfnq_index}]', self.inputdict)
+
         # Kpts.
         kpts: Kpts = Kpts.from_kgrid(
             kgrid = [
-                jmespath.search('wfn.kgrid[0]', self.inputdict),
-                jmespath.search('wfn.kgrid[1]', self.inputdict),
-                jmespath.search('wfn.kgrid[2]', self.inputdict),
+                jmespath.search('kgrid[0]', self.wfnq_options),
+                jmespath.search('kgrid[1]', self.wfnq_options),
+                jmespath.search('kgrid[2]', self.wfnq_options),
             ],
             qshift=[
-                jmespath.search('wfnq.qshift[0]', self.inputdict),
-                jmespath.search('wfnq.qshift[1]', self.inputdict),
-                jmespath.search('wfnq.qshift[2]', self.inputdict),
+                jmespath.search('qshift[0]', self.wfnq_options),
+                jmespath.search('qshift[1]', self.wfnq_options),
+                jmespath.search('qshift[2]', self.wfnq_options),
             ],
-            is_reduced=jmespath.search('wfn.sym', self.inputdict),
+            is_reduced=jmespath.search('sym', self.wfnq_options),
         )
 
         epsilondict: dict = {
@@ -89,13 +106,25 @@ eps_step.create()
     def job_epsilon(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'gw.epsilon.job_info')
 
+        wfnlink_str: str = os.path.join(
+            '..',
+            jmespath.search('gw.epsilon.wfnlink', self.inputdict),
+            'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
+        )
+
+        wfnqlink_str: str = os.path.join(
+            '..',
+            jmespath.search('gw.epsilon.wfnqlink', self.inputdict),
+            'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfnq_options) else 'wfn.h5' 
+        )
+
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{'python ./script_update_eps_from_pseudobands.py &> script_update_eps_from_pseudobands.py.out' if jmespath.search('wfn.is_pseudobands', self.inputdict) else ''}
+{'python ./script_update_eps_from_pseudobands.py &> script_update_eps_from_pseudobands.py.out' if jmespath.search('parabands.enabled', self.wfn_options) else ''}
 
-ln -sf {jmespath.search('gw.epsilon.wfnlink', self.inputdict)} ./WFN.h5 
-ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5 
+ln -sf {wfnlink_str} ./WFN.h5 
+ln -sf {wfnqlink_str} ./WFNq.h5 
 {scheduler.get_exec_prefix()}epsilon.cplx.x &> epsilon.inp.out 
 '''
         return file_string
@@ -103,20 +132,20 @@ ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5
     @property
     def file_contents(self) -> dict:
         output = {
-            'epsilon.inp': self.epsilon,
-            'job_epsilon.sh': self.job_epsilon,
+            './epsilon/epsilon.inp': self.epsilon,
+            './epsilon/job_epsilon.sh': self.job_epsilon,
         }
 
         # Add the script to from pseudobands if needed.
-        if jmespath.search('wfn.is_pseudobands', self.inputdict):
-            output['script_update_eps_from_pseudobands.py'] = self.eps_update_from_pseuobands
+        if jmespath.search('parabands.enabled', self.wfn_options):
+            output['./epsilon/script_update_eps_from_pseudobands.py'] = self.eps_update_from_pseudobands
 
         return output
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_epsilon.sh',
+            './epsilon/job_epsilon.sh',
         ]
 
     @property
@@ -126,18 +155,6 @@ ln -sf {jmespath.search('gw.epsilon.wfnqlink', self.inputdict)} ./WFNq.h5
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './epsilon.inp',
-            './job_epsilon.sh',
-            './WFN.h5',
-            './WFNq.h5',
-            './epsmat.h5',
-            './eps0mat.h5',
-            './epsilon.log',
-            './chi_converge.dat',
-            './epsilon.inp.out',
-            './checkbz.log',
-            './x.dat',
-            './script_update_eps_from_pseudobands.py',
-            './script_update_eps_from_pseudobands.py.out',
+            './epsilon',
         ]
 #endregion
