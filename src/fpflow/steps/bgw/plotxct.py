@@ -53,7 +53,7 @@ class BgwPlotxctStep(Step):
         wfn_index: int = wfn_names.index(wfnlink)
         self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
         wfnlink_str: str = os.path.join(
-            '..',
+            jmespath.search('bse.link_dir_prefix', self.inputdict),
             jmespath.search(path, self.inputdict),
             'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
         )
@@ -69,9 +69,9 @@ class BgwPlotxctStep(Step):
 
 ln -sf {self.get_link('bse.absorption.wfnfi_link')} ./WFN_fi.h5 
 ln -sf {self.get_link('bse.absorption.wfnqfi_link')} ./WFNq_fi.h5 
-ln -sf ../absorption/eigenvectors.h5 ./
+ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/absorption/eigenvectors.h5 ./
 {scheduler.get_exec_prefix()}plotxct.cplx.x &> plotxct.inp.out 
-volume.py ../scf/scf.in espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
+volume.py {jmespath.search('bse.link_dir_prefix', self.inputdict)}/scf/scf.in espresso *.a3Dr a3dr plotxct_elec.xsf xsf false abs2 true 
 rm -rf *.a3Dr
 '''
         

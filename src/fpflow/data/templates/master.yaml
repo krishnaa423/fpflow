@@ -163,7 +163,7 @@ generator:
    - kernel_bgw
    - absorption_bgw 
    - plotxct_bgw 
-  #  - bseq_bgw
+   - bseq_bgw
   #  - bseq_epw
   #  - wannier_bgw 
   #  - bseq_waninterp_bgw
@@ -475,6 +475,7 @@ gw:
     job_info:
       <<: *para
 bse:
+  link_dir_prefix: '../'
   kernel:
     qshift: [0.0, 0.0, 0.0]
     args:
@@ -505,6 +506,7 @@ bse:
 bseq:
   sym: *fine_sym
   qgrid: *fine_kgrid
+  Qpt_convention: 'conduction'    # Or can be valence. For conduction a -1.0 factor is multiplied with the Q points. 
   job_info:
     <<: *big_para
 xctph:

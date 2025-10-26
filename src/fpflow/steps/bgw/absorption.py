@@ -62,7 +62,7 @@ class BgwAbsorptionStep(Step):
         wfn_index: int = wfn_names.index(wfnlink)
         self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
         wfnlink_str: str = os.path.join(
-            '..',
+            jmespath.search('bse.link_dir_prefix', self.inputdict),
             jmespath.search(path, self.inputdict),
             'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
         )
@@ -77,10 +77,10 @@ class BgwAbsorptionStep(Step):
 {scheduler.get_script_header()}
 
 
-ln -sf ../epsilon/epsmat.h5 ./
-ln -sf ../epsilon/eps0mat.h5 ./
-ln -sf ../sigma/eqp1.dat ./eqp_co.dat
-ln -sf ../kernel/bsemat.h5 ./
+ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/epsilon/epsmat.h5 ./
+ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/epsilon/eps0mat.h5 ./
+ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/sigma/eqp1.dat ./eqp_co.dat
+ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/kernel/bsemat.h5 ./
 ln -sf {self.get_link('bse.absorption.wfnco_link')} ./WFN_co.h5 
 ln -sf {self.get_link('bse.absorption.wfnqco_link')} ./WFNq_co.h5 
 ln -sf {self.get_link('bse.absorption.wfnfi_link')} ./WFN_fi.h5 

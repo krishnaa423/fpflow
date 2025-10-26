@@ -44,7 +44,6 @@ Steps, post-processsing, and (Plots):
 - absorption_bgw 
 - plotxct_bgw 
 - bseq_bgw
-- bseq_epw
 - wannier_bgw 
 - bseq_waninterp_bgw
 - xctph_fp 

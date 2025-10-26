@@ -28,7 +28,6 @@ from fpflow.steps.bgw.kernel import BgwKernelStep
 from fpflow.steps.bgw.absorption import BgwAbsorptionStep
 from fpflow.steps.bgw.plotxct import BgwPlotxctStep
 from fpflow.steps.bgw.bseq import BgwBseqStep
-from fpflow.steps.bgw.bseq_epw import EpwBseqStep
 from fpflow.steps.xctph import XctphStep
 from fpflow.steps.bgw.xctph_epw import EpwXctphStep
 from fpflow.steps.xctpol import XctpolStep
@@ -89,10 +88,7 @@ step_class_map: dict = {
     'kernel_bgw': BgwKernelStep, 
     'absorption_bgw': BgwAbsorptionStep,
     'plotxct_bgw': BgwPlotxctStep,
-    
-    
     'bseq_bgw': BgwBseqStep,
-    'bseq_epw': EpwBseqStep,
     
     'xctwannier_bgw': MlQeBseStep, #TODO
     'xctph_fp': XctphStep, #TODO
