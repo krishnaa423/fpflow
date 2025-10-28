@@ -30,6 +30,7 @@ setup(
         'glom',
         'python-benedict[all]',
         'phonopy',
+        # Make sure to install Julia with WannierIO package. 
     ],
     entry_points={
         'console_scripts': [

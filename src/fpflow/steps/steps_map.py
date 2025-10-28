@@ -17,8 +17,9 @@ from fpflow.steps.qe.dos import QeDosStep
 from fpflow.steps.qe.pdos import QePdosStep
 from fpflow.steps.qe.kpdos import QeKpdosStep
 from fpflow.steps.qe.wannier import QeWannierStep
-from fpflow.steps.qe.epw import QeEpwStep
-from fpflow.steps.qe.elph import QeElphEpwStep
+from fpflow.steps.qe.elph_grid import EpwElphGridStep
+from fpflow.steps.qe.elph_bands import EpwElphBandsStep
+from fpflow.steps.qe.pp_elph import QePpElphEpwStep
 from fpflow.steps.qe.phonopy import QePhonopyStep
 from fpflow.steps.qe.phonopy_nested import QePhonopyNestedStep
 from fpflow.steps.bgw.epsilon import BgwEpsilonStep
@@ -76,9 +77,11 @@ step_class_map: dict = {
     'phdos_qe': QePhdosStep, #TODO
     'phmodes_qe': QePhmodesStep,
     
-    'epw_qe': QeEpwStep, 
-    'elph_epw': QeElphEpwStep, #TODO
-    'pol_fp': QeElphEpwStep, #TODO
+    'elph_grid_epw': EpwElphGridStep, 
+    'elph_bands_epw': EpwElphBandsStep, #TODO
+    'pp_elph_epw': QePpElphEpwStep, #TODO
+    'pol_epw': QePpElphEpwStep, #TODO
+    'pol_fp': QePpElphEpwStep, #TODO
     'phonopy_qe': QePhonopyNestedStep,
 
     'epsilon_bgw': BgwEpsilonStep,
@@ -90,13 +93,13 @@ step_class_map: dict = {
     'plotxct_bgw': BgwPlotxctStep,
     'bseq_bgw': BgwBseqStep,
     
-    'xctwannier_bgw': MlQeBseStep, #TODO
-    'xctph_fp': XctphStep, #TODO
-    'xctph_epw': EpwXctphStep,
+    'wannier_bgw': MlQeBseStep, #TODO
+    'xctph_epw': XctphStep, #TODO
+    'xctph_fp': EpwXctphStep,
     'xctpol_fp': XctpolStep, #TODO
     'ste_epw': EpwSteStep, 
-    'ste_fp': SteStep, #TODO
     'zd_epw': EpwZdStep,
+    'ste_fp': SteStep, #TODO
     'esf_fp': EsfStep, #TODO
     'esr_fp': EsrStep,  #TODO
 

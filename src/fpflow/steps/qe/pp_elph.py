@@ -14,7 +14,7 @@ from fpflow.schedulers.scheduler import Scheduler
 #endregion
 
 #region classes
-class QeElphEpwStep(Step):
+class QePpElphEpwStep(Step):
     @property
     def elph(self) -> str:
         file_string: str = f'''

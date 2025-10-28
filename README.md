@@ -1,5 +1,19 @@
 # First-principles workflow
 
+## Requirements
+
+The `pip install -e .` will take care of installing the pip dependencies. Additionally, install 
+Julia with `WannierIO.jl` package. This can be installed using 
+
+```
+using Pkg
+Pkg.add("WannierIO")
+```
+
+This will be used for reading and writing data from wannier90 output. 
+
+## Capabilities
+
 Helps create input files, job scripts, manage runs, plots, and analysis. 
 
 Supported software:
@@ -32,8 +46,8 @@ Steps, post-processsing, and (Plots):
 - phbands_qe 
 - phdos_qe 
 - phmodes_qe  
-- epw_qe
 - elph_epw 
+- pp_elph_epw 
 - pol_epw
 - phonopy_qe 
 - epsilon_bgw 

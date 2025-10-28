@@ -32,6 +32,8 @@ import copy
 class QePhonopyStep(Step):
     @property
     def script_phonopy_fc_bs(self):
+        regex_pattern: str = r"phonopy-supercell-(\d+)\.out$"
+
         return f'''
 # script_phonopy_fc_bs.py (patched)
 from fpflow.inputs.inputyaml import InputYaml
@@ -52,7 +54,7 @@ def sorted_supercell_outs(pattern="phonopy-supercell-*.out"):
         raise FileNotFoundError(f"No QE output files matched pattern")
     # sort by trailing integer index: phonopy-supercell-<idx>.out
     def idx_of(f):
-        m = re.search(r"phonopy-supercell-(\d+)\.out$", f)
+        m = re.search(r"{regex_pattern}", f)
         return int(m.group(1)) if m else 1_000_000
     return sorted(files, key=idx_of)
 

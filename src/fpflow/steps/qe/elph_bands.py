@@ -11,6 +11,7 @@ from fpflow.schedulers.scheduler import Scheduler
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.io.logging import get_logger
+from fpflow.structure.kpath import Kpath
 
 #endregion
 
@@ -22,7 +23,16 @@ logger = get_logger()
 #endregion
 
 #region classes
-class QeEpwStep(Step):
+class EpwElphBandsStep(Step):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Set options.
+        wfnlink: str = jmespath.search('elph.nscf_link', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfnlink)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
     @property
     def bands_skipped_string(self) -> str:
         #TODO: Copied this code, but need to refactor to make it simple. 
@@ -39,10 +49,10 @@ class QeEpwStep(Step):
         # Populate list.
         if bands_skipped is None:
             bands_skipped = []
-            epw_val_bands = jmespath.search('epw.val_bands', self.inputdict)
+            epw_val_bands = jmespath.search('elph.val_bands', self.inputdict)
             total_val_bands = max_val_bands
-            epw_cond_bands = jmespath.search('epw.cond_bands', self.inputdict)
-            wfn_cond = jmespath.search('wfn.cond_bands', self.inputdict)
+            epw_cond_bands = jmespath.search('elph.cond_bands', self.inputdict)
+            wfn_cond = jmespath.search('cond_bands', self.wfn_options)
 
             if epw_val_bands!= total_val_bands:
                 temp = (1, total_val_bands - epw_val_bands)
@@ -73,36 +83,41 @@ class QeEpwStep(Step):
         return exclude_bands_str
 
     @property
-    def epw(self) -> str:
+    def elph(self) -> str:
         epwdict: dict = {
             'inputepw': {
-                'outdir': "'./tmp_epw'",
+                'outdir': "'./tmp'",
                 'prefix': "'struct'",
                 'dvscf_dir': "'./save'",
                 
-                'nk1': jmespath.search('epw.kgrid[0]', self.inputdict),
-                'nk2': jmespath.search('epw.kgrid[1]', self.inputdict),
-                'nk3': jmespath.search('epw.kgrid[2]', self.inputdict),
-                'nq1': jmespath.search('epw.qgrid[0]', self.inputdict),
-                'nq2': jmespath.search('epw.qgrid[1]', self.inputdict),
-                'nq3': jmespath.search('epw.qgrid[2]', self.inputdict),
-                'nkf1': jmespath.search('epw.kgrid[0]', self.inputdict),
-                'nkf2': jmespath.search('epw.kgrid[1]', self.inputdict),
-                'nkf3': jmespath.search('epw.kgrid[2]', self.inputdict),
-                'nqf1': jmespath.search('epw.qgrid[0]', self.inputdict),
-                'nqf2': jmespath.search('epw.qgrid[1]', self.inputdict),
-                'nqf3': jmespath.search('epw.qgrid[2]', self.inputdict),
-                'nbndsub': jmespath.search('epw.val_bands', self.inputdict) + jmespath.search('epw.cond_bands', self.inputdict),
-
+                'nk1': jmespath.search('elph.coarse_kgrid[0]', self.inputdict),
+                'nk2': jmespath.search('elph.coarse_kgrid[1]', self.inputdict),
+                'nk3': jmespath.search('elph.coarse_kgrid[2]', self.inputdict),
+                'nq1': jmespath.search('elph.coarse_qgrid[0]', self.inputdict),
+                'nq2': jmespath.search('elph.coarse_qgrid[1]', self.inputdict),
+                'nq3': jmespath.search('elph.coarse_qgrid[2]', self.inputdict),
+                'nbndsub': jmespath.search('elph.val_bands', self.inputdict) + jmespath.search('elph.cond_bands', self.inputdict),
+                'band_plot': '.true.',
+                'filkf': "'./path.kpt'",
+                'filqf': "'./path.kpt'",
                 
                 'elph': '.true.',
                 'epbwrite': '.true.',
                 'epbread': '.false.',
+                'epwwrite': '.true.',
+                'epwread': '.false.',
                 'lpolar': '.true.',
                 
-                'wannierize': '.true.',
-                'auto_projections': '.true.',
-                'scdm_proj': '.true.',
+                # Reuse wannier90 calculations. 
+                'wannierize': '.false.',
+                'filukk': "'./struct.ukk'",
+
+                # Do custom wannier calculations. 
+                # 'wannierize': '.true.',
+                # 'wannier_plot': '.true.',
+                # 'wannier_plot_supercell': f'{jmespath.search("elph.coarse_kgrid[0]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[1]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[2]", self.inputdict)*2}',
+                # 'auto_projections': '.true.',
+                # 'scdm_proj': '.true.',
             }
         }
 
@@ -112,20 +127,30 @@ class QeEpwStep(Step):
             epwdict['inputepw']['bands_skipped'] = self.bands_skipped_string
 
         # Update if needed. 
-        update_dict(epwdict, jmespath.search('epw.args', self.inputdict))
+        update_dict(epwdict, jmespath.search('elph.args', self.inputdict))
+
+        # If projections provided, delete auto_projections and scdm_proj.
+        if 'proj(1)' in epwdict['inputepw'].keys() and epwdict['inputepw']['wannierize'] == '.true.':
+            del epwdict['inputepw']['auto_projections']
+            del epwdict['inputepw']['scdm_proj']
 
         return NamelistGrammar().write(epwdict)
 
     @property
-    def job_epw(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'epw.job_info')
+    def job_elph(self) -> str:
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'elph.job_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < epw.in  &> epw.in.out 
-cp ./tmp_epw/struct.xml ./save/wfn_epw.xml
-cp ./tmp_epw/*epb* ./save/
+rm -rf ./tmp
+cp -r ../{jmespath.search('elph.nscf_link', self.inputdict)}/tmp ./tmp
+rm -rf ./save
+cp -r ../dfpt/save ./save
+ln -sf ../wannier/wan.ukk ./struct.ukk
+{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < elph.in  &> elph.in.out 
+cp ./tmp/struct.xml ./save/wfn.xml
+cp ./tmp/*epb* ./save/
 '''
         return file_string
 
@@ -133,14 +158,15 @@ cp ./tmp_epw/*epb* ./save/
     @property
     def file_contents(self) -> dict:
         return {
-            'epw.in': self.epw,
-            'job_epw.sh': self.job_epw,
+            './elph_bands/elph.in': self.elph,
+            './elph_bands/job_elph.sh': self.job_elph,
+            './elph_bands/path.kpt': Kpath.from_yamlfile().epwpath_str,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_epw.sh'
+            './elph_bands/job_elph.sh'
         ]
 
     @property
@@ -150,17 +176,7 @@ cp ./tmp_epw/*epb* ./save/
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './epw.in',
-            './job_epw.sh',
-            './tmp_epw',
-            './struct*',
-            './decay*',
-            './EPW.bib',
-            './epwdata.fmt',
-            './selecq.fmt',
-            './vmedata.fmt',
-            './epw.in.out',
-            './epw.out',
-            './crystal.fmt',
+            './elph_bands',
         ]
+
 #endregion

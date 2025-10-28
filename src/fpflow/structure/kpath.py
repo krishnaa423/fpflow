@@ -141,6 +141,15 @@ class Kpath:
             output += f'{coord[0]:15.10f} {coord[1]:15.10f} {coord[2]:15.10f} {self.npoints_segment} !{path_special_point}\n'
         
         return output 
+    
+    @property
+    def epwpath_str(self):
+        output = f'{len(self.kpts)} crystal\n'
+
+        for kpt in self.kpts:
+            output += f'{kpt[0]:15.10f} {kpt[1]:15.10f} {kpt[2]:15.10f} 1.0\n'
+
+        return output
 
     @property
     def dftelbands_list(self):

@@ -60,7 +60,7 @@ class QeWannierStep(Step):
         # Kpath.
         kpath_data: list = Kpath.from_yamlfile().wannierpath_list
 
-        wannierdict: dict = {
+        self.wannierdict: dict = {
             'mp_grid': jmespath.search('wannier.kgrid', self.inputdict),
             'num_bands': cond_bands + val_bands,
             'num_wann': cond_bands + val_bands,
@@ -80,15 +80,18 @@ class QeWannierStep(Step):
         }
 
         if jmespath.search('scf.is_spinorbit', self.inputdict):
-            wannierdict['spinors'] = True
+            self.wannierdict['spinors'] = True
 
         # Add exclude bands if needed.
-        self.add_exclude_bands(wannierdict, max_val_bands, val_bands)
+        self.add_exclude_bands(self.wannierdict, max_val_bands, val_bands)
 
         # Update if needed. 
-        update_dict(wannierdict, jmespath.search('wannier.args', self.inputdict))
+        update_dict(self.wannierdict, jmespath.search('wannier.args', self.inputdict))
 
-        return WannierGrammar().write(wannierdict)
+        # If projections provided, delete auto_projections.
+        if 'projections' in self.wannierdict.keys(): del self.wannierdict['auto_projections']
+
+        return WannierGrammar().write(self.wannierdict)
     
     @property
     def pw2wan(self) -> str:
@@ -107,19 +110,42 @@ class QeWannierStep(Step):
         # Update if needed. 
         update_dict(pw2wandict, jmespath.search('wannier.pw2wan_args', self.inputdict))
 
+        # If projections provided, delete scdm_proj.
+        if 'projections' in self.wannierdict: del pw2wandict['inputpp']['scdm_proj']
+
         file_string: str =  NamelistGrammar().write(pw2wandict)
 
         return file_string
     
     @property
+    def create_ukk(self) -> str:
+        filestring = '''
+using WannierIO
+
+# Read wannier90 files
+chk = WannierIO.read_chk("./wan.chk")
+
+# Read qe xml.
+qe_xml = WannierIO.read_qe_xml("./tmp/struct.xml")
+alat = qe_xml.alat
+
+# Create ukk file.
+ukk = WannierIO.Ukk(chk, alat)
+WannierIO.write_epw_ukk("wan.ukk", ukk)
+
+println("Created wan.ukk file for EPW calculations.")
+'''
+
+        return filestring
+
+    @property
     def job_wanpp(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'wannier.job_wanpp_info')
-        link_dir: str = jmespath.search('wannier.nscflink_dir', self.inputdict)
-
+        
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-ln -sf {link_dir} ./tmp
+ln -sf ../{jmespath.search('wannier.nscf_link', self.inputdict)}/tmp ./tmp
 {scheduler.get_exec_prefix()}wannier90.x {scheduler.get_exec_infix()} -pp wan &> wan.win.pp.out
 '''
         return file_string
@@ -143,6 +169,9 @@ ln -sf {link_dir} ./tmp
 {scheduler.get_script_header()}
 
 {scheduler.get_exec_prefix()}wannier90.x {scheduler.get_exec_infix()} wan &> wan.win.out
+
+# Create .ukk file for epw.
+julia create_ukk.jl &> create_ukk.jl.out
 
 wannierqe_pp="
 from fpflow.analysis.wannierqe import WannierQeAnalysis
@@ -171,11 +200,12 @@ python -c "$tbmodels_pp" &> wannierqe_pp_tbmodels.out
     @property
     def file_contents(self) -> dict:
         file_list = {
-            './wan/wan.win': self.wan,
-            './wan/pw2wan.in': self.pw2wan,
-            './wan/job_wanpp.sh': self.job_wanpp,
-            './wan/job_pw2wan.sh': self.job_pw2wan,
-            './wan/job_wan.sh': self.job_wan,
+            './wannier/wan.win': self.wan,
+            './wannier/pw2wan.in': self.pw2wan,
+            './wannier/create_ukk.jl': self.create_ukk,
+            './wannier/job_wanpp.sh': self.job_wanpp,
+            './wannier/job_pw2wan.sh': self.job_pw2wan,
+            './wannier/job_wan.sh': self.job_wan,
         }
 
         return file_list
@@ -183,9 +213,9 @@ python -c "$tbmodels_pp" &> wannierqe_pp_tbmodels.out
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './wan/job_wanpp.sh',
-            './wan/job_pw2wan.sh',
-            './wan/job_wan.sh',
+            './wannier/job_wanpp.sh',
+            './wannier/job_pw2wan.sh',
+            './wannier/job_wan.sh',
         ]
 
     @property
@@ -195,7 +225,7 @@ python -c "$tbmodels_pp" &> wannierqe_pp_tbmodels.out
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './wan',
+            './wannier',
         ]
 
     def plot(self, **kwargs):

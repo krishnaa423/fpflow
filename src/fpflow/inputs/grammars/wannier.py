@@ -132,7 +132,7 @@ pair: NAME "=" value
 value: VALUE_STR | NUMBER | number_list | NAME | LOGICAL
 number_list: NUMBER (NUMBER)+
 
-block: unit_cell_cart | atoms_frac | kpoints | kpath
+block: unit_cell_cart | atoms_frac | kpoints | kpath | projections
 
 UNIT: "bohr" | "angstrom"
 unit: UNIT
@@ -148,6 +148,9 @@ kpoints_line: NUMBER NUMBER NUMBER NEWLINE
 
 kpath: "begin" "kpoint_path" NEWLINE kpath_line+ "end" "kpoint_path"
 kpath_line: SPECIAL_POINT NUMBER NUMBER NUMBER SPECIAL_POINT NUMBER NUMBER NUMBER NEWLINE
+
+projections: "begin" "projections" NEWLINE projection_line+ "end" "projections"
+projection_line: /[^\n]+/  NEWLINE
 """
 
     transform: WannierTransform = WannierTransform()
@@ -179,7 +182,7 @@ kpath_line: SPECIAL_POINT NUMBER NUMBER NUMBER SPECIAL_POINT NUMBER NUMBER NUMBE
             else:
                 return f"{key} = {fmt_scalar(val)}"
 
-        block_keys = {"unit_cell_cart", "atoms_frac", "kpoints", "kpoint_path"}
+        block_keys = {"unit_cell_cart", "atoms_frac", "kpoints", "kpoint_path", "projections"}
 
         # 1) key-value pairs (everything not in block_keys)
         for key, val in data.items():
@@ -236,6 +239,14 @@ kpath_line: SPECIAL_POINT NUMBER NUMBER NUMBER SPECIAL_POINT NUMBER NUMBER NUMBE
                     # fallback: write whatever is present
                     lines.append(" ".join(str(x) for x in row))
             lines.append("end kpoint_path\n")
+
+        # projections
+        if "projections" in data:
+            rows = data["projections"] or []
+            lines.append("\nbegin projections")
+            for row in rows:
+                lines.append(f'{row}')
+            lines.append("end projections\n")
 
         return "\n".join(lines) + "\n"
 

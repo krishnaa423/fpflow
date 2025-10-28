@@ -68,8 +68,10 @@ class QeWannierPlot(PlotBase):
 
     def add_wan_bands_data(self):
         # Read wannierqe eigs.
+        os.chdir('./wannier')
         wan_analysis = WannierQeAnalysis()
         wan_analysis.read_all()
+        os.chdir('..')
         self.wan_eigs = wan_analysis.eigs - self.fermi_energy
         self.wan_axis = wan_analysis.wan_axis.reshape(-1, 1)
         self.wan_num_bands = self.wan_eigs.shape[1]
@@ -156,7 +158,7 @@ class QeWannierPlot(PlotBase):
             self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
 
     def add_hr_figure(self):
-        with h5py.File('./wan/wannier.h5', 'r') as hf:
+        with h5py.File('./wannier/wannier.h5', 'r') as hf:
             hr = hf['hr'][:]
             rpts = hf['hr_R'][:]
 

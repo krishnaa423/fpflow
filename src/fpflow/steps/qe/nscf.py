@@ -208,20 +208,23 @@ wfn2hdf.x BIN wfn wfn.h5
         for wfn_options in jmespath.search('nscf.list[*]', self.inputdict):
             name = jmespath.search('name', wfn_options)
 
-            contents_dict.update({
-                f'./{name}/wfn.in': self.get_wfn(wfn_options),
-                f'./{name}/job_wfn.sh': self.get_job_wfn(wfn_options),
-                f'./{name}/pw2bgw.in': self.get_pw2bgw(wfn_options),
-                f'./{name}/job_pw2bgw.sh': self.get_job_pw2bgw(wfn_options),
-            })
-
-            # Add parabands if asked.
-            use_parabands: bool = jmespath.search('parabands.enabled', wfn_options)
-            if use_parabands:
+            # Check if name is in enabled dirs.
+            enabled_dirs: List[str] = jmespath.search('nscf.enabled_dirs', self.inputdict) or []
+            if name in enabled_dirs:
                 contents_dict.update({
-                    f'./{name}/parabands.inp': self.get_parabands(wfn_options),
-                    f'./{name}/job_parabands.sh': self.get_job_parabands(wfn_options),
+                    f'./{name}/wfn.in': self.get_wfn(wfn_options),
+                    f'./{name}/job_wfn.sh': self.get_job_wfn(wfn_options),
+                    f'./{name}/pw2bgw.in': self.get_pw2bgw(wfn_options),
+                    f'./{name}/job_pw2bgw.sh': self.get_job_pw2bgw(wfn_options),
                 })
+
+                # Add parabands if asked.
+                use_parabands: bool = jmespath.search('parabands.enabled', wfn_options)
+                if use_parabands:
+                    contents_dict.update({
+                        f'./{name}/parabands.inp': self.get_parabands(wfn_options),
+                        f'./{name}/job_parabands.sh': self.get_job_parabands(wfn_options),
+                    })
 
         return contents_dict
 
@@ -232,15 +235,18 @@ wfn2hdf.x BIN wfn wfn.h5
         for wfn_options in jmespath.search('nscf.list[*]', self.inputdict):
             name = jmespath.search('name', wfn_options)
 
-            scripts_list.extend([
-                f'./{name}/job_wfn.sh',
-                f'./{name}/job_pw2bgw.sh',
-            ])
+            # Check if name is in enabled dirs.
+            enabled_dirs: List[str] = jmespath.search('nscf.enabled_dirs', self.inputdict) or []
+            if name in enabled_dirs:
+                scripts_list.extend([
+                    f'./{name}/job_wfn.sh',
+                    f'./{name}/job_pw2bgw.sh',
+                ])
 
-            # Add parabands if asked.
-            use_parabands: bool = jmespath.search('parabands.enabled', wfn_options)
-            if use_parabands:
-                scripts_list.append(f'./{name}/job_parabands.sh')
+                # Add parabands if asked.
+                use_parabands: bool = jmespath.search('parabands.enabled', wfn_options)
+                if use_parabands:
+                    scripts_list.append(f'./{name}/job_parabands.sh')
 
         return scripts_list
 
@@ -250,7 +256,7 @@ wfn2hdf.x BIN wfn wfn.h5
     
     @property
     def remove_inodes(self) -> List[str]:
-        inodes_list: List[str] = [f'./{dirname}' for dirname in jmespath.search('nscf.list[*].name', self.inputdict)]
+        inodes_list: List[str] = [f'./{dirname}' for dirname in jmespath.search('nscf.list[*].name', self.inputdict) if dirname in jmespath.search('nscf.enabled_dirs', self.inputdict) or []]
 
         return inodes_list
 
