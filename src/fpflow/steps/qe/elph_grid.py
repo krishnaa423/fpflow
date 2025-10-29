@@ -11,6 +11,9 @@ from fpflow.schedulers.scheduler import Scheduler
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.io.logging import get_logger
+from fpflow.structure.kpath import Kpath
+from fpflow.inputs.grammars.wannier import WannierGrammar
+from fpflow.plots.elph_grid import EpwElphGridPlot
 
 #endregion
 
@@ -81,6 +84,26 @@ class EpwElphGridStep(Step):
         
         return exclude_bands_str
 
+    def add_wannier_data(self, epwdict: dict):
+        # Kpath.
+        kpath_data: list = Kpath.from_yamlfile().wannierpath_list
+        
+        wannierdict: dict = {
+            'bands_plot': True,
+            'bands_num_points': jmespath.search('kpath.npoints_segment', self.inputdict),
+            'write_hr': True,
+            'use_ws_distance': True,
+            'write_xyz': True,
+            'write_u_matrices': True,
+            'write_tb': True,
+            'kpoint_path': kpath_data,
+        }
+        wannier_lines = WannierGrammar().write(wannierdict).splitlines()
+
+        # Add the lines to epwdict. 
+        for line_num, line in enumerate(wannier_lines):
+            epwdict['inputepw'][f'wdata({line_num+1})'] = f"'{line}'"
+
     @property
     def elph(self) -> str:
         epwdict: dict = {
@@ -111,16 +134,16 @@ class EpwElphGridStep(Step):
                 'epwread': '.false.',
                 'lpolar': '.true.',
 
-                # Reuse wannier90 calculations. 
-                'wannierize': '.false.',
-                'filukk': "'./struct.ukk'",
+                # # Reuse wannier90 calculations. 
+                # 'wannierize': '.false.',
+                # 'filukk': "'./struct.ukk'",
 
                 # Do custom wannier calculations. 
-                # 'wannierize': '.true.',
-                # 'wannier_plot': '.true.',
-                # 'wannier_plot_supercell': f'{jmespath.search("elph.coarse_kgrid[0]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[1]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[2]", self.inputdict)*2}',
-                # 'auto_projections': '.true.',
-                # 'scdm_proj': '.true.',
+                'wannierize': '.true.',
+                'wannier_plot': '.true.',
+                'wannier_plot_supercell': f'{jmespath.search("elph.coarse_kgrid[0]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[1]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[2]", self.inputdict)*2}',
+                'auto_projections': '.true.',
+                'scdm_proj': '.true.',
             }
         }
 
@@ -128,6 +151,9 @@ class EpwElphGridStep(Step):
         a = self.bands_skipped_string
         if self.bands_skipped_string is not None and self.bands_skipped_string!='' : 
             epwdict['inputepw']['bands_skipped'] = self.bands_skipped_string
+
+        # Add extra wannier data. 
+        self.add_wannier_data(epwdict)
 
         # Update if needed. 
         update_dict(epwdict, jmespath.search('elph.args', self.inputdict))
@@ -150,10 +176,18 @@ rm -rf ./tmp
 cp -r ../{jmespath.search('elph.nscf_link', self.inputdict)}/tmp ./tmp
 rm -rf ./save
 cp -r ../dfpt/save ./save
-ln -sf ../wannier/wan.ukk ./struct.ukk
 {scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < elph.in  &> elph.in.out 
 cp ./tmp/struct.xml ./save/wfn.xml
 cp ./tmp/*epb* ./save/
+
+wannierqe_pp="
+from fpflow.analysis.wannierqe import WannierQeAnalysis
+wan = WannierQeAnalysis()
+wan.read_all()
+wan.write()
+"
+
+python -c "$wannierqe_pp" &> wannierqe_pp.out 
 '''
         return file_string
 
@@ -180,5 +214,8 @@ cp ./tmp/*epb* ./save/
         return [
             './elph_grid',
         ]
+    
+    def plot(self, **kwargs):
+            EpwElphGridPlot(inputdict=self.inputdict).save_figures(**kwargs)
 
 #endregion

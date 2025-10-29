@@ -47,8 +47,8 @@ common:
   coarse_nk: &coarse_nk 8
 
   fine_sym: &fine_sym false
-  fine_kgrid: &fine_kgrid [8, 8, 8]
-  fine_nk: &fine_nk 512
+  fine_kgrid: &fine_kgrid [2, 2, 2]
+  fine_nk: &fine_nk 8
   
   qgrid: &qgrid [2, 2, 2]
   dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign true 
@@ -152,7 +152,7 @@ generator:
   #  - phdos_qe 
   #  - phmodes_qe  
    - elph_grid_epw 
-   - elph_bands_epw 
+  #  - elph_bands_epw 
   #  - pp_elph_epw 
   #  - pol_epw
   #  - phonopy_qe 

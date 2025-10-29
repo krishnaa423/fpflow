@@ -73,6 +73,7 @@ class QeWannierStep(Step):
             'write_xyz': True,
             'write_u_matrices': True,
             'write_tb': True,
+            'write_bvec': True,
             'unit_cell_cart': qestruct.cell,
             'atoms_frac': qestruct.scaled_atomic_positions,
             'kpoints': kpts,
@@ -99,7 +100,7 @@ class QeWannierStep(Step):
             'inputpp': {
                 'outdir': "'./tmp'",
                 'prefix': "'struct'",
-                'seedname': "'wan'",
+                'seedname': "'struct'",
                 'write_amn': '.true.',
                 'write_mmn': '.true.',
                 'write_unk': '.true.',
@@ -123,7 +124,7 @@ class QeWannierStep(Step):
 using WannierIO
 
 # Read wannier90 files
-chk = WannierIO.read_chk("./wan.chk")
+chk = WannierIO.read_chk("./struct.chk")
 
 # Read qe xml.
 qe_xml = WannierIO.read_qe_xml("./tmp/struct.xml")
@@ -131,9 +132,9 @@ alat = qe_xml.alat
 
 # Create ukk file.
 ukk = WannierIO.Ukk(chk, alat)
-WannierIO.write_epw_ukk("wan.ukk", ukk)
+WannierIO.write_epw_ukk("struct.ukk", ukk)
 
-println("Created wan.ukk file for EPW calculations.")
+println("Created struct.ukk file for EPW calculations.")
 '''
 
         return filestring
@@ -146,7 +147,7 @@ println("Created wan.ukk file for EPW calculations.")
 {scheduler.get_script_header()}
 
 ln -sf ../{jmespath.search('wannier.nscf_link', self.inputdict)}/tmp ./tmp
-{scheduler.get_exec_prefix()}wannier90.x {scheduler.get_exec_infix()} -pp wan &> wan.win.pp.out
+{scheduler.get_exec_prefix()}wannier90.x {scheduler.get_exec_infix()} -pp struct &> struct.win.pp.out
 '''
         return file_string
     
@@ -168,10 +169,10 @@ ln -sf ../{jmespath.search('wannier.nscf_link', self.inputdict)}/tmp ./tmp
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}wannier90.x {scheduler.get_exec_infix()} wan &> wan.win.out
+{scheduler.get_exec_prefix()}wannier90.x {scheduler.get_exec_infix()} struct &> struct.win.out
 
 # Create .ukk file for epw.
-julia create_ukk.jl &> create_ukk.jl.out
+# julia create_ukk.jl &> create_ukk.jl.out
 
 wannierqe_pp="
 from fpflow.analysis.wannierqe import WannierQeAnalysis
@@ -184,10 +185,10 @@ tbmodels_pp='
 import tbmodels
 
 model = tbmodels.Model.from_wannier_files(
-    hr_file="./wan_hr.dat",
-    wsvec_file="./wan_wsvec.dat",
-    xyz_file="./wan_centres.xyz",
-    win_file="./wan.win",
+    hr_file="./struct_hr.dat",
+    wsvec_file="./struct_wsvec.dat",
+    xyz_file="./struct_centres.xyz",
+    win_file="./struct.win",
 )
 model.to_hdf5_file("./wannier_tbmodel.hdf5")
 '
@@ -200,9 +201,9 @@ python -c "$tbmodels_pp" &> wannierqe_pp_tbmodels.out
     @property
     def file_contents(self) -> dict:
         file_list = {
-            './wannier/wan.win': self.wan,
+            './wannier/struct.win': self.wan,
             './wannier/pw2wan.in': self.pw2wan,
-            './wannier/create_ukk.jl': self.create_ukk,
+            # './wannier/create_ukk.jl': self.create_ukk,
             './wannier/job_wanpp.sh': self.job_wanpp,
             './wannier/job_pw2wan.sh': self.job_pw2wan,
             './wannier/job_wan.sh': self.job_wan,

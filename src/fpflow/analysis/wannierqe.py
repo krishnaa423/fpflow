@@ -20,7 +20,7 @@ class WannierQeAnalysis:
     def __init__(self):
         self.inputdict: dict = InputYaml.from_yaml_file('../input.yaml').inputdict
 
-    def read_eig(self, filename: str = './wan_band.dat', kpt_label_file: str = './wan_band.labelinfo.dat'):
+    def read_eig(self, filename: str = './struct_band.dat', kpt_label_file: str = './struct_band.labelinfo.dat'):
         # Read the wannier kpath.
         self.wannier_kpt_idxs: np.ndarray = np.loadtxt(kpt_label_file, usecols=1) - 1
         self.dft_kpt_idxs: np.ndarray = np.arange(
@@ -51,7 +51,7 @@ class WannierQeAnalysis:
     def read_kgrid(self):
         self.kgrid: list = jmespath.search('wannier.kgrid', self.inputdict)
 
-    def read_hr(self, filename: str = './wan_hr.dat'):
+    def read_hr(self, filename: str = './struct_hr.dat'):
         with open(filename) as f:
             lines = f.readlines()
 
@@ -90,7 +90,7 @@ class WannierQeAnalysis:
         self.hr_matrices = hr_matrices
         self.hr_rpts = np.array(rpts)  # shape (nrpts, 3)
 
-    def read_u_matrix(self, filename: str = './wan_u.mat'):
+    def read_u_matrix(self, filename: str = './struct_u.mat'):
         with open(filename) as f:
             lines = f.readlines()
 
