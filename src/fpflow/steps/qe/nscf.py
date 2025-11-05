@@ -258,6 +258,9 @@ wfn2hdf.x BIN wfn wfn.h5
     def remove_inodes(self) -> List[str]:
         inodes_list: List[str] = [f'./{dirname}' for dirname in jmespath.search('nscf.list[*].name', self.inputdict) if dirname in jmespath.search('nscf.enabled_dirs', self.inputdict) or []]
 
+        # Remove any kgrid folders. 
+        inodes_list.append('./kgrid*')
+
         return inodes_list
 
 #endregion

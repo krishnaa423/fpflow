@@ -65,7 +65,6 @@ class QeWannierStep(Step):
             'num_bands': cond_bands + val_bands,
             'num_wann': cond_bands + val_bands,
             'auto_projections': True,
-            'wannier_plot': True,
             'bands_plot': True,
             'bands_num_points': jmespath.search('kpath.npoints_segment', self.inputdict),
             'write_hr': True,
@@ -78,6 +77,14 @@ class QeWannierStep(Step):
             'atoms_frac': qestruct.scaled_atomic_positions,
             'kpoints': kpts,
             'kpoint_path': kpath_data,
+
+            # Options for wannier2bgw. 
+            'wannier_plot': True,
+            'wvfn_formatted': True,
+            'wannier_plot_supercell': jmespath.search('wannier.kgrid', self.inputdict),
+            'print_interp_rotmat': True,
+            'interp_rotmat_grid': jmespath.search('wannier.fine_kgrid', self.inputdict),
+            'print_uwk': True,
         }
 
         if jmespath.search('scf.is_spinorbit', self.inputdict):
@@ -104,6 +111,7 @@ class QeWannierStep(Step):
                 'write_amn': '.true.',
                 'write_mmn': '.true.',
                 'write_unk': '.true.',
+                'wvfn_formatted': '.true.',
                 'scdm_proj': '.true.',
             }
         }

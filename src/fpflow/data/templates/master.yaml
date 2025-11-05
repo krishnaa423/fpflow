@@ -47,8 +47,8 @@ common:
   coarse_nk: &coarse_nk 8
 
   fine_sym: &fine_sym false
-  fine_kgrid: &fine_kgrid [2, 2, 2]
-  fine_nk: &fine_nk 8
+  fine_kgrid: &fine_kgrid [4, 4, 4]
+  fine_nk: &fine_nk 64
   
   qgrid: &qgrid [2, 2, 2]
   dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign true 
@@ -146,12 +146,12 @@ generator:
   #  - pdos_qe 
   #  - kpdos_qe 
    - wannier_qe
-  #  - dfpt_qe
+   - dfpt_qe
   #  - pp_dfpt_qe
   #  - phbands_qe 
   #  - phdos_qe 
   #  - phmodes_qe  
-  #  - elph_grid_epw 
+   - elph_grid_epw 
   #  - elph_bands_epw 
   #  - pp_elph_epw 
   #  - pol_epw
@@ -402,6 +402,7 @@ kpdos:
 wannier:
   nscf_link: *wannier_nscf_link
   kgrid: *coarse_kgrid
+  fine_kgrid: *fine_kgrid
   val_bands: *dft_valbands
   cond_bands: *dft_condbands
   

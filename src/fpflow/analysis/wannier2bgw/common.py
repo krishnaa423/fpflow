@@ -4,20 +4,24 @@
 
 import numpy as np
 from datetime import datetime
+import jmespath
+from fpflow.inputs.inputyaml import InputYaml
 
+
+inputdict: dict = InputYaml.from_yaml_file('../inputs.yaml').inputdict
 
 ## input parameters (mandatory)
 #convert = 'split-wannier-kpoints'   # preprocessing option
 #convert = 'dft-unk'   # converting DFT-UNK wavefunctions
 convert = 'wannier-interp-uwk'   # converting Wannier-interpolated UWK with rotmat
 
-prefix = 'graphene'  # wannier90 prefix
-wpath = 'unk/qe/'  # wannier run folders containing UNK or UWK files
+prefix = 'struct'  # wannier90 prefix
+wpath = './'  # wannier run folders containing UNK or UWK files
 nsplit = 0  # number of split of kpoints for wannier interpolation, for no-split, set to 0
 wvfn_disk_io = False  # save intermediate wavefunctions on disk or in memory
 restart = False  # restart from main object wavef saved in main folder
 
-ecut = 60.0  # rydberg
+ecut = jmespath.search('scf.ecut', inputdict) # rydberg
 efermi = 0.577598909  # eV, for insulators, set a value in the gap
 latvec = np.array([[ 2.323902005,   4.025116356,   0.000000000], \
                    [-2.323902005,   4.025116356,   0.000000000], \

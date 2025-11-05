@@ -97,6 +97,14 @@ class EpwElphGridStep(Step):
             'write_u_matrices': True,
             'write_tb': True,
             'kpoint_path': kpath_data,
+            
+            # Options for wannier2bgw. 
+            'wannier_plot': True,
+            'wvfn_formatted': True,
+            'wannier_plot_supercell': jmespath.search('elph.coarse_kgrid', self.inputdict),
+            'print_interp_rotmat': True,
+            'interp_rotmat_grid': jmespath.search('elph.fine_kgrid', self.inputdict),
+            'print_uwk': True,
         }
         wannier_lines = WannierGrammar().write(wannierdict).splitlines()
 
@@ -140,8 +148,8 @@ class EpwElphGridStep(Step):
 
                 # Do custom wannier calculations. 
                 'wannierize': '.true.',
-                'wannier_plot': '.true.',
-                'wannier_plot_supercell': f'{jmespath.search("elph.coarse_kgrid[0]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[1]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[2]", self.inputdict)*2}',
+                # 'wannier_plot': '.true.',
+                # 'wannier_plot_supercell': f'{jmespath.search("elph.coarse_kgrid[0]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[1]", self.inputdict)*2} {jmespath.search("elph.coarse_kgrid[2]", self.inputdict)*2}',
                 'auto_projections': '.true.',
                 'scdm_proj': '.true.',
             }

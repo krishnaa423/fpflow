@@ -53,7 +53,12 @@ def get_ibz_kpts(atoms: Atoms, kgrid: list, qshift: list = [0.0, 0.0, 0.0]):
 
     kpts: np.ndarray = np.loadtxt('kgrid.log', skiprows=2)
 
-    os.system('rm -rf ./kgrid.inp ./kgrid.log ./kgrid.out')
+    # Save the input and output files in a kgrid directory. 
+    kgrid_folder_name = f'kgrid_{kgrid[0]}_{kgrid[1]}_{kgrid[2]}_qshift_{qshift[0]}_{qshift[1]}_{qshift[2]}'
+    os.system(f'mkdir -p ./{kgrid_folder_name}')
+    os.system(f'mv ./kgrid.inp ./{kgrid_folder_name}/kgrid.inp')
+    os.system(f'mv ./kgrid.log ./{kgrid_folder_name}/kgrid.log')
+    os.system(f'mv ./kgrid.out ./{kgrid_folder_name}/kgrid.out')
 
     return kpts
 #endregion
