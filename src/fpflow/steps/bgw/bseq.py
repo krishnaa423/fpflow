@@ -126,7 +126,8 @@ python ./script_bseq.py
         ).bseq_qpts
 
         for Qpt_idx, Qpt in enumerate(Qpts):
-            self.dest_dir: str = f'./bseq/q_{Qpt_idx:04d}'
+            # self.dest_dir: str = f'./bseq/q_{Qpt_idx:04d}'
+            self.dest_dir: str = f'./bseq/q_{Qpt_idx}'
             self.current_dir: str = os.getcwd()
             os.makedirs(self.dest_dir, exist_ok=True)
             if jmespath.search('bseq.Qpt_convention', self.inputdict) == 'conduction':

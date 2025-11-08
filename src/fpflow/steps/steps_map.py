@@ -94,8 +94,8 @@ step_class_map: dict = {
     'bseq_bgw': BgwBseqStep,
     
     'wannier_bgw': MlQeBseStep, #TODO
-    'xctph_epw': XctphStep, #TODO
-    'xctph_fp': EpwXctphStep,
+    'xctph_epw': EpwXctphStep, #TODO
+    'xctph_fp': XctphStep,  #TODO
     'xctpol_fp': XctpolStep, #TODO
     'ste_epw': EpwSteStep, 
     'zd_epw': EpwZdStep,

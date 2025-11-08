@@ -11,6 +11,7 @@ from fpflow.schedulers.scheduler import Scheduler
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.io.logging import get_logger
+from fpflow.plots.xctph_epw import EpwXctphPlot
 
 #endregion
 
@@ -36,13 +37,19 @@ class EpwXctphStep(Step):
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
         ))
 
+        # wfnlink. 
+        wfn_link: str = jmespath.search('elph.nscf_link', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
         # Populate list.
         if bands_skipped is None:
             bands_skipped = []
             epw_val_bands = jmespath.search('xctph.val_bands', self.inputdict)
             total_val_bands = max_val_bands
             epw_cond_bands = jmespath.search('xctph.cond_bands', self.inputdict)
-            wfn_cond = jmespath.search('wfn.cond_bands', self.inputdict)
+            wfn_cond = jmespath.search('cond_bands', self.wfn_options)
 
             if epw_val_bands!= total_val_bands:
                 temp = (1, total_val_bands - epw_val_bands)
@@ -76,7 +83,7 @@ class EpwXctphStep(Step):
     def xctph_epw(self) -> str:
         epwdict: dict = {
             'inputepw': {
-                'outdir': "'./tmp_epw'",
+                'outdir': "'./tmp'",
                 'prefix': "'struct'",
                 'dvscf_dir': "'./save'",
                 
@@ -134,7 +141,11 @@ class EpwXctphStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < xctph_epw.in  &> xctph_epw.in.out 
+rm -rf ./tmp
+ln -sf ../{self.wfn_options["name"]}/tmp ./tmp
+ln -sf ../dfpt/save ./save
+ln -sf ../bseq ./eigv
+{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < xctph.in  &> xctph.in.out 
 '''
         return file_string
 
@@ -142,14 +153,14 @@ class EpwXctphStep(Step):
     @property
     def file_contents(self) -> dict:
         return {
-            'xctph_epw.in': self.xctph_epw,
-            'job_xctph_epw.sh': self.job_xctph_epw,
+            './xctph_epw/xctph.in': self.xctph_epw,
+            './xctph_epw/job_xctph.sh': self.job_xctph_epw,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_xctph_epw.sh'
+            './xctph_epw/job_xctph.sh'
         ]
 
     @property
@@ -159,20 +170,10 @@ class EpwXctphStep(Step):
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './xctph_epw.in',
-            './job_xctph_epw.sh',
-            './tmp_epw',
-            './struct*',
-            './decay*',
-            './EPW.bib',
-            './epwdata.fmt',
-            './selecq.fmt',
-            './vmedata.fmt',
-            './xctph_epw.in.out',
-            './xctph_epw.out',
-            './crystal.fmt',
-            './wigner.fmt',
-            './dmedata.fmt',
-            './G_full_epmatq',
+            './xctph_epw',
         ]
+
+    def plot(self, **kwargs):
+        EpwXctphPlot(inputdict=self.inputdict).save_figures(**kwargs)
+
 #endregion

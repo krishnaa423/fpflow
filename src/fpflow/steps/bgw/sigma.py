@@ -104,17 +104,23 @@ os.chdir('./sigma')
             'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
         )
 
+        unfold_string: str = f'''python -c "from fpflow.analysis.unfold_sigma import unfold_sigma; unfold_sigma()" &> unfold_sigma.out'''
+
+        kgrid_link_folder: str = f"../kgrid_{jmespath.search('kgrid[0]', self.wfn_options)}_{jmespath.search('kgrid[1]', self.wfn_options)}_{jmespath.search('kgrid[2]', self.wfn_options)}_qshift_{0.0}_{0.0}_{0.0}"
+
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
 {'python ./script_update_sigma_from_pseudobands.py &> script_update_sigma_from_pseudobands.py.out' if jmespath.search('parabands.enabled', self.wfn_options) else ''}
 
+ln -sf {kgrid_link_folder} ./kgrid
 ln -sf ../epsilon/epsmat.h5 ./
 ln -sf ../epsilon/eps0mat.h5 ./
 ln -sf ../{jmespath.search('gw.sigma.wfnlink', self.inputdict)}/rho ./RHO
 ln -sf ../{jmespath.search('gw.sigma.wfnlink', self.inputdict)}/vxc.dat ./
 ln -sf {wfnlink_str} ./WFN_inner.h5 
 {scheduler.get_exec_prefix()}sigma.cplx.x &> sigma.inp.out
+{unfold_string if jmespath.search('sym', self.wfn_options)==True else ""}
 '''
         return file_string
 

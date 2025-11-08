@@ -73,13 +73,27 @@ class BgwAbsorptionStep(Step):
     def job_absorption(self) -> str:
         scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'bse.absorption.job_info')
 
+        # wfnlink. 
+        wfn_link: str = jmespath.search('gw.sigma.wfnlink', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
+        # Change eqp1 link if symmetries used.
+        eqp1_link_str: str = None
+        if jmespath.search('sym', self.wfn_options)==True:
+            eqp1_link_str = f"{jmespath.search('bse.link_dir_prefix', self.inputdict)}/sigma/eqp1_unfold.dat"
+        else:
+            eqp1_link_str = f"{jmespath.search('bse.link_dir_prefix', self.inputdict)}/sigma/eqp1.dat"
+
+        # Absorption file string. 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
 
 ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/epsilon/epsmat.h5 ./
 ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/epsilon/eps0mat.h5 ./
-ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/sigma/eqp1.dat ./eqp_co.dat
+ln -sf {eqp1_link_str} ./eqp_co.dat
 ln -sf {jmespath.search('bse.link_dir_prefix', self.inputdict)}/kernel/bsemat.h5 ./
 ln -sf {self.get_link('bse.absorption.wfnco_link')} ./WFN_co.h5 
 ln -sf {self.get_link('bse.absorption.wfnqco_link')} ./WFNq_co.h5 
@@ -87,6 +101,7 @@ ln -sf {self.get_link('bse.absorption.wfnfi_link')} ./WFN_fi.h5
 ln -sf {self.get_link('bse.absorption.wfnqfi_link')} ./WFNq_fi.h5 
 {scheduler.get_exec_prefix()}absorption.cplx.x &> absorption.inp.out
 mv bandstructure.dat bandstructure_absorption.dat
+cp ./eigenvectors.h5 ../
 '''
         return file_string
     

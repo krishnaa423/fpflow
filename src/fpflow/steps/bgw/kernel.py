@@ -33,6 +33,7 @@ class BgwKernelStep(Step):
             'number_cond_bands': jmespath.search('bse.absorption.cond_bands', self.inputdict),
             'use_wfn_hdf5': '',
             'dont_check_norms': '',
+            'energy_loss': '',
         }
 
         # Update if needed. 

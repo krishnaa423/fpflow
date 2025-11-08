@@ -32,11 +32,11 @@ kpath:
     - 'L'
     - 'G'
     - 'X'
-    - 'W'
-    - 'U'
-    - 'L'
-    - 'K'
-    - 'G'
+    # - 'W'
+    # - 'U'
+    # - 'L'
+    # - 'K'
+    # - 'G'
   npoints_segment: 10  
 
 common:
@@ -64,10 +64,10 @@ common:
     is_spinorbit: &dft_spinorbit false
   nscf:
     enabled_dirs: &nscf_enabled_dirs
-      # - 'wfnco_ibz'
-      # - 'wfnqco_ibz'
+      - 'wfnco_ibz'
+      - 'wfnqco_ibz'
       - 'wfnco_fbz'
-      # - 'wfnqco_fbz'
+      - 'wfnqco_fbz'
       # - 'wfnwannier'
   wannier:
     nscf_link: &wannier_nscf_link 'wfnco_fbz'
@@ -92,8 +92,8 @@ common:
     val_bands: &gwelbands_valbands 3
     cond_bands: &gwelbands_condbands 3
   bse:
-    val_bands: &bse_valbands 4
-    cond_bands: &bse_condbands 4
+    val_bands: &bse_valbands 3
+    cond_bands: &bse_condbands 3
     nxct: &bse_nxct 10
     supercell_size: &xct_supercell_size [2, 2, 2]
     hole_position: &xct_hole_position [0.00, 0.00, 0.00]
@@ -102,10 +102,10 @@ common:
     spinor: &plotxct_spinor # Only activated in spin orbit coupling mode. 1 is up, 2 is down.
       electron_spin: 1      
       hole_spin: 2
-    wfnco_link: &bse_wfnco_link 'wfnco_ibz'
-    wfnqco_link: &bse_wfnqco_link 'wfnqco_ibz'
-    wfnfi_link: &bse_wfnfi_link 'wfnco_ibz'
-    wfnqfi_link: &bse_wfnqfi_link 'wfnqco_ibz'
+    wfnco_link: &bse_wfnco_link 'wfnco_fbz'
+    wfnqco_link: &bse_wfnqco_link 'wfnco_fbz'
+    wfnfi_link: &bse_wfnfi_link 'wfnco_fbz'
+    wfnqfi_link: &bse_wfnqfi_link 'wfnco_fbz'
   job_types:
     scheduler: &scheduler_dict
       name: &scheduler_name 'mac_mini_parallel'
@@ -145,30 +145,30 @@ generator:
   #  - dos_qe 
   #  - pdos_qe 
   #  - kpdos_qe 
-   - wannier_qe
+  #  - wannier_qe
    - dfpt_qe
   #  - pp_dfpt_qe
-  #  - phbands_qe 
+   - phbands_qe 
   #  - phdos_qe 
   #  - phmodes_qe  
-   - elph_grid_epw 
+  #  - elph_grid_epw 
   #  - elph_bands_epw 
   #  - pp_elph_epw 
   #  - pol_epw
   #  - phonopy_qe 
-  #  - epsilon_bgw 
+   - epsilon_bgw 
   #  - sigmasc_bgw. Repeat this and below as many times as needed for scGW. 
-  #  - sigma_bgw
+   - sigma_bgw
   #  - gwelbands_bgw 
-  #  - kernel_bgw
-  #  - absorption_bgw 
+   - kernel_bgw
+   - absorption_bgw 
   #  - plotxct_bgw 
-  #  - bseq_bgw
+   - bseq_bgw
   #  - bseq_epw
   #  - wannier_bgw 
   #  - bseq_waninterp_bgw
   #  - xctph_fp 
-  #  - xctph_epw
+   - xctph_epw
   #  - xctpol_fp
   #  - ste_fp  
   #  - ste_epw
