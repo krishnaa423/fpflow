@@ -1,8 +1,34 @@
 #region: basic info 
 structures:
+  # active_idx: 0
+  # list:
+  #   - name: 'Si'
+  #     file:
+  #       # type: 'mpapi-id'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
+  #       # value: 'mp-149'
+  #     cell:
+  #       unit: angstrom  # angstrom, bohr, alat. 
+  #       read_if_relaxed: true
+  #       # Specify either 'vectors' or 'bravais_lattice_info'
+  #       # vectors:
+  #       #   - [5.45, 5.43, 0.0]
+  #       #   - [0.0, 5.43, 5.43]
+  #       #   - [5.43, 0.0, 5.43]
+  #       bravais_lattice_info:
+  #         ibrav: 'fcc'
+  #         A: 5.43
+  #     positions:
+  #       unit: crystal   # angstrom, bohr, crystal, alat. 
+  #       read_if_relaxed: true
+  #       coords:
+  #         - ['Si', 0.00, 0.00, 0.00]
+  #         - ['Si', 0.25, 0.25, 0.25]  
+  #       # vca:    # Virtual crystal approximation. 
+  #       #   - ['Si', 'Ag', 0.2]
+  #     # supercell_size: [2, 2, 2]
   active_idx: 0
   list:
-    - name: 'Si'
+    - name: 'LiF'
       file:
         # type: 'mpapi-id'        # localfile, mpapi-id, mpapi-formula. Set MP_API in environment if using mp. 
         # value: 'mp-149'
@@ -16,13 +42,13 @@ structures:
         #   - [5.43, 0.0, 5.43]
         bravais_lattice_info:
           ibrav: 'fcc'
-          A: 5.43
+          A: 4.03
       positions:
         unit: crystal   # angstrom, bohr, crystal, alat. 
         read_if_relaxed: true
         coords:
-          - ['Si', 0.00, 0.00, 0.00]
-          - ['Si', 0.25, 0.25, 0.25]  
+          - ['Li', 0.00, 0.00, 0.00]
+          - ['F', 0.50, 0.50, 0.50]  
         # vca:    # Virtual crystal approximation. 
         #   - ['Si', 'Ag', 0.2]
       # supercell_size: [2, 2, 2]
@@ -32,11 +58,11 @@ kpath:
     - 'L'
     - 'G'
     - 'X'
-    # - 'W'
-    # - 'U'
-    # - 'L'
-    # - 'K'
-    # - 'G'
+    - 'W'
+    - 'U'
+    - 'L'
+    - 'K'
+    - 'G'
   npoints_segment: 10  
 
 common:
@@ -53,10 +79,10 @@ common:
   qgrid: &qgrid [2, 2, 2]
   dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign true 
   epw_nodes: &epw_nodes 1
-  epw_nk: &epw_nk 8
+  epw_nk: &epw_nk 1
 
   dft:
-    ecut: &dft_ecut 20.0
+    ecut: &dft_ecut 40.0
     kgrid: &scf_kgrid [2, 2, 2]
     val_bands: &dft_valbands 4
     cond_bands: &dft_condbands 4
@@ -73,12 +99,14 @@ common:
     nscf_link: &wannier_nscf_link 'wfnco_fbz'
     args: &wannier_args
       projections:
-        - 'Si:s,px,py,pz'
+        - 'Li:s,px,py,pz'
+        - 'F:s,px,py,pz'
   elph:
     nscf_link: &elph_nscf_link 'wfnco_fbz'
     args: &elph_args
       inputepw:
-        proj(1): "'Si:s,px,py,pz'"
+        proj(1): "'Li:s,px,py,pz'"
+        proj(1): "'F:s,px,py,pz'"
   gw:
     ecut: &gwecut 10.0
     val_bands: &gw_valbands 4
@@ -138,41 +166,42 @@ generator:
    - scf_qe
   #  - scf_abacus
   #  - scf_siesta
-   - dftelbands_qe
-   - nscf_qe
+  #  - dftelbands_qe
+  #  - nscf_qe
   #  - nscf_abacus
   #  - nscf_siesta
   #  - dos_qe 
   #  - pdos_qe 
   #  - kpdos_qe 
   #  - wannier_qe
-   - dfpt_qe
+  #  - dfpt_qe
+  #  - dfpt_elec_qe
   #  - pp_dfpt_qe
-   - phbands_qe 
+  #  - phbands_qe 
   #  - phdos_qe 
   #  - phmodes_qe  
   #  - elph_grid_epw 
   #  - elph_bands_epw 
+  #  - elph_frohlich 
   #  - pp_elph_epw 
   #  - pol_epw
+  #  - dmc_elph_fp
   #  - phonopy_qe 
-   - epsilon_bgw 
+  #  - epsilon_bgw 
   #  - sigmasc_bgw. Repeat this and below as many times as needed for scGW. 
-   - sigma_bgw
+  #  - sigma_bgw
   #  - gwelbands_bgw 
-   - kernel_bgw
-   - absorption_bgw 
+  #  - kernel_bgw
+  #  - absorption_bgw 
   #  - plotxct_bgw 
-   - bseq_bgw
-  #  - bseq_epw
+  #  - bseq_bgw
   #  - wannier_bgw 
-  #  - bseq_waninterp_bgw
+  #  - xctph_epw
   #  - xctph_fp 
-   - xctph_epw
-  #  - xctpol_fp
-  #  - ste_fp  
+  #  - xctpol_fp 
   #  - ste_epw
   #  - zd_epw
+  #  - ste_fp 
   #  - dmc_xctph_fp
   #  - esf_fp
   #  - esr_fp 
@@ -183,6 +212,7 @@ generator:
   post_steps:
     - create_script
     - run_script
+    # - tail_script
     - remove_script
     - plot_script
     - interactive_script
@@ -386,16 +416,14 @@ dos:
     <<: *para
 pdos:
   plot:
-    # filter_regex: '2\(Si\)'
-    filter_regex: '2\(Si\)'
+    filter_regex: '2\(F\)'
   args:
   job_info:
     <<: *para
 kpdos:
   plot:
     scatter_scale_factor: 1.0
-    # filter_regex: '2\(Si\)'
-    filter_regex: '2\(Si\)'
+    filter_regex: '2\(F\)'
   args:
   job_info:
     <<: *para
@@ -450,8 +478,8 @@ elph:
   coarse_qgrid: *qgrid
   fine_qgrid: *fine_kgrid
   
-  val_bands: *bse_valbands
-  cond_bands: *bse_condbands
+  val_bands: *dft_valbands
+  cond_bands: *dft_condbands
   
   args:
     <<: *elph_args
@@ -527,8 +555,10 @@ xctph:
   qgrid: *qgrid
   nxct: *bse_nxct
   args:
+    <<: *elph_args    # For xctph_epw case. 
   job_info:
     <<: *big_para
+    nk: *epw_nk
 xctpol:
   nxct: *bse_nxct
   temp: 300

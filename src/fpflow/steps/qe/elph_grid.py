@@ -102,9 +102,9 @@ class EpwElphGridStep(Step):
             'wannier_plot': True,
             'wvfn_formatted': True,
             'wannier_plot_supercell': jmespath.search('elph.coarse_kgrid', self.inputdict),
-            'print_interp_rotmat': True,
-            'interp_rotmat_grid': jmespath.search('elph.fine_kgrid', self.inputdict),
-            'print_uwk': True,
+            # 'print_interp_rotmat': True,
+            # 'interp_rotmat_grid': jmespath.search('elph.fine_kgrid', self.inputdict),
+            # 'print_uwk': True,
         }
         wannier_lines = WannierGrammar().write(wannierdict).splitlines()
 

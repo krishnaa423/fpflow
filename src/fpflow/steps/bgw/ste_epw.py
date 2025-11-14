@@ -11,6 +11,7 @@ from fpflow.schedulers.scheduler import Scheduler
 from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.io.logging import get_logger
+from fpflow.plots.ste_epw import EpwStePlot
 
 #endregion
 
@@ -39,10 +40,10 @@ class EpwSteStep(Step):
         # Populate list.
         if bands_skipped is None:
             bands_skipped = []
-            epw_val_bands = jmespath.search('ste.val_bands', self.inputdict)
+            epw_val_bands = jmespath.search('elph.val_bands', self.inputdict)
             total_val_bands = max_val_bands
-            epw_cond_bands = jmespath.search('ste.cond_bands', self.inputdict)
-            wfn_cond = jmespath.search('wfn.cond_bands', self.inputdict)
+            epw_cond_bands = jmespath.search('elph.cond_bands', self.inputdict)
+            wfn_cond = jmespath.search('cond_bands', self.wfn_options)
 
             if epw_val_bands!= total_val_bands:
                 temp = (1, total_val_bands - epw_val_bands)
@@ -74,9 +75,15 @@ class EpwSteStep(Step):
 
     @property
     def ste_epw(self) -> str:
+        # wfnlink. 
+        wfn_link: str = jmespath.search('elph.nscf_link', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
         epwdict: dict = {
             'inputepw': {
-                'outdir': "'./tmp_epw'",
+                'outdir': "'./tmp'",
                 'prefix': "'struct'",
                 'dvscf_dir': "'./save'",
 
@@ -92,7 +99,7 @@ class EpwSteStep(Step):
                 'nqf1': jmespath.search('ste.qgrid[0]', self.inputdict),
                 'nqf2': jmespath.search('ste.qgrid[1]', self.inputdict),
                 'nqf3': jmespath.search('ste.qgrid[2]', self.inputdict),
-                'nbndsub': jmespath.search('ste.val_bands', self.inputdict) + jmespath.search('ste.cond_bands', self.inputdict),
+                'nbndsub': jmespath.search('elph.val_bands', self.inputdict) + jmespath.search('elph.cond_bands', self.inputdict),
                 
                 'elph': '.true.',
                 # 'epbwrite': '.true.',
@@ -105,7 +112,7 @@ class EpwSteStep(Step):
                 'explrn': '.true.',
                 'negnv_explrn': jmespath.search('ste.nxct', self.inputdict),
                 'nbndv_explrn': jmespath.search('ste.val_bands', self.inputdict),
-                'nbndc_explrn': jmespath.search('ste.cond_bands', self.inputdict),
+                'nbndc_explrn': jmespath.search('ste.cond_bands', self.inputdict) - 1, # -1 for the fine grid thing. 
                 'ethrdg_plrn': jmespath.search('ste.max_error', self.inputdict),
                 'init_plrn': 5,
                 'niter_plrn': jmespath.search('ste.max_steps', self.inputdict),
@@ -124,13 +131,24 @@ class EpwSteStep(Step):
         # Update if needed. 
         update_dict(epwdict, jmespath.search('ste.args', self.inputdict))
 
+        # If projections provided, delete auto_projections and scdm_proj.
+        if 'proj(1)' in epwdict['inputepw'].keys() and epwdict['inputepw']['wannierize'] == '.true.': 
+            del epwdict['inputepw']['auto_projections']
+            del epwdict['inputepw']['scdm_proj']
+
         return NamelistGrammar().write(epwdict)
     
     @property
     def ste_epw_plrn_plot(self) -> str:
+        # wfnlink. 
+        wfn_link: str = jmespath.search('elph.nscf_link', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
         epwdict: dict = {
             'inputepw': {
-                'outdir': "'./tmp_epw'",
+                'outdir': "'./tmp'",
                 'prefix': "'struct'",
                 'dvscf_dir': "'./save'",
 
@@ -146,7 +164,7 @@ class EpwSteStep(Step):
                 'nqf1': jmespath.search('ste.qgrid[0]', self.inputdict),
                 'nqf2': jmespath.search('ste.qgrid[1]', self.inputdict),
                 'nqf3': jmespath.search('ste.qgrid[2]', self.inputdict),
-                'nbndsub': jmespath.search('ste.val_bands', self.inputdict) + jmespath.search('ste.cond_bands', self.inputdict),
+                'nbndsub': jmespath.search('elph.val_bands', self.inputdict) + jmespath.search('elph.cond_bands', self.inputdict),
                 
                 'elph': '.true.',
                 # 'epbwrite': '.true.',
@@ -159,7 +177,7 @@ class EpwSteStep(Step):
                 'explrn': '.true.',
                 'negnv_explrn': jmespath.search('ste.nxct', self.inputdict),
                 'nbndv_explrn': jmespath.search('ste.val_bands', self.inputdict),
-                'nbndc_explrn': jmespath.search('ste.cond_bands', self.inputdict),
+                'nbndc_explrn': jmespath.search('ste.cond_bands', self.inputdict)- 1, # -1 for the fine grid thing.
                 'ethrdg_plrn': jmespath.search('ste.max_error', self.inputdict),
                 'init_plrn': 5,
                 'niter_plrn': jmespath.search('ste.max_steps', self.inputdict),
@@ -180,6 +198,11 @@ class EpwSteStep(Step):
         # Update if needed. 
         update_dict(epwdict, jmespath.search('ste.args', self.inputdict))
 
+        # If projections provided, delete auto_projections and scdm_proj.
+        if 'proj(1)' in epwdict['inputepw'].keys() and epwdict['inputepw']['wannierize'] == '.true.': 
+            del epwdict['inputepw']['auto_projections']
+            del epwdict['inputepw']['scdm_proj']
+
         return NamelistGrammar().write(epwdict)
 
     @property
@@ -189,7 +212,8 @@ class EpwSteStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < ste_epw.in  &> ste_epw.in.out 
+# Prereq: xctph_epw run must be done to generate the necessary files and folders. 
+{scheduler.get_exec_prefix()}epw.x -npool {scheduler.nk} < ste.in  &> ste.in.out 
 '''
         return file_string
     
@@ -200,7 +224,8 @@ class EpwSteStep(Step):
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
 
-{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < ste_epw_plrn_plot.in  &> ste_epw_plrn_plot.in.out 
+# Prereq: xctph_epw run must be done to generate the necessary files and folders.
+{scheduler.get_exec_prefix()}epw.x -npool {scheduler.nk} < ste_wf_plot.in  &> ste_wf_plot.in.out 
 '''
         return file_string
 
@@ -208,17 +233,17 @@ class EpwSteStep(Step):
     @property
     def file_contents(self) -> dict:
         return {
-            'ste_epw.in': self.ste_epw,
-            'ste_epw_plrn_plot.in': self.ste_epw_plrn_plot,
-            'job_ste_epw.sh': self.job_ste_epw,
-            'job_ste_epw_plrn_plot.sh': self.job_ste_epw_plrn_plot,
+            './zd_epw/ste.in': self.ste_epw,
+            './zd_epw/ste_wf_plot.in': self.ste_epw_plrn_plot,
+            './zd_epw/job_ste.sh': self.job_ste_epw,
+            './zd_epw/job_ste_wf_plot.sh': self.job_ste_epw_plrn_plot,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './job_ste_epw.sh',
-            './job_ste_epw_plrn_plot.sh',
+            './zd_epw/job_ste.sh',
+            './zd_epw/job_ste_wf_plot.sh',
         ]
 
     @property
@@ -228,32 +253,10 @@ class EpwSteStep(Step):
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './ste_epw.in',
-            './ste_epw_plrn_plot.in',
-            './job_ste_epw.sh',
-            './job_ste_epw_plrn_plot.sh',
-            './tmp_epw',
-            './struct*',
-            './decay*',
-            './EPW.bib',
-            './epwdata.fmt',
-            './selecq.fmt',
-            './vmedata.fmt',
-            './ste_epw.in.out',
-            './ste_epw_plrn_plot.in.out',
-            './ste_epw_plrn_plot.out',
-            './ste_epw.out',
-            './crystal.fmt',
-            './wigner.fmt',
-            './dmedata.fmt',
-            './A_mp_ck.plrn',
-            './A_mp_vk.plrn',
-            './Asq.plrn',
-            './bmat.band.plrn',
-            './bmat.plrn',
-            './dtau.plrn',
-            './dtau.plrn.xsf',
-            './e_psir_plrn.xsf',
-            './h_psir_plrn.xsf',
+            './zd_epw',
         ]
+    
+    def plot(self, **kwargs):
+        EpwStePlot(inputdict=self.inputdict).save_figures(**kwargs)
+
 #endregion

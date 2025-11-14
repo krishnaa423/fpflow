@@ -14,6 +14,9 @@ from fpflow.schedulers.scheduler import Scheduler
 import glom 
 from fpflow.inputs.inputyaml import InputYaml
 from fpflow.io.change_dir import change_dir
+import glob
+import h5py
+
 #endregion
 
 #region variables
@@ -33,6 +36,34 @@ class EpwBseqStep(Step):
         '''
         super().__init__(**kwargs)
         self.generatorclass = generatorclass
+
+    def get_xct_h5(self):
+        # Get sizes.
+        nQ: int = len(glob.glob('./q_*'))
+        with h5py.File('./q_0/eigenvectors.h5', 'r') as h5file:
+            nS: int = h5file['/exciton_header/kpoints/nevecs'][()]
+            nk: int = h5file['/exciton_header/kpoints/nk'][()]
+            nc: int = h5file['/exciton_header/params/nc'][()]
+            nv: int = h5file['/exciton_header/params/nv'][()]
+            ns: int = h5file['/exciton_header/params/ns'][()]
+
+        # Create dataset arrays.
+        eigs: np.ndarray = np.zeros(shape=(nQ, nS), dtype='f8')
+        evecs: np.ndarray = np.zeros(shape=(nQ, nS, nk, nc, nv), dtype='c16')
+
+        for qpt_idx in range(nQ):
+            with h5py.File(f'./q_{qpt_idx}/eigenvectors.h5', 'r') as h5file:
+                eigs[qpt_idx, :] = h5file['/exciton_data/eigenvalues'][:]
+                evecs[qpt_idx, :, :, :, :] = h5file['/exciton_data/eigenvectors'][0, :, :, :, :, 0, 0] + 1j * h5file['/exciton_data/eigenvectors'][0, :, :, :, :, 0, 1]
+
+        # Write to h5 file.
+        dsets: dict = {
+            '/eigs': eigs,
+            '/evecs': evecs,
+        }
+        with h5py.File('./xct.h5', 'w') as h5file:
+            for dset_name, dset_data in dsets.items():
+                h5file.create_dataset(f'{dset_name}', data=dset_data)
 
     @property
     def script_bseq_epw(self):
@@ -74,6 +105,16 @@ print(f'Done bseq in total time: ', total_time, ' seconds.', flush=True)
 {bseq_scheduler.get_script_header()}
 
 python ./script_bseq_epw.py
+
+# Write xct.h5 file.
+bseq_pp="
+from fpflow.inputs.inputyaml import InputYaml
+from fpflow.steps.bgw.bseq_epw import EpwBseqStep
+inputdict: dict = InputYaml.from_yaml_file('../input.yaml').inputdict
+bseq: EpwBseqStep = EpwBseqStep(inputdict=inputdict)
+bseq.get_xct_h5()
+"
+python -c "$bseq_pp" &> bseq_pp.out 
 '''
 
     @change_dir

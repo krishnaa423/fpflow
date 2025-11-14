@@ -10,6 +10,8 @@ import jmespath
 from fpflow.io.update import update_dict
 from fpflow.io.logging import get_logger
 from fpflow.schedulers.scheduler import Scheduler
+from mpi4py import MPI 
+
 #endregion
 
 #region variables
@@ -20,6 +22,9 @@ from fpflow.schedulers.scheduler import Scheduler
 
 #region classes
 class QeScfStep(Step):
+    def get_uknG(self):
+        pass
+
     @property
     def scf(self):
         qestruct = QeStruct.from_inputdict(self.inputdict)

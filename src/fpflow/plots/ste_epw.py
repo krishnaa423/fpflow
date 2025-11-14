@@ -23,13 +23,7 @@ from scipy import interpolate
 #endregion
 
 #region classes
-class EpwXctphPlot(PlotBase):
-    '''
-    It will plot:
-    - Exciton bandstructure along kpath.
-    - Xctph projected phonon bandstructure.
-    - Xctph projected exciton bandstructure.
-    '''
+class EpwStePlot(PlotBase):
     def __init__(
         self,
         **kwargs,
@@ -61,54 +55,33 @@ class EpwXctphPlot(PlotBase):
         self.xaxis, self.xticks, self.xtick_labels = self.kpath.even_spaced_axis
         self.axis = self.xaxis.reshape(-1, 1)
 
-        # Get phbands.
+        # Get phonon bands. 
         data = np.loadtxt('./dfpt/struct.freq.gp')
         self.phbands = data[:, 1:]
         self.phbands *= 0.123984   # Convert to meV. 1 cm-1 = 0.123984 meV
         self.num_phbands: int = self.phbands.shape[1]
 
-        # Get xctgrid. 
+        # get exciton bands. 
         data = np.loadtxt('./zd_epw/G_full_epmatq/exband.fmt')
         xct_grid = data[:, :]
         self.num_xctbands: int = xct_grid.shape[1]
-
-        # Interpolate xct_grid to kpath to get xct_bands.
         self.xct_bands = interpolate.RBFInterpolator(self.Qpts, xct_grid, neighbors=8)(self.kpath.kpts)
 
-        # Get xctph_grid.
-        self.xctph_grid = np.zeros(shape=(
-            self.num_xctbands,
-            self.num_xctbands,
-            self.num_Qpts, 
-            self.num_phbands,     
-            self.num_Qpts,      # Assuming Q and q have the same grid.
-        ))
-        # Fill xctph_grid.
-        for qpt_idx in range(self.num_Qpts):
-            filename: str = f'./zd_epw/G_full_epmatq/G_full_epmatq_{qpt_idx}.dat'
-            data = np.loadtxt(filename)
-            data = data[:, 5] + 1j * data[:, 6]   # Get complex values.
-            self.xctph_grid[:, :, :, :, qpt_idx] = data.reshape(
-                self.num_xctbands,
-                self.num_xctbands,
-                self.num_Qpts,
-                self.num_phbands
-            )
+        # Get AQS on grid and interp on kpath.
+        data: np.ndarray = np.loadtxt('./zd_epw/Asq.plrn', skiprows=1)
+        self.AQS_grid: np.ndarray = (np.abs(data[:, 2] + 1j* data[:, 3])**2).reshape(self.num_Qpts, self.num_xctbands)
+        self.AQS_xctbands: np.ndarray = interpolate.RBFInterpolator(self.Qpts, self.AQS_grid, neighbors=8)(self.kpath.kpts)
 
-        # Interpolate xctph_grid to kpath to get xctph_phbands and xctph_xctbands.
-        self.xctph_phgrid = np.einsum('sSQuq->qu', np.abs(self.xctph_grid)**2)
-        self.xctph_phgrid /= self.num_xctbands*self.num_xctbands*self.num_Qpts # Normalize.
-        self.xctph_phbands = interpolate.RBFInterpolator(self.Qpts, self.xctph_phgrid, neighbors=8)(self.kpath.kpts)
+        # Get Bqu on grid and interp on kpath. 
+        data: np.ndarray = np.loadtxt('./zd_epw/bmat.plrn', skiprows=1)
+        self.Bqu_grid: np.ndarray = data[:, 5].reshape(self.num_Qpts, self.num_phbands)
+        self.Bqu_phbands: np.ndarray = interpolate.RBFInterpolator(self.Qpts, self.Bqu_grid, neighbors=8)(self.kpath.kpts)
 
-        self.xctph_xctgrid = np.einsum('sSQuq->QS', self.xctph_grid)
-        self.xctph_xctgrid /= self.num_Qpts*self.num_phbands # Normalize.
-        self.xctph_xctbands = interpolate.RBFInterpolator(self.Qpts, self.xctph_xctgrid, neighbors=8)(self.kpath.kpts)
-
-        # Add xct_bands and xctph_xctbands. 
+        # Add xct_bands and AQS. 
         self.xct_bands_colnames = [f"y{i+1}" for i in range(self.num_xctbands)]
         self.xct_bands_weight_colnames = [f"s{i+1}" for i in range(self.num_xctbands)] 
         df_xct: pd.DataFrame = pd.DataFrame(
-            np.hstack([self.axis, self.xct_bands, self.xctph_xctbands*1e4]),
+            np.hstack([self.axis, self.xct_bands, self.AQS_xctbands*1e2]),
             columns=["x"] + self.xct_bands_colnames + self.xct_bands_weight_colnames
         )
         append_xct_bands_df = pd.DataFrame({
@@ -117,11 +90,11 @@ class EpwXctphPlot(PlotBase):
         })
         self.dsets_df = pd.concat([self.dsets_df, append_xct_bands_df], ignore_index=True)
 
-        # Add xctph_phbands.
+        # Add ph_bands and Bqu.
         self.phbands_colnames = [f"y{i+1}" for i in range(self.num_phbands)]
         self.phbands_weight_colnames = [f"s{i+1}" for i in range(self.num_phbands)]
         df_ph: pd.DataFrame = pd.DataFrame(
-            np.hstack([self.axis, self.phbands, self.xctph_phbands*1e4]),
+            np.hstack([self.axis, self.phbands, self.Bqu_phbands*1e1]),
             columns=["x"] + self.phbands_colnames + self.phbands_weight_colnames
         )
         append_ph_df = pd.DataFrame({
@@ -135,14 +108,14 @@ class EpwXctphPlot(PlotBase):
         for band_idx in range(self.num_xctbands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
-                    'fig_name': 'xctph_epw_xctbands',
+                    'fig_name': 'ste_AQS',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
                     'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                     'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                     'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Exciton Bandstructure',
+                    'title': f'{self.struct_name} STE Projection on Exciton Bandstructure',
                     'dset_name': 'dset_xct',
                     'dset_axis_cols': 'x',        
                     'dset_data_cols': [self.xct_bands_colnames[band_idx]],
@@ -152,31 +125,14 @@ class EpwXctphPlot(PlotBase):
                     'legend_label': None,
                 },
                 {
-                    'fig_name': 'xctph_epw_xctph_xctbands',
-                    'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                    'plot_type': PlotType.LINE, 'axis': None,
-                    'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                    'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
-                    'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
-                    'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Xctph Projection on Exciton Bandstructure',
-                    'dset_name': 'dset_xct',
-                    'dset_axis_cols': 'x',        
-                    'dset_data_cols': [self.xct_bands_colnames[band_idx]],
-                    'color': 'blue', 
-                    'xgrid': True,
-                    'ygrid': False,
-                    'legend_label': None,
-                },
-                {
-                    'fig_name': 'xctph_epw_xctph_xctbands',
+                    'fig_name': 'ste_AQS',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.SCATTER, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
                     'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                     'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                     'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Xctph Projection on Exciton Bandstructure',
+                    'title': f'{self.struct_name} STE Projection on Exciton Bandstructure',
                     'dset_name': 'dset_xct',
                     'dset_axis_cols': 'x',        
                     'dset_data_cols': [self.xct_bands_colnames[band_idx], self.xct_bands_weight_colnames[band_idx]],
@@ -193,14 +149,14 @@ class EpwXctphPlot(PlotBase):
         for band_idx in range(self.num_phbands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
-                    'fig_name': 'xctph_epw_xctph_phbands',
+                    'fig_name': 'ste_Bqu',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
                     'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                     'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                     'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Xctph Projection on Phonon Bandstructure',
+                    'title': f'{self.struct_name} STE Displacement Projection on Phonon Bandstructure',
                     'dset_name': 'dset_ph',
                     'dset_axis_cols': 'x',        
                     'dset_data_cols': [self.phbands_colnames[band_idx]],
@@ -210,14 +166,14 @@ class EpwXctphPlot(PlotBase):
                     'legend_label': None,
                 },
                 {
-                    'fig_name': 'xctph_epw_xctph_phbands',
+                    'fig_name': 'ste_Bqu',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.SCATTER, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
                     'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                     'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                     'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Xctph Projection on Phonon Bandstructure',
+                    'title': f'{self.struct_name} STE Displacement on Phonon Bandstructure',
                     'dset_name': 'dset_ph',
                     'dset_axis_cols': 'x',        
                     'dset_data_cols': [self.phbands_colnames[band_idx], self.phbands_weight_colnames[band_idx]],

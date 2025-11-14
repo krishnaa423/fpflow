@@ -12,6 +12,8 @@ from importlib.util import find_spec
 from fpflow.structure.qe.qe_struct import QeStruct
 from fpflow.io.logging import get_logger
 from fpflow.plots.xctph_epw import EpwXctphPlot
+import numpy as np 
+import h5py
 
 #endregion
 
@@ -24,6 +26,44 @@ logger = get_logger()
 
 #region classes
 class EpwXctphStep(Step):
+    def get_xctph_h5(self):
+        nS: int = jmespath.search('xctph.nxct', self.inputdict)
+        nu: int = np.loadtxt('./dfpt/struct.freq.gp').shape[1] - 1
+        nQ: int = np.prod(jmespath.search('xctph.kgrid', self.inputdict))
+        nq: int = np.prod(jmespath.search('xctph.qgrid', self.inputdict))
+
+        xctph: np.ndarray = np.zeros((nS, nS, nQ, nu, nq), dtype='c16')
+        for qpt_idx  in range(nq):
+            data: np.ndarray = np.loadtxt(f'./G_full_epmatq/G_full_epmatq_{qpt_idx}.dat')
+            data = data[:, 5] + 1j * data[:, 6]
+            xctph[:, :, :, :, qpt_idx] = data
+
+        # Write to h5 file.
+        with h5py.File('xctph.h5', 'w') as h5file:
+            h5file.create_dataset('/xctph', data=xctph)
+
+    def get_ph_h5(self):
+        nu: int = np.loadtxt('./dfpt/struct.freq.gp').shape[1] - 1
+        nq: int = np.prod(jmespath.search('xctph.qgrid', self.inputdict))
+
+        eigs: np.ndarray = np.zeros((nq, nu), dtype='f8')
+        eigs = np.loadtxt(f'./G_full_epmatq/phband.fmt')
+        evecs: np.ndarray = np.zeros((nq, nu, nu), dtype='c16')
+
+        for qpt_idx in range(nq):
+            data = np.loadtxt(f'./G_full_epmatq/ph_eigvec_{qpt_idx}.dat')
+            data = data[:, 0] + 1j * data[:, 1]
+            evecs[qpt_idx, :, :] = data
+
+        # Write to h5 file.
+        dsets = {
+            '/eigs': eigs,
+            '/evecs': evecs,
+        }
+        with h5py.File('ph.h5', 'w') as h5file:
+            for dset_name, dset_data in dsets.items():
+                h5file.create_dataset(dset_name, data=dset_data)
+
     @property
     def bands_skipped_string(self) -> str:
         #TODO: Copied this code, but need to refactor to make it simple. 
@@ -37,18 +77,12 @@ class EpwXctphStep(Step):
             is_soc=jmespath.search('scf.is_spinorbit', self.inputdict),
         ))
 
-        # wfnlink. 
-        wfn_link: str = jmespath.search('elph.nscf_link', self.inputdict)
-        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
-        wfn_index: int = wfn_names.index(wfn_link)
-        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
-
         # Populate list.
         if bands_skipped is None:
             bands_skipped = []
-            epw_val_bands = jmespath.search('xctph.val_bands', self.inputdict)
+            epw_val_bands = jmespath.search('elph.val_bands', self.inputdict)
             total_val_bands = max_val_bands
-            epw_cond_bands = jmespath.search('xctph.cond_bands', self.inputdict)
+            epw_cond_bands = jmespath.search('elph.cond_bands', self.inputdict)
             wfn_cond = jmespath.search('cond_bands', self.wfn_options)
 
             if epw_val_bands!= total_val_bands:
@@ -81,6 +115,12 @@ class EpwXctphStep(Step):
 
     @property
     def xctph_epw(self) -> str:
+        # wfnlink. 
+        wfn_link: str = jmespath.search('elph.nscf_link', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
         epwdict: dict = {
             'inputepw': {
                 'outdir': "'./tmp'",
@@ -99,7 +139,7 @@ class EpwXctphStep(Step):
                 'nqf1': jmespath.search('xctph.qgrid[0]', self.inputdict),
                 'nqf2': jmespath.search('xctph.qgrid[1]', self.inputdict),
                 'nqf3': jmespath.search('xctph.qgrid[2]', self.inputdict),
-                'nbndsub': jmespath.search('xctph.val_bands', self.inputdict) + jmespath.search('xctph.cond_bands', self.inputdict),
+                'nbndsub': jmespath.search('elph.val_bands', self.inputdict) + jmespath.search('elph.cond_bands', self.inputdict),
                 
                 'elph': '.true.',
                 # 'epbwrite': '.true.',
@@ -112,8 +152,8 @@ class EpwXctphStep(Step):
                 'explrn': '.false.',
                 'negnv_explrn': jmespath.search('xctph.nxct', self.inputdict),
                 'nbndv_explrn': jmespath.search('xctph.val_bands', self.inputdict),
-                'nbndc_explrn': jmespath.search('xctph.cond_bands', self.inputdict),
-                
+                'nbndc_explrn': (jmespath.search('xctph.cond_bands', self.inputdict) - 1),      # -1 for the fine grid thing. 
+
                 'wannierize': '.true.',
                 'wannier_plot':'.true.',
                 'wannier_plot_supercell': f"{jmespath.search('xctph.qgrid[0]', self.inputdict)*2} {jmespath.search('xctph.qgrid[1]', self.inputdict)*2} {jmespath.search('xctph.qgrid[2]', self.inputdict)*2}",
@@ -121,6 +161,7 @@ class EpwXctphStep(Step):
                 'scdm_proj': '.true.',
                 
                 'iprint': 2,
+                # 'prtgkk': '.true.',
             }
         }
 
@@ -132,6 +173,11 @@ class EpwXctphStep(Step):
         # Update if needed. 
         update_dict(epwdict, jmespath.search('xctph.args', self.inputdict))
 
+        # If projections provided, delete auto_projections and scdm_proj.
+        if 'proj(1)' in epwdict['inputepw'].keys() and epwdict['inputepw']['wannierize'] == '.true.': 
+            del epwdict['inputepw']['auto_projections']
+            del epwdict['inputepw']['scdm_proj']
+
         return NamelistGrammar().write(epwdict)
 
     @property
@@ -142,25 +188,36 @@ class EpwXctphStep(Step):
 {scheduler.get_script_header()}
 
 rm -rf ./tmp
+rm -rf ./eigv
 ln -sf ../{self.wfn_options["name"]}/tmp ./tmp
 ln -sf ../dfpt/save ./save
 ln -sf ../bseq ./eigv
-{scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < xctph.in  &> xctph.in.out 
+{scheduler.get_exec_prefix()}epw.x -npool {scheduler.nk} < xctph.in  &> xctph.in.out 
+
+# Write xctph.h5, ph.h5 files.
+xctph_pp="
+from fpflow.inputs.inputyaml import InputYaml
+from fpflow.steps.bgw.xctph_epw import EpwXctphStep
+inputdict: dict = InputYaml.from_yaml_file('../input.yaml').inputdict
+xctph: EpwXctphStep = EpwXctphStep(inputdict=inputdict)
+xctph.get_xctph_h5()
+xctph.get_ph_h5()
+"
+python -c "$xctph_pp" &> xctph_pp.out 
 '''
         return file_string
-
 
     @property
     def file_contents(self) -> dict:
         return {
-            './xctph_epw/xctph.in': self.xctph_epw,
-            './xctph_epw/job_xctph.sh': self.job_xctph_epw,
+            './zd_epw/xctph.in': self.xctph_epw,
+            './zd_epw/job_xctph.sh': self.job_xctph_epw,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './xctph_epw/job_xctph.sh'
+            './zd_epw/job_xctph.sh'
         ]
 
     @property
@@ -170,7 +227,7 @@ ln -sf ../bseq ./eigv
     @property
     def remove_inodes(self) -> List[str]:
         return [
-            './xctph_epw',
+            './zd_epw',
         ]
 
     def plot(self, **kwargs):

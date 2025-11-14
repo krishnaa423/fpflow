@@ -17,6 +17,7 @@ from fpflow.steps.qe.dos import QeDosStep
 from fpflow.steps.qe.pdos import QePdosStep
 from fpflow.steps.qe.kpdos import QeKpdosStep
 from fpflow.steps.qe.wannier import QeWannierStep
+from fpflow.steps.qe.pol_epw import EpwPolStep
 from fpflow.steps.qe.elph_grid import EpwElphGridStep
 from fpflow.steps.qe.elph_bands import EpwElphBandsStep
 from fpflow.steps.qe.pp_elph import QePpElphEpwStep
@@ -72,6 +73,7 @@ step_class_map: dict = {
     'kpdos_qe': QeKpdosStep, 
     'wannier_qe': QeWannierStep,
     'dfpt_qe': QeDfptStep,
+    'dfpt_elec_qe': QeDfptStep, # TODO. 
     'pp_dfpt_qe': QeDfptStep, #TODO
     'phbands_qe': QePhbandsStep,
     'phdos_qe': QePhdosStep, #TODO
@@ -79,9 +81,11 @@ step_class_map: dict = {
     
     'elph_grid_epw': EpwElphGridStep, 
     'elph_bands_epw': EpwElphBandsStep, #TODO
+    'elph_frohlich': EpwElphBandsStep, #TODO
     'pp_elph_epw': QePpElphEpwStep, #TODO
-    'pol_epw': QePpElphEpwStep, #TODO
+    'pol_epw': EpwPolStep, #TODO
     'pol_fp': QePpElphEpwStep, #TODO
+    'dmc_elph_fp': QePpElphEpwStep, #TODO
     'phonopy_qe': QePhonopyNestedStep,
 
     'epsilon_bgw': BgwEpsilonStep,
@@ -100,6 +104,7 @@ step_class_map: dict = {
     'ste_epw': EpwSteStep, 
     'zd_epw': EpwZdStep,
     'ste_fp': SteStep, #TODO
+    'dmc_xctph_fp': SteStep, #TODO
     'esf_fp': EsfStep, #TODO
     'esr_fp': EsrStep,  #TODO
 
@@ -118,6 +123,12 @@ step_class_map: dict = {
     'convergence_dfpt_qe': QeConvergenceDfptStep, 
     'convergence_gw_qe': BgwConvergenceGwStep, 
     'convergence_bse_qe': BgwConvergenceBseStep, 
+    'convergence_xctph': BgwConvergenceBseStep, #TODO
+    'convergence_xctpol': BgwConvergenceBseStep, #TODO
+    'convergence_ste': BgwConvergenceBseStep, #TODO
+    'convergence_dmc_elph': BgwConvergenceBseStep, #TODO
+    'convergence_dmc_xctph': BgwConvergenceBseStep, #TODO
+    
     'create_script': CreateScriptStep,
     'run_script': RunScriptStep,
     'tail_script': TailScriptStep,

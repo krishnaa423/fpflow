@@ -82,9 +82,9 @@ class QeWannierStep(Step):
             'wannier_plot': True,
             'wvfn_formatted': True,
             'wannier_plot_supercell': jmespath.search('wannier.kgrid', self.inputdict),
-            'print_interp_rotmat': True,
-            'interp_rotmat_grid': jmespath.search('wannier.fine_kgrid', self.inputdict),
-            'print_uwk': True,
+            # 'print_interp_rotmat': True,
+            # 'interp_rotmat_grid': jmespath.search('wannier.fine_kgrid', self.inputdict),
+            # 'print_uwk': True,
         }
 
         if jmespath.search('scf.is_spinorbit', self.inputdict):
