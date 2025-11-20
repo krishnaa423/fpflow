@@ -49,7 +49,7 @@ Steps, post-processsing, and (Plots):
 - phmodes_qe  
 - elph_grid_epw
 - elph_bands_epw
-- elph_frohlich
+- elph_frohlich_epw
 - pp_elph_epw
 - pol_epw
 - pol_fp

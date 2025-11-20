@@ -11,7 +11,7 @@ import os
 from fpflow.plots.plot import PlotBase, PlotType
 import pandas as pd
 from ase.units import Hartree, eV
-from fpflow.analysis.wannierqe import WannierQeAnalysis
+from fpflow.analysis.wannier_qe.wannierqe import WannierQeAnalysis
 
 #endregion
 
@@ -105,9 +105,11 @@ class EpwElphGridPlot(PlotBase):
         active_idx: int = jmespath.search('structures.active_idx', inputdict)
         self.struct_name: str = jmespath.search(f'structures.list[{active_idx}].name', inputdict)
 
-        # Add the data.
-        if os.path.exists('./dftelbands/dftelbands.xml'): self.add_dft_data()
-        self.add_wan_bands_data()
+        # # Add dft and wannier data.
+        # if os.path.exists('./dftelbands/dftelbands.xml'): self.add_dft_data()
+        # self.add_wan_bands_data()
+
+        # Add elph coarse data.
 
     def add_dft_bands_figure(self):
         # Add the dft bands. 
@@ -236,8 +238,11 @@ class EpwElphGridPlot(PlotBase):
         self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
 
     def set_figures(self):
-        if os.path.exists('./dftelbands/dftelbands.xml'): self.add_dft_bands_figure()
-        self.add_wannier_bands_figure()
-        self.add_hr_figure()
+        # Add DFT and wannier figures. 
+        # if os.path.exists('./dftelbands/dftelbands.xml'): self.add_dft_bands_figure()
+        # self.add_wannier_bands_figure()
+        # self.add_hr_figure()
+
+        pass
 
 #endregion

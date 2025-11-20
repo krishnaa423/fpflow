@@ -104,7 +104,7 @@ os.chdir('./sigma')
             'wfn_parabands.h5' if jmespath.search('parabands.enabled', self.wfn_options) else 'wfn.h5' 
         )
 
-        unfold_string: str = f'''python -c "from fpflow.analysis.unfold_sigma import unfold_sigma; unfold_sigma()" &> unfold_sigma.out'''
+        unfold_string: str = f'''python -c "from fpflow.analysis.gw.unfold_sigma import unfold_sigma; unfold_sigma()" &> unfold_sigma.out'''
 
         kgrid_link_folder: str = f"../kgrid_{jmespath.search('kgrid[0]', self.wfn_options)}_{jmespath.search('kgrid[1]', self.wfn_options)}_{jmespath.search('kgrid[2]', self.wfn_options)}_qshift_{0.0}_{0.0}_{0.0}"
 

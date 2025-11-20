@@ -73,8 +73,8 @@ common:
   coarse_nk: &coarse_nk 8
 
   fine_sym: &fine_sym false
-  fine_kgrid: &fine_kgrid [4, 4, 4]
-  fine_nk: &fine_nk 64
+  fine_kgrid: &fine_kgrid [2, 2, 2]
+  fine_nk: &fine_nk 8
   
   qgrid: &qgrid [2, 2, 2]
   dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign true 
@@ -106,7 +106,7 @@ common:
     args: &elph_args
       inputepw:
         proj(1): "'Li:s,px,py,pz'"
-        proj(1): "'F:s,px,py,pz'"
+        proj(2): "'F:s,px,py,pz'"
   gw:
     ecut: &gwecut 10.0
     val_bands: &gw_valbands 4
@@ -166,43 +166,43 @@ generator:
    - scf_qe
   #  - scf_abacus
   #  - scf_siesta
-  #  - dftelbands_qe
-  #  - nscf_qe
+   - dftelbands_qe
+   - nscf_qe
   #  - nscf_abacus
   #  - nscf_siesta
   #  - dos_qe 
   #  - pdos_qe 
   #  - kpdos_qe 
   #  - wannier_qe
-  #  - dfpt_qe
+   - dfpt_qe
   #  - dfpt_elec_qe
   #  - pp_dfpt_qe
-  #  - phbands_qe 
+   - phbands_qe 
   #  - phdos_qe 
   #  - phmodes_qe  
   #  - elph_grid_epw 
   #  - elph_bands_epw 
-  #  - elph_frohlich 
+  #  - elph_frohlich_epw 
   #  - pp_elph_epw 
   #  - pol_epw
   #  - dmc_elph_fp
   #  - phonopy_qe 
-  #  - epsilon_bgw 
+   - epsilon_bgw 
   #  - sigmasc_bgw. Repeat this and below as many times as needed for scGW. 
-  #  - sigma_bgw
-  #  - gwelbands_bgw 
-  #  - kernel_bgw
-  #  - absorption_bgw 
-  #  - plotxct_bgw 
-  #  - bseq_bgw
+   - sigma_bgw
+   - gwelbands_bgw 
+   - kernel_bgw
+   - absorption_bgw 
+   - plotxct_bgw 
+   - bseq_bgw
   #  - wannier_bgw 
-  #  - xctph_epw
+   - xctph_epw
   #  - xctph_fp 
-  #  - xctpol_fp 
-  #  - ste_epw
+   - xctpol_fp 
+   - ste_epw
   #  - zd_epw
   #  - ste_fp 
-  #  - dmc_xctph_fp
+   - dmc_xctph_fp
   #  - esf_fp
   #  - esr_fp 
   #  - convergence_scf_qe
@@ -561,8 +561,8 @@ xctph:
     nk: *epw_nk
 xctpol:
   nxct: *bse_nxct
-  temp: 300
-  max_error: 1e-2
+  temps: [300, 200, 100, 50]
+  max_error: 1e-6
   max_steps: 10
   job_info:
     <<: *big_para
@@ -574,7 +574,16 @@ ste:
   nxct: *bse_nxct
   max_error: 1e-2
   max_steps: 30
-  temp: 300
+  temps: [300, 200, 100, 50]
+  args:
+  job_info:
+    <<: *big_para
+dmc_xctph:
+  temps: [300, 200, 100, 50]
+  kgrid: *coarse_kgrid
+  qgrid: *qgrid
+  nxct: *bse_nxct
+  max_steps: 10e6
   args:
   job_info:
     <<: *big_para

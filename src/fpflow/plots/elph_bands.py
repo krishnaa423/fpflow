@@ -11,7 +11,7 @@ import os
 from fpflow.plots.plot import PlotBase, PlotType
 import pandas as pd
 from ase.units import Hartree, eV
-from fpflow.analysis.wannierqe import WannierQeAnalysis
+from fpflow.analysis.wannier_qe.wannierqe import WannierQeAnalysis
 
 #endregion
 

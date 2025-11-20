@@ -31,6 +31,7 @@ setup(
         'python-benedict[all]',
         'phonopy',
         'mpi4py',
+        # 'einops',
         # Make sure to install Julia with WannierIO package. 
     ],
     entry_points={

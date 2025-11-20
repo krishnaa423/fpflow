@@ -35,6 +35,7 @@ from fpflow.steps.bgw.xctph_epw import EpwXctphStep
 from fpflow.steps.xctpol import XctpolStep
 from fpflow.steps.bgw.ste_epw import EpwSteStep
 from fpflow.steps.ste import SteStep
+from fpflow.steps.dmc_xctph import DmcXctphStep
 from fpflow.steps.qe.zd_epw import EpwZdStep
 from fpflow.steps.esf import EsfStep
 from fpflow.steps.esr import EsrStep
@@ -52,6 +53,7 @@ from fpflow.steps.post_steps.tail_script import TailScriptStep
 from fpflow.steps.post_steps.remove_script import RemoveScriptStep
 from fpflow.steps.post_steps.plot_script import PlotScriptStep
 from fpflow.steps.post_steps.interactive_script import InteractiveScriptStep
+
 #endregion
 
 #region variables
@@ -81,7 +83,7 @@ step_class_map: dict = {
     
     'elph_grid_epw': EpwElphGridStep, 
     'elph_bands_epw': EpwElphBandsStep, #TODO
-    'elph_frohlich': EpwElphBandsStep, #TODO
+    'elph_frohlich_epw': EpwElphBandsStep, #TODO
     'pp_elph_epw': QePpElphEpwStep, #TODO
     'pol_epw': EpwPolStep, #TODO
     'pol_fp': QePpElphEpwStep, #TODO
@@ -104,7 +106,7 @@ step_class_map: dict = {
     'ste_epw': EpwSteStep, 
     'zd_epw': EpwZdStep,
     'ste_fp': SteStep, #TODO
-    'dmc_xctph_fp': SteStep, #TODO
+    'dmc_xctph_fp': DmcXctphStep, #TODO
     'esf_fp': EsfStep, #TODO
     'esr_fp': EsrStep,  #TODO
 
@@ -136,6 +138,7 @@ step_class_map: dict = {
     'plot_script': PlotScriptStep,
     'interactive_script': InteractiveScriptStep,
 }
+
 #endregion
 
 #region functions

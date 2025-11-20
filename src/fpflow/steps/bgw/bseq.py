@@ -134,12 +134,33 @@ python ./script_bseq.py
                 Qpt = [-1.0 * q for q in Qpt]
             self._create_in_subdir(Qpt, Qpt_idx)
 
+    @property
+    def script_pp(self) -> str:
+        filestring = f'''#!/bin/bash
+from fpflow.analysis.bse.bseq_pp import BseqPpAnalysis
+bseq: BseqPpAnalysis = BseqPpAnalysis()
+bseq.read_all()
+bseq.write_all()
+'''
+        
+        return filestring
+
+    @property
+    def job_pp(self) -> str:
+        filestring = f'''#!/bin/bash
+python ./pp.py &> pp.out
+'''
+
+        return filestring
+
     def create(self):
         self.create_in_subdirs()
 
         extra_filecontents: dict = {
             './bseq/script_bseq.py': self.script_bseq,
             './bseq/job_bseq.sh': self.job_bseq,
+            './bseq/pp.py': self.script_pp,
+            './bseq/job_pp.sh': self.job_pp,
         }
 
         for filename, filecontents in extra_filecontents.items():
@@ -148,7 +169,8 @@ python ./script_bseq.py
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './bseq/job_bseq.sh'
+            './bseq/job_bseq.sh',
+            './bseq/job_pp.sh',
         ]
 
     @property

@@ -141,6 +141,7 @@ class EpwElphGridStep(Step):
                 'epwwrite': '.true.',
                 'epwread': '.false.',
                 'lpolar': '.true.',
+                'prtgkk': '.true.',
 
                 # # Reuse wannier90 calculations. 
                 # 'wannierize': '.false.',
@@ -161,7 +162,7 @@ class EpwElphGridStep(Step):
             epwdict['inputepw']['bands_skipped'] = self.bands_skipped_string
 
         # Add extra wannier data. 
-        self.add_wannier_data(epwdict)
+        # self.add_wannier_data(epwdict)
 
         # Update if needed. 
         update_dict(epwdict, jmespath.search('elph.args', self.inputdict))
@@ -184,18 +185,11 @@ rm -rf ./tmp
 cp -r ../{jmespath.search('elph.nscf_link', self.inputdict)}/tmp ./tmp
 rm -rf ./save
 cp -r ../dfpt/save ./save
+rm -rf ./coarse_grid
+rm -rf ./fine_grid
 {scheduler.get_exec_prefix()}epw.x {scheduler.get_exec_infix()} < elph.in  &> elph.in.out 
 cp ./tmp/struct.xml ./save/wfn.xml
 cp ./tmp/*epb* ./save/
-
-wannierqe_pp="
-from fpflow.analysis.wannierqe import WannierQeAnalysis
-wan = WannierQeAnalysis()
-wan.read_all()
-wan.write()
-"
-
-python -c "$wannierqe_pp" &> wannierqe_pp.out 
 '''
         return file_string
 

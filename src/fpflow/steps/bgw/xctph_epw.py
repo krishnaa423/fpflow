@@ -65,6 +65,25 @@ class EpwXctphStep(Step):
                 h5file.create_dataset(dset_name, data=dset_data)
 
     @property
+    def script_pp(self) -> str:
+        filestring = f'''#!/bin/bash
+from fpflow.analysis.xctph.xctph_epw_pp import EpwXctphPpAnalysis
+xctph: EpwXctphPpAnalysis = EpwXctphPpAnalysis()
+xctph.read_all()
+xctph.write_all()
+'''
+        
+        return filestring
+
+    @property
+    def job_pp(self) -> str:
+        filestring = f'''#!/bin/bash
+python ./pp.py &> pp.out
+'''
+
+        return filestring
+
+    @property
     def bands_skipped_string(self) -> str:
         #TODO: Copied this code, but need to refactor to make it simple. 
 
@@ -193,17 +212,173 @@ ln -sf ../{self.wfn_options["name"]}/tmp ./tmp
 ln -sf ../dfpt/save ./save
 ln -sf ../bseq ./eigv
 {scheduler.get_exec_prefix()}epw.x -npool {scheduler.nk} < xctph.in  &> xctph.in.out 
+rm -rf ./G_full_epmatq_all
+mv ./G_full_epmatq ./G_full_epmatq_all
+'''
+        return file_string
 
-# Write xctph.h5, ph.h5 files.
-xctph_pp="
-from fpflow.inputs.inputyaml import InputYaml
-from fpflow.steps.bgw.xctph_epw import EpwXctphStep
-inputdict: dict = InputYaml.from_yaml_file('../input.yaml').inputdict
-xctph: EpwXctphStep = EpwXctphStep(inputdict=inputdict)
-xctph.get_xctph_h5()
-xctph.get_ph_h5()
-"
-python -c "$xctph_pp" &> xctph_pp.out 
+    @property
+    def xctph_epw_el(self) -> str:
+        # wfnlink. 
+        wfn_link: str = jmespath.search('elph.nscf_link', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
+        epwdict: dict = {
+            'inputepw': {
+                'outdir': "'./tmp'",
+                'prefix': "'struct'",
+                'dvscf_dir': "'./save'",
+                
+                'nk1': jmespath.search('xctph.kgrid[0]', self.inputdict),
+                'nk2': jmespath.search('xctph.kgrid[1]', self.inputdict),
+                'nk3': jmespath.search('xctph.kgrid[2]', self.inputdict),
+                'nq1': jmespath.search('xctph.qgrid[0]', self.inputdict),
+                'nq2': jmespath.search('xctph.qgrid[1]', self.inputdict),
+                'nq3': jmespath.search('xctph.qgrid[2]', self.inputdict),
+                'nkf1': jmespath.search('xctph.kgrid[0]', self.inputdict),
+                'nkf2': jmespath.search('xctph.kgrid[1]', self.inputdict),
+                'nkf3': jmespath.search('xctph.kgrid[2]', self.inputdict),
+                'nqf1': jmespath.search('xctph.qgrid[0]', self.inputdict),
+                'nqf2': jmespath.search('xctph.qgrid[1]', self.inputdict),
+                'nqf3': jmespath.search('xctph.qgrid[2]', self.inputdict),
+                'nbndsub': jmespath.search('elph.val_bands', self.inputdict) + jmespath.search('elph.cond_bands', self.inputdict),
+                
+                'elph': '.true.',
+                # 'epbwrite': '.true.',
+                # 'epbread': '.false.',
+                'epwwrite': '.true.',
+                'epwread': '.false.',
+                'lpolar': '.true.',
+
+                'exciton': '.true.',
+                'explrn': '.false.',
+                'negnv_explrn': jmespath.search('xctph.nxct', self.inputdict),
+                'nbndv_explrn': jmespath.search('xctph.val_bands', self.inputdict),
+                'nbndc_explrn': (jmespath.search('xctph.cond_bands', self.inputdict) - 1),      # -1 for the fine grid thing. 
+                'only_c_explrn': '.true.',
+                'only_v_explrn': '.false.',
+
+                'wannierize': '.true.',
+                'wannier_plot':'.true.',
+                'wannier_plot_supercell': f"{jmespath.search('xctph.qgrid[0]', self.inputdict)*2} {jmespath.search('xctph.qgrid[1]', self.inputdict)*2} {jmespath.search('xctph.qgrid[2]', self.inputdict)*2}",
+                'auto_projections': '.true.',
+                'scdm_proj': '.true.',
+                
+                'iprint': 2,
+                # 'prtgkk': '.true.',
+            }
+        }
+
+        # Add bands_skipped.
+        a = self.bands_skipped_string
+        if self.bands_skipped_string is not None and self.bands_skipped_string!='' : 
+            epwdict['inputepw']['bands_skipped'] = self.bands_skipped_string
+
+        # Update if needed. 
+        update_dict(epwdict, jmespath.search('xctph.args', self.inputdict))
+
+        # If projections provided, delete auto_projections and scdm_proj.
+        if 'proj(1)' in epwdict['inputepw'].keys() and epwdict['inputepw']['wannierize'] == '.true.': 
+            del epwdict['inputepw']['auto_projections']
+            del epwdict['inputepw']['scdm_proj']
+
+        return NamelistGrammar().write(epwdict)
+
+    @property
+    def job_xctph_epw_el(self) -> str:
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'xctph.job_info')
+
+        file_string = f'''#!/bin/bash
+{scheduler.get_script_header()}
+
+{scheduler.get_exec_prefix()}epw.x -npool {scheduler.nk} < xctph_el.in  &> xctph_el.in.out 
+rm -rf ./G_full_epmatq_el
+mv ./G_full_epmatq ./G_full_epmatq_el
+'''
+        return file_string
+
+    @property
+    def xctph_epw_hole(self) -> str:
+        # wfnlink. 
+        wfn_link: str = jmespath.search('elph.nscf_link', self.inputdict)
+        wfn_names: list[str] = jmespath.search(f'nscf.list[*].name', self.inputdict)
+        wfn_index: int = wfn_names.index(wfn_link)
+        self.wfn_options: dict = jmespath.search(f'nscf.list[{wfn_index}]', self.inputdict)
+
+        epwdict: dict = {
+            'inputepw': {
+                'outdir': "'./tmp'",
+                'prefix': "'struct'",
+                'dvscf_dir': "'./save'",
+                
+                'nk1': jmespath.search('xctph.kgrid[0]', self.inputdict),
+                'nk2': jmespath.search('xctph.kgrid[1]', self.inputdict),
+                'nk3': jmespath.search('xctph.kgrid[2]', self.inputdict),
+                'nq1': jmespath.search('xctph.qgrid[0]', self.inputdict),
+                'nq2': jmespath.search('xctph.qgrid[1]', self.inputdict),
+                'nq3': jmespath.search('xctph.qgrid[2]', self.inputdict),
+                'nkf1': jmespath.search('xctph.kgrid[0]', self.inputdict),
+                'nkf2': jmespath.search('xctph.kgrid[1]', self.inputdict),
+                'nkf3': jmespath.search('xctph.kgrid[2]', self.inputdict),
+                'nqf1': jmespath.search('xctph.qgrid[0]', self.inputdict),
+                'nqf2': jmespath.search('xctph.qgrid[1]', self.inputdict),
+                'nqf3': jmespath.search('xctph.qgrid[2]', self.inputdict),
+                'nbndsub': jmespath.search('elph.val_bands', self.inputdict) + jmespath.search('elph.cond_bands', self.inputdict),
+                
+                'elph': '.true.',
+                # 'epbwrite': '.true.',
+                # 'epbread': '.false.',
+                'epwwrite': '.true.',
+                'epwread': '.false.',
+                'lpolar': '.true.',
+
+                'exciton': '.true.',
+                'explrn': '.false.',
+                'negnv_explrn': jmespath.search('xctph.nxct', self.inputdict),
+                'nbndv_explrn': jmespath.search('xctph.val_bands', self.inputdict),
+                'nbndc_explrn': (jmespath.search('xctph.cond_bands', self.inputdict) - 1),      # -1 for the fine grid thing. 
+                'only_c_explrn': '.false.',
+                'only_v_explrn': '.true.',
+
+                'wannierize': '.true.',
+                'wannier_plot':'.true.',
+                'wannier_plot_supercell': f"{jmespath.search('xctph.qgrid[0]', self.inputdict)*2} {jmespath.search('xctph.qgrid[1]', self.inputdict)*2} {jmespath.search('xctph.qgrid[2]', self.inputdict)*2}",
+                'auto_projections': '.true.',
+                'scdm_proj': '.true.',
+                'wdata(1)': "'write_u_matrices = .true.'",
+                
+                'iprint': 2,
+                # 'prtgkk': '.true.',
+            }
+        }
+
+        # Add bands_skipped.
+        a = self.bands_skipped_string
+        if self.bands_skipped_string is not None and self.bands_skipped_string!='' : 
+            epwdict['inputepw']['bands_skipped'] = self.bands_skipped_string
+
+        # Update if needed. 
+        update_dict(epwdict, jmespath.search('xctph.args', self.inputdict))
+
+        # If projections provided, delete auto_projections and scdm_proj.
+        if 'proj(1)' in epwdict['inputepw'].keys() and epwdict['inputepw']['wannierize'] == '.true.': 
+            del epwdict['inputepw']['auto_projections']
+            del epwdict['inputepw']['scdm_proj']
+
+        return NamelistGrammar().write(epwdict)
+
+    @property
+    def job_xctph_epw_hole(self) -> str:
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'xctph.job_info')
+
+        file_string = f'''#!/bin/bash
+{scheduler.get_script_header()}
+
+{scheduler.get_exec_prefix()}epw.x -npool {scheduler.nk} < xctph_hole.in  &> xctph_hole.in.out 
+rm -rf ./G_full_epmatq_hole
+mv ./G_full_epmatq ./G_full_epmatq_hole
 '''
         return file_string
 
@@ -211,13 +386,22 @@ python -c "$xctph_pp" &> xctph_pp.out
     def file_contents(self) -> dict:
         return {
             './zd_epw/xctph.in': self.xctph_epw,
+            './zd_epw/xctph_el.in': self.xctph_epw_el,
+            './zd_epw/xctph_hole.in': self.xctph_epw_hole,
             './zd_epw/job_xctph.sh': self.job_xctph_epw,
+            './zd_epw/job_xctph_el.sh': self.job_xctph_epw_el,
+            './zd_epw/job_xctph_hole.sh': self.job_xctph_epw_hole,
+            './zd_epw/pp.py': self.script_pp,
+            './zd_epw/job_pp.sh': self.job_pp,
         }
     
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './zd_epw/job_xctph.sh'
+            './zd_epw/job_xctph_el.sh',
+            './zd_epw/job_xctph_hole.sh',
+            './zd_epw/job_xctph.sh',
+            './zd_epw/job_pp.sh',
         ]
 
     @property

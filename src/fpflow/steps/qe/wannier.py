@@ -183,7 +183,7 @@ ln -sf ../{jmespath.search('wannier.nscf_link', self.inputdict)}/tmp ./tmp
 # julia create_ukk.jl &> create_ukk.jl.out
 
 wannierqe_pp="
-from fpflow.analysis.wannierqe import WannierQeAnalysis
+from fpflow.analysis.wannier_qe.wannierqe import WannierQeAnalysis
 wan = WannierQeAnalysis()
 wan.read_all()
 wan.write()
