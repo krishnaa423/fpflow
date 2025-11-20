@@ -26,44 +26,6 @@ logger = get_logger()
 
 #region classes
 class EpwXctphStep(Step):
-    def get_xctph_h5(self):
-        nS: int = jmespath.search('xctph.nxct', self.inputdict)
-        nu: int = np.loadtxt('./dfpt/struct.freq.gp').shape[1] - 1
-        nQ: int = np.prod(jmespath.search('xctph.kgrid', self.inputdict))
-        nq: int = np.prod(jmespath.search('xctph.qgrid', self.inputdict))
-
-        xctph: np.ndarray = np.zeros((nS, nS, nQ, nu, nq), dtype='c16')
-        for qpt_idx  in range(nq):
-            data: np.ndarray = np.loadtxt(f'./G_full_epmatq/G_full_epmatq_{qpt_idx}.dat')
-            data = data[:, 5] + 1j * data[:, 6]
-            xctph[:, :, :, :, qpt_idx] = data
-
-        # Write to h5 file.
-        with h5py.File('xctph.h5', 'w') as h5file:
-            h5file.create_dataset('/xctph', data=xctph)
-
-    def get_ph_h5(self):
-        nu: int = np.loadtxt('./dfpt/struct.freq.gp').shape[1] - 1
-        nq: int = np.prod(jmespath.search('xctph.qgrid', self.inputdict))
-
-        eigs: np.ndarray = np.zeros((nq, nu), dtype='f8')
-        eigs = np.loadtxt(f'./G_full_epmatq/phband.fmt')
-        evecs: np.ndarray = np.zeros((nq, nu, nu), dtype='c16')
-
-        for qpt_idx in range(nq):
-            data = np.loadtxt(f'./G_full_epmatq/ph_eigvec_{qpt_idx}.dat')
-            data = data[:, 0] + 1j * data[:, 1]
-            evecs[qpt_idx, :, :] = data
-
-        # Write to h5 file.
-        dsets = {
-            '/eigs': eigs,
-            '/evecs': evecs,
-        }
-        with h5py.File('ph.h5', 'w') as h5file:
-            for dset_name, dset_data in dsets.items():
-                h5file.create_dataset(dset_name, data=dset_data)
-
     @property
     def script_pp(self) -> str:
         filestring = f'''#!/bin/bash
@@ -178,6 +140,7 @@ python ./pp.py &> pp.out
                 'wannier_plot_supercell': f"{jmespath.search('xctph.qgrid[0]', self.inputdict)*2} {jmespath.search('xctph.qgrid[1]', self.inputdict)*2} {jmespath.search('xctph.qgrid[2]', self.inputdict)*2}",
                 'auto_projections': '.true.',
                 'scdm_proj': '.true.',
+                'wdata(1)': "'write_u_matrices = .true.'",
                 
                 'iprint': 2,
                 # 'prtgkk': '.true.',
@@ -213,7 +176,7 @@ ln -sf ../dfpt/save ./save
 ln -sf ../bseq ./eigv
 {scheduler.get_exec_prefix()}epw.x -npool {scheduler.nk} < xctph.in  &> xctph.in.out 
 rm -rf ./G_full_epmatq_all
-mv ./G_full_epmatq ./G_full_epmatq_all
+cp -r ./G_full_epmatq ./G_full_epmatq_all
 '''
         return file_string
 
@@ -398,8 +361,8 @@ mv ./G_full_epmatq ./G_full_epmatq_hole
     @property
     def job_scripts(self) -> List[str]:
         return [
-            './zd_epw/job_xctph_el.sh',
-            './zd_epw/job_xctph_hole.sh',
+            # './zd_epw/job_xctph_el.sh',
+            # './zd_epw/job_xctph_hole.sh',
             './zd_epw/job_xctph.sh',
             './zd_epw/job_pp.sh',
         ]

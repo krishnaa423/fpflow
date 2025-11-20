@@ -79,7 +79,7 @@ common:
   qgrid: &qgrid [2, 2, 2]
   dfpt_ni_nodes_auto_assign: &dfpt_ni_nodes_auto_assign true 
   epw_nodes: &epw_nodes 1
-  epw_nk: &epw_nk 1
+  epw_nk: &epw_nk 4
 
   dft:
     ecut: &dft_ecut 40.0
@@ -184,7 +184,7 @@ generator:
   #  - elph_bands_epw 
   #  - elph_frohlich_epw 
   #  - pp_elph_epw 
-  #  - pol_epw
+   - pol_epw
   #  - dmc_elph_fp
   #  - phonopy_qe 
    - epsilon_bgw 
@@ -198,11 +198,11 @@ generator:
   #  - wannier_bgw 
    - xctph_epw
   #  - xctph_fp 
-   - xctpol_fp 
+  #  - xctpol_fp 
    - ste_epw
   #  - zd_epw
   #  - ste_fp 
-   - dmc_xctph_fp
+  #  - dmc_xctph_fp
   #  - esf_fp
   #  - esr_fp 
   #  - convergence_scf_qe
@@ -487,6 +487,10 @@ elph:
     <<: *para_epwk
   job_pp_info:
     <<: *big_para
+pol:
+  job_info:
+    <<: *big_para
+    nk: 1
 gw:
   epsilon:
     ecut: *gwecut
@@ -557,13 +561,16 @@ xctph:
   args:
     <<: *elph_args    # For xctph_epw case. 
   job_info:
-    <<: *big_para
+    <<: *scheduler_dict
+    nodes: *epw_nodes
+    ntasks: *epw_nk
+    time: *big_time
     nk: *epw_nk
 xctpol:
   nxct: *bse_nxct
   temps: [300, 200, 100, 50]
   max_error: 1e-6
-  max_steps: 10
+  max_steps: 30
   job_info:
     <<: *big_para
 ste:
@@ -577,7 +584,11 @@ ste:
   temps: [300, 200, 100, 50]
   args:
   job_info:
-    <<: *big_para
+    <<: *scheduler_dict
+    nodes: *epw_nodes
+    ntasks: *epw_nk
+    time: *big_time
+    nk: *epw_nk
 dmc_xctph:
   temps: [300, 200, 100, 50]
   kgrid: *coarse_kgrid

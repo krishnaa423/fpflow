@@ -262,8 +262,12 @@ class AxisPlot:
         match self.figs_row['plot_type']:
             case PlotType.LINE:
                 self.line()
+            case PlotType.DASHEDLINE:
+                self.dashedline()
             case PlotType.SCATTER:
                 self.scatter()
+            case PlotType.SCATTERSIZECOLOR:
+                self.scattersizecolor()
             case PlotType.ERRORBAR:
                 NotImplementedError
             case PlotType.STEP:
@@ -400,6 +404,16 @@ class AxisPlot:
         self.set_additional_kwargs_dict()
         self.axis.plot(axis_data, line_data, **self.addition_dict)
         self.set_common_axis_props()
+
+    def dashedline(self):
+        axis_col: str = self.figs_row['dset_axis_cols']
+        data_col: str = self.figs_row['dset_data_cols']
+        axis_data: np.ndarray = self.dset_row['data'][axis_col].to_numpy()
+        line_data: np.ndarray = self.dset_row['data'][data_col].to_numpy()
+
+        self.set_additional_kwargs_dict()
+        self.axis.plot(axis_data, line_data, **self.addition_dict, linestyle='--')
+        self.set_common_axis_props()
     
     def stem(self):
         axis_col: str = self.figs_row['dset_axis_cols']
@@ -441,6 +455,29 @@ class AxisPlot:
             self.add_colorbar(sc, label=self.figs_row.get('zlabel') or 'value')
         self.set_common_axis_props()
 
+    def scattersizecolor(self):
+        axis_col: str = self.figs_row['dset_axis_cols']
+        data_cols: list[str] = self.figs_row['dset_data_cols']
+        point_cols: list[str] = [item for item in data_cols if 'y' in item]
+        size_cols: list[str] = [item for item in data_cols if 's' in item]
+        color_cols: list[str] = [item for item in data_cols if 'c' in item]
+
+        axis_data: np.ndarray = self.dset_row['data'][axis_col].to_numpy()
+        point_data: np.ndarray = self.dset_row['data'][point_cols].to_numpy()
+        size_data: np.ndarray = self.dset_row['data'][size_cols].to_numpy()
+        color_data: np.ndarray = self.dset_row['data'][color_cols].to_numpy()
+
+        # Resize axis to point, size, color data. 
+        axis_data = axis_data.reshape(-1, 1).repeat(point_data.shape[1], axis=1)
+
+        self.set_additional_kwargs_dict()
+        if self.figs_row['zlim'] is not None:
+            self.addition_dict['vmin'] = self.figs_row['zlim'][0]
+            self.addition_dict['vmax'] = self.figs_row['zlim'][1]
+        sc = self.axis.scatter(axis_data, point_data, s=size_data, c=color_data, cmap='viridis', **self.addition_dict)
+        self.add_colorbar(sc, label=self.figs_row.get('zlabel') or '')
+        self.set_common_axis_props()
+
     def mesh2d(self):
         axis_col: str = self.figs_row['dset_axis_cols']
         data_cols: str = self.figs_row['dset_data_cols']
@@ -452,7 +489,10 @@ class AxisPlot:
         X, Y = np.meshgrid(unique_x, unique_y, indexing='ij')
         Z = mesh_data.reshape(len(unique_x), len(unique_y))
 
-        pcm = self.axis.pcolormesh(X, Y, Z, cmap='viridis', shading='gouraud')
+        if self.figs_row['zlim'] is not None:
+            pcm = self.axis.pcolormesh(X, Y, Z, cmap='viridis', shading='gouraud', vmin=self.figs_row['zlim'][0], vmax=self.figs_row['zlim'][1])
+        else:
+            pcm = self.axis.pcolormesh(X, Y, Z, cmap='viridis', shading='gouraud')
         self.add_colorbar(pcm, label=self.figs_row.get('zlabel') or 'Z')
         self.set_common_axis_props()
     
@@ -614,7 +654,9 @@ class AxisPlot:
 class PlotType:
     # --- 2D basic ---
     LINE        = "line"
+    DASHEDLINE  = "dashedline"
     SCATTER     = "scatter"
+    SCATTERSIZECOLOR  = "scattersizecolor"
     ERRORBAR    = "errorbar"
     STEP        = "step"
     STEM        = "stem"
@@ -652,7 +694,9 @@ class PlotType:
     def plot_requirements(cls):
         return {
             PlotType.LINE:        {"x": 1, "y": (1, None)},   # one x, one or many y
+            PlotType.DASHEDLINE:  {"x": 1, "y": (1, None)},   # one x, one or many y
             PlotType.SCATTER:     {"x": 1, "y": (1, None)},
+            PlotType.SCATTERSIZECOLOR:  {"x": 1, "y": 1, 's': 1, 'c': 1},  # x, y, size, color
             PlotType.ERRORBAR:    {"x": 1, "y": 1, "yerr": (1, None)},
             PlotType.STEP:        {"x": 1, "y": (1, None)},
             PlotType.STEM:        {"x": 1, "y": (1, None)},

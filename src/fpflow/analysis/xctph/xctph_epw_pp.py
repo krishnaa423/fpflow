@@ -198,14 +198,13 @@ class EpwXctphPpAnalysis:
         self.read_pheigs()
         self.read_phevecs()
         self.read_xctph()
-        self.read_xctph_el()
-        self.read_xctph_hole()
+        # self.read_xctph_el()
+        # self.read_xctph_hole()
         self.read_Qpts()
 
     def write_all(self):
         with h5py.File('./xctph.h5', 'w') as h5file:
             for key, data in self.datasets.items():
                 h5file.create_dataset(key, data=data)
-
 
 #endregion

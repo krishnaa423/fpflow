@@ -64,8 +64,20 @@ class EpwStePlot(PlotBase):
         # get exciton bands. 
         data = np.loadtxt('./zd_epw/G_full_epmatq/exband.fmt')
         xct_grid = data[:, :]
+        # xctpol_100: np.ndarray = (xct_grid[:, 0] - np.array([0.12, 0.1, 0.08, 0.06, 0.04, 0.02, 0.001, 0.0015])).reshape(-1, 1)
+        # xctpol_200: np.ndarray = (xct_grid[:, 0] - np.array([0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2])).reshape(-1, 1)
+        xctpol_300: np.ndarray = (xct_grid[:, 0] - np.array([0.401, 0.400, 0.372, 0.352, 0.311, 0.302, 0.293, 0.206])).reshape(-1, 1)
+        # ste_100: np.ndarray = np.full_like(xctpol_100, 9.5)
+        # ste_200: np.ndarray = np.full_like(xctpol_100, 9.4)
+        ste_300: np.ndarray = np.full_like(xctpol_300, xct_grid[0, 0] - 0.487)
         self.num_xctbands: int = xct_grid.shape[1]
         self.xct_bands = interpolate.RBFInterpolator(self.Qpts, xct_grid, neighbors=8)(self.kpath.kpts)
+        # self.xctpol_100 = interpolate.RBFInterpolator(self.Qpts, xctpol_100, neighbors=8)(self.kpath.kpts)
+        # self.xctpol_200 = interpolate.RBFInterpolator(self.Qpts, xctpol_200, neighbors=8)(self.kpath.kpts)
+        self.xctpol_300 = interpolate.RBFInterpolator(self.Qpts, xctpol_300, neighbors=8)(self.kpath.kpts)
+        # self.ste_100 = interpolate.RBFInterpolator(self.Qpts, ste_100, neighbors=8)(self.kpath.kpts)
+        # self.ste_200 = interpolate.RBFInterpolator(self.Qpts, ste_200, neighbors=8)(self.kpath.kpts)
+        self.ste_300 = interpolate.RBFInterpolator(self.Qpts, ste_300, neighbors=8)(self.kpath.kpts)
 
         # Get AQS on grid and interp on kpath.
         data: np.ndarray = np.loadtxt('./zd_epw/Asq.plrn', skiprows=1)
@@ -79,10 +91,11 @@ class EpwStePlot(PlotBase):
 
         # Add xct_bands and AQS. 
         self.xct_bands_colnames = [f"y{i+1}" for i in range(self.num_xctbands)]
-        self.xct_bands_weight_colnames = [f"s{i+1}" for i in range(self.num_xctbands)] 
+        self.xct_bands_size_colnames = [f"s{i+1}" for i in range(self.num_xctbands)] 
+        self.xct_bands_color_colnames = [f"c{i+1}" for i in range(self.num_xctbands)] 
         df_xct: pd.DataFrame = pd.DataFrame(
-            np.hstack([self.axis, self.xct_bands, self.AQS_xctbands*1e2]),
-            columns=["x"] + self.xct_bands_colnames + self.xct_bands_weight_colnames
+            np.hstack([self.axis, self.xct_bands, self.AQS_xctbands*20e1, self.AQS_xctbands]),
+            columns=["x"] + self.xct_bands_colnames + self.xct_bands_size_colnames + self.xct_bands_color_colnames
         )
         append_xct_bands_df = pd.DataFrame({
             "name": ["dset_xct"],
@@ -90,12 +103,24 @@ class EpwStePlot(PlotBase):
         })
         self.dsets_df = pd.concat([self.dsets_df, append_xct_bands_df], ignore_index=True)
 
+        # Add xctpol and ste.
+        df_ste: pd.DataFrame = pd.DataFrame(
+            np.hstack([self.axis, self.xctpol_300, self.ste_300]),
+            columns=["x", "xctpol_300", "ste_300"],
+        )
+        append_ste_df: pd.DataFrame = pd.DataFrame({
+            "name": ["dset_ste"],
+            'data': [df_ste],
+        })
+        self.dsets_df = pd.concat([self.dsets_df, append_ste_df], ignore_index=True)
+
         # Add ph_bands and Bqu.
         self.phbands_colnames = [f"y{i+1}" for i in range(self.num_phbands)]
-        self.phbands_weight_colnames = [f"s{i+1}" for i in range(self.num_phbands)]
+        self.phbands_size_colnames = [f"s{i+1}" for i in range(self.num_phbands)]
+        self.phbands_color_colnames = [f"c{i+1}" for i in range(self.num_phbands)]
         df_ph: pd.DataFrame = pd.DataFrame(
-            np.hstack([self.axis, self.phbands, self.Bqu_phbands*1e1]),
-            columns=["x"] + self.phbands_colnames + self.phbands_weight_colnames
+            np.hstack([self.axis, self.phbands, self.Bqu_phbands*4, self.Bqu_phbands]),
+            columns=["x"] + self.phbands_colnames + self.phbands_size_colnames + self.phbands_color_colnames
         )
         append_ph_df = pd.DataFrame({
             "name": ["dset_ph"],
@@ -105,6 +130,26 @@ class EpwStePlot(PlotBase):
 
     def set_figures(self):
         # Add xct_bands and xctph_xctbands. 
+        append_fig_df: pd.DataFrame = pd.DataFrame([
+            {
+                'fig_name': 'ste_AQS',
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.SCATTERSIZECOLOR, 'axis': None,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                'zlabel': r'$A_{\mathbf{Q}S}$', 'zlim': (self.AQS_xctbands.flatten().min(), self.AQS_xctbands.flatten().max()), 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} STE Projection on Exciton Bandstructure',
+                'dset_name': 'dset_xct',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': self.xct_bands_colnames + self.xct_bands_size_colnames + self.xct_bands_color_colnames,
+                'color': None,
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': None,
+            },
+        ])
+        self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
         for band_idx in range(self.num_xctbands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
@@ -125,9 +170,9 @@ class EpwStePlot(PlotBase):
                     'legend_label': None,
                 },
                 {
-                    'fig_name': 'ste_AQS',
+                    'fig_name': 'ste_xctpol',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                    'plot_type': PlotType.SCATTER, 'axis': None,
+                    'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
                     'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                     'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
@@ -135,17 +180,75 @@ class EpwStePlot(PlotBase):
                     'title': f'{self.struct_name} STE Projection on Exciton Bandstructure',
                     'dset_name': 'dset_xct',
                     'dset_axis_cols': 'x',        
-                    'dset_data_cols': [self.xct_bands_colnames[band_idx], self.xct_bands_weight_colnames[band_idx]],
-                    'color': 'red', 
+                    'dset_data_cols': [self.xct_bands_colnames[band_idx]],
+                    'color': 'blue', 
                     'xgrid': True,
                     'ygrid': False,
                     'legend_label': None,
                 },
             ])
-
             self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
 
+        # Add ste_xctpol.
+        append_fig_df: pd.DataFrame = pd.DataFrame([
+            {
+                'fig_name': 'ste_xctpol',
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.LINE, 'axis': None,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': 'Energy (eV)', 'ylim': (9, 12.5), 'yticks': None, 'ytick_labels': None,
+                'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} Exciton Polaron and STE energies',
+                'dset_name': 'dset_ste',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': ['xctpol_300'],
+                'color': 'orange', 
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': r'Xctpol $300K$ ',
+            },
+            {
+                'fig_name': 'ste_xctpol',
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.DASHEDLINE, 'axis': None,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': 'Energy (eV)', 'ylim': (9, 12.5), 'yticks': None, 'ytick_labels': None,
+                'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} Exciton Polaron and STE energies',
+                'dset_name': 'dset_ste',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': ['ste_300'],
+                'color': 'orange', 
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': r'DiagMC STE $300K$',
+            },
+        ])
+        self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
+
         # Add xctph_phbands.
+        append_fig_df: pd.DataFrame = pd.DataFrame([
+            {
+                'fig_name': 'ste_Bqu',
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.SCATTERSIZECOLOR, 'axis': None,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                'zlabel': r'$B_{\mathbf{q}\lambda}$', 'zlim': (self.Bqu_phbands.flatten().min(), self.Bqu_phbands.flatten().max()), 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} STE Displacement on Phonon Bandstructure',
+                'dset_name': 'dset_ph',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': self.phbands_colnames + self.phbands_size_colnames + self.phbands_color_colnames,
+                'color': None, 
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': None,
+            },
+        ])
+        self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
         for band_idx in range(self.num_phbands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
@@ -161,23 +264,6 @@ class EpwStePlot(PlotBase):
                     'dset_axis_cols': 'x',        
                     'dset_data_cols': [self.phbands_colnames[band_idx]],
                     'color': 'blue', 
-                    'xgrid': True,
-                    'ygrid': False,
-                    'legend_label': None,
-                },
-                {
-                    'fig_name': 'ste_Bqu',
-                    'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                    'plot_type': PlotType.SCATTER, 'axis': None,
-                    'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                    'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
-                    'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
-                    'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} STE Displacement on Phonon Bandstructure',
-                    'dset_name': 'dset_ph',
-                    'dset_axis_cols': 'x',        
-                    'dset_data_cols': [self.phbands_colnames[band_idx], self.phbands_weight_colnames[band_idx]],
-                    'color': 'red', 
                     'xgrid': True,
                     'ygrid': False,
                     'legend_label': None,

@@ -41,17 +41,17 @@ class Xctpol:
         self.current_Qpt_idx: int = 0
 
     def read_xctph_all(self) -> np.ndarray:
-        with h5py.File('../xctph_epw/xctph.h5', 'r') as xctph_file:
-            xctph_all: np.ndarray = xctph_file['/xctph_all'][:]
+        with h5py.File('../zd_epw/xctph.h5', 'r') as xctph_file:
+            xctph_all: np.ndarray = xctph_file['/xctph'][:]
         return xctph_all
 
     def read_xctph_hole(self) -> np.ndarray:
-        with h5py.File('../xctph_epw/xctph.h5', 'r') as xctph_file:
+        with h5py.File('../zd_epw/xctph.h5', 'r') as xctph_file:
             xctph_hole: np.ndarray = xctph_file['/xctph_hole'][:]
         return xctph_hole
 
     def read_pheigs(self) -> np.ndarray:
-        with h5py.File('../xctph_epw/xctph.h5', 'r') as xctph_file:
+        with h5py.File('../zd_epw/xctph.h5', 'r') as xctph_file:
             pheigs: np.ndarray = xctph_file['/pheigs'][:]
         return pheigs
     
@@ -68,7 +68,7 @@ class Xctpol:
         self.ph_occ: np.ndarray = np.zeros([self.nQ, self.nmodes], dtype='f8')
 
         # Set the inverse phonon eigenvalues. 
-        self.inv_pheigs: np.ndarray = self.zeroes([self.nQ, self.nmodes], dtype='f8')
+        self.inv_pheigs: np.ndarray = np.zeros([self.nQ, self.nmodes], dtype='f8')
         for iQ in range(self.nQ):
             for imode in range(self.nmodes):
                 if abs(self.pheigs[iQ, imode].real) > 1e-8:
@@ -130,21 +130,21 @@ class Xctpol:
         '''
         if self.use_all_xctph:
             self.tp[self.current_Qpt_idx, :, :] = np.einsum(
-                'sSuQ, bauC, Cb, Ca, u -> sS',
-                self.xctph_all[:, :, :, :, 0],
+                'sSu, bauC, Cb, Ca, u -> sS',
+                self.xctph_all[:, :, :, self.current_Qpt_idx, 0],
                 self.xctph_all[:, :, :, :, 0].conj(),
                 self.xctpol_evecs,
                 self.xctpol_evecs.conj(),
-                -2.0/self.inv_pheigs[0, :],
+                -2.0*self.inv_pheigs[0, :],
             )
         else:
             self.tp[self.current_Qpt_idx, :, :] = np.einsum(
-                'sSuQ, bauC, Cb, Ca, u -> sS',
-                self.xctph_hole[:, :, :, :, 0],
+                'sSu, bauC, Cb, Ca, u -> sS',
+                self.xctph_hole[:, :, :, self.current_Qpt_idx, 0],
                 self.xctph_hole[:, :, :, :, 0].conj(),
                 self.xctpol_evecs,
                 self.xctpol_evecs.conj(),
-                -2.0/self.inv_pheigs[0, :],
+                -2.0*self.inv_pheigs[0, :],
             )
 
     def calc_fm(self):
@@ -162,6 +162,8 @@ class Xctpol:
         self.mat.assemble()
 
         # Solve the eigenvalue problem.
+        self.eps.setOperators(self.mat)
+        self.eps.setUp()
         self.eps.solve()
 
         nconv: int = self.eps.getConverged()
@@ -184,12 +186,15 @@ class Xctpol:
         return abs(self.current_eig_real - self.prev_eig_real)
 
     def run_convergence(self):
-        self.max_error: float = jmespath.search('xctpol.max_error', self.inputdict)
-        self.max_steps: int = jmespath.search('xctpol.max_steps', self.inputdict)
+        self.max_error: float = float(jmespath.search('xctpol.max_error', self.inputdict))
+        self.max_steps: int = int(jmespath.search('xctpol.max_steps', self.inputdict))
 
         for Qpt_idx in range(self.nQ):
             self.current_Qpt_idx = Qpt_idx
             self.error: float = self.max_error + 1.0
+
+            # Initial guess is calculated for each Qpt. 
+            self.get_initial_guess()
 
             for step in range(self.max_steps):
                 self.step()
@@ -210,7 +215,6 @@ class Xctpol:
     def run(self):
         self.read_arrays()
         self.init_arrays()
-        self.get_initial_guess()
         self.run_convergence()
         self.calc_fm()
 
@@ -218,6 +222,9 @@ class Xctpol:
         datasets: dict = {
             'xctpol_eigs': self.xctpol_eigs,
             'xctpol_evecs': self.xctpol_evecs,
+            'ham': self.ham,
+            'tp': self.tp,
+            'diag': self.diag,
         }
 
         with h5py.File('./xctpol.h5', 'w') as f:

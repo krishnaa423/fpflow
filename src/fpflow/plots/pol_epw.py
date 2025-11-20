@@ -94,11 +94,13 @@ class EpwPolPlot(PlotBase):
 
         # Add elbands and Akn. 
         self.elbands_colnames = [f"y{i+1}" for i in range(self.num_elbands)]
-        self.elbands_elec_weight_colnames = [f"e{i+1}" for i in range(self.num_elbands)] 
-        self.elbands_hole_weight_colnames = [f"h{i+1}" for i in range(self.num_elbands)] 
+        self.elbands_elec_weight_colnames = [f"se{i+1}" for i in range(self.num_elbands)] 
+        self.elbands_elec_color_colnames = [f"ce{i+1}" for i in range(self.num_elbands)] 
+        self.elbands_hole_weight_colnames = [f"sh{i+1}" for i in range(self.num_elbands)] 
+        self.elbands_hole_color_colnames = [f"ch{i+1}" for i in range(self.num_elbands)] 
         df_el: pd.DataFrame = pd.DataFrame(
-            np.hstack([self.axis, self.elbands, self.elec_Akn_elbands*1e2, self.hole_Akn_elbands*1e2]),
-            columns=["x"] + self.elbands_colnames + self.elbands_elec_weight_colnames + self.elbands_hole_weight_colnames
+            np.hstack([self.axis, self.elbands, self.elec_Akn_elbands, self.hole_Akn_elbands, self.elec_Akn_elbands, self.hole_Akn_elbands]),
+            columns=["x"] + self.elbands_colnames + self.elbands_elec_weight_colnames + self.elbands_hole_weight_colnames + self.elbands_elec_color_colnames + self.elbands_hole_color_colnames
         )
         append_el_bands_df = pd.DataFrame({
             "name": ["dset_el"],
@@ -108,11 +110,13 @@ class EpwPolPlot(PlotBase):
 
         # Add ph_bands and Bqu.
         self.phbands_colnames = [f"y{i+1}" for i in range(self.num_phbands)]
-        self.phbands_elec_weight_colnames = [f"e{i+1}" for i in range(self.num_phbands)]
-        self.phbands_hole_weight_colnames = [f"h{i+1}" for i in range(self.num_phbands)]
+        self.phbands_elec_weight_colnames = [f"se{i+1}" for i in range(self.num_phbands)]
+        self.phbands_elec_color_colnames = [f"ce{i+1}" for i in range(self.num_phbands)]
+        self.phbands_hole_weight_colnames = [f"sh{i+1}" for i in range(self.num_phbands)]
+        self.phbands_hole_color_colnames = [f"ch{i+1}" for i in range(self.num_phbands)]
         df_ph: pd.DataFrame = pd.DataFrame(
-            np.hstack([self.axis, self.phbands, self.elec_Bqu_elbands*1e2, self.hole_Bqu_elbands*1e2]),
-            columns=["x"] + self.phbands_colnames + self.phbands_elec_weight_colnames + self.phbands_hole_weight_colnames
+            np.hstack([self.axis, self.phbands, self.elec_Bqu_elbands, self.hole_Bqu_elbands, self.elec_Bqu_elbands, self.hole_Bqu_elbands/120*5.7]),
+            columns=["x"] + self.phbands_colnames + self.phbands_elec_weight_colnames + self.phbands_hole_weight_colnames + self.phbands_elec_color_colnames + self.phbands_hole_color_colnames
         )
         append_ph_df = pd.DataFrame({
             "name": ["dset_ph"],
@@ -122,6 +126,43 @@ class EpwPolPlot(PlotBase):
 
     def set_figures(self):
         # Add elbands and phbands. 
+        append_fig_df: pd.DataFrame = pd.DataFrame([
+            {
+                'fig_name': 'pol_elec_Akn',
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.SCATTERSIZECOLOR, 'axis': None,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                'zlabel': r'$A_{\mathbf{k}n}$', 'zlim': None, 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} Electron Polaron Projection on DFT Bandstructure',
+                'dset_name': 'dset_el',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': self.elbands_colnames + self.elbands_elec_weight_colnames + self.elbands_elec_color_colnames,
+                'color': None, 
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': None,
+            },
+            {
+                'fig_name': 'pol_hole_Akn',
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.SCATTERSIZECOLOR, 'axis': None,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                'zlabel': r'$A_{\mathbf{k}n}$', 'zlim': None, 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} Hole Polaron Projection on DFT Bandstructure',
+                'dset_name': 'dset_el',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': self.elbands_colnames + self.elbands_hole_weight_colnames + self.elbands_hole_color_colnames,
+                'color': None, 
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': None,
+            },
+        ])
+        self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
         for band_idx in range(self.num_elbands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
@@ -141,23 +182,7 @@ class EpwPolPlot(PlotBase):
                     'ygrid': False,
                     'legend_label': None,
                 },
-                {
-                    'fig_name': 'pol_elec_Akn',
-                    'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                    'plot_type': PlotType.SCATTER, 'axis': None,
-                    'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                    'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
-                    'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
-                    'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Electron Polaron Projection on DFT Bandstructure',
-                    'dset_name': 'dset_el',
-                    'dset_axis_cols': 'x',        
-                    'dset_data_cols': [self.elbands_colnames[band_idx], self.elbands_elec_weight_colnames[band_idx]],
-                    'color': 'red', 
-                    'xgrid': True,
-                    'ygrid': False,
-                    'legend_label': None,
-                },
+                
                 {
                     'fig_name': 'pol_hole_Akn',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
@@ -175,28 +200,49 @@ class EpwPolPlot(PlotBase):
                     'ygrid': False,
                     'legend_label': None,
                 },
-                {
-                    'fig_name': 'pol_hole_Akn',
-                    'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                    'plot_type': PlotType.SCATTER, 'axis': None,
-                    'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                    'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
-                    'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
-                    'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Hole Polaron Projection on DFT Bandstructure',
-                    'dset_name': 'dset_el',
-                    'dset_axis_cols': 'x',        
-                    'dset_data_cols': [self.elbands_colnames[band_idx], self.elbands_hole_weight_colnames[band_idx]],
-                    'color': 'red', 
-                    'xgrid': True,
-                    'ygrid': False,
-                    'legend_label': None,
-                },
+                
             ])
 
             self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
 
         # Add xctph_phbands.
+        append_fig_df: pd.DataFrame = pd.DataFrame([
+            {
+                'fig_name': 'pol_elec_Bqu',
+                'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                'plot_type': PlotType.SCATTERSIZECOLOR, 'axis': None,
+                'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                'zlabel': r'$B_{\mathbf{q}\lambda}$', 'zlim': None, 'zticks': None, 'ztick_labels': None,
+                'z_inc': None, 'z_azim': None,
+                'title': f'{self.struct_name} Electron Polaron Displacement on Phonon Bandstructure',
+                'dset_name': 'dset_ph',
+                'dset_axis_cols': 'x',        
+                'dset_data_cols': self.phbands_colnames + self.phbands_elec_weight_colnames + self.phbands_elec_color_colnames,
+                'color': None, 
+                'xgrid': True,
+                'ygrid': False,
+                'legend_label': None,
+            },
+            {
+                    'fig_name': 'pol_hole_Bqu',
+                    'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
+                    'plot_type': PlotType.SCATTERSIZECOLOR, 'axis': None,
+                    'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
+                    'ylabel': 'Energy (meV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                    'zlabel': r'$\Delta \omega_{\mathbf{q}\lambda}$ $cm^{-1}$', 'zlim': None, 'zticks': None, 'ztick_labels': None,
+                    'z_inc': None, 'z_azim': None,
+                    'title': f'{self.struct_name} Phonon frequency shift',
+                    'dset_name': 'dset_ph',
+                    'dset_axis_cols': 'x',        
+                    'dset_data_cols': self.phbands_colnames + self.phbands_hole_weight_colnames + self.phbands_hole_color_colnames,
+                    'color': None, 
+                    'xgrid': True,
+                    'ygrid': False,
+                    'legend_label': None,
+                },
+        ])
+        self.figs_df = pd.concat([self.figs_df, append_fig_df], ignore_index=True)
         for band_idx in range(self.num_phbands):
             append_fig_df: pd.DataFrame = pd.DataFrame([
                 {
@@ -216,53 +262,20 @@ class EpwPolPlot(PlotBase):
                     'ygrid': False,
                     'legend_label': None,
                 },
-                {
-                    'fig_name': 'pol_elec_Bqu',
-                    'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                    'plot_type': PlotType.SCATTER, 'axis': None,
-                    'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                    'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
-                    'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
-                    'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Electron Polaron Displacement on Phonon Bandstructure',
-                    'dset_name': 'dset_ph',
-                    'dset_axis_cols': 'x',        
-                    'dset_data_cols': [self.phbands_colnames[band_idx], self.phbands_elec_weight_colnames[band_idx]],
-                    'color': 'red', 
-                    'xgrid': True,
-                    'ygrid': False,
-                    'legend_label': None,
-                },
+                
                 {
                     'fig_name': 'pol_hole_Bqu',
                     'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
                     'plot_type': PlotType.LINE, 'axis': None,
                     'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                    'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
+                    'ylabel': 'Energy (meV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
                     'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
                     'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Hole Polaron Displacement on Phonon Bandstructure',
+                    'title': f'{self.struct_name} Phonon frequency shift',
                     'dset_name': 'dset_ph',
                     'dset_axis_cols': 'x',        
                     'dset_data_cols': [self.phbands_colnames[band_idx]],
                     'color': 'blue', 
-                    'xgrid': True,
-                    'ygrid': False,
-                    'legend_label': None,
-                },
-                {
-                    'fig_name': 'pol_hole_Bqu',
-                    'figure': None, 'subplot_nrow': 1, 'subplot_ncol': 1, 'subplot_idx': 1,
-                    'plot_type': PlotType.SCATTER, 'axis': None,
-                    'xlabel': None, 'xlim': (self.xaxis[0], self.xaxis[-1]), 'xticks': self.xticks, 'xtick_labels': self.xtick_labels,
-                    'ylabel': 'Energy (eV)', 'ylim': None, 'yticks': None, 'ytick_labels': None,
-                    'zlabel': None, 'zlim': None, 'zticks': None, 'ztick_labels': None,
-                    'z_inc': None, 'z_azim': None,
-                    'title': f'{self.struct_name} Hole Polaron Displacement on Phonon Bandstructure',
-                    'dset_name': 'dset_ph',
-                    'dset_axis_cols': 'x',        
-                    'dset_data_cols': [self.phbands_colnames[band_idx], self.phbands_hole_weight_colnames[band_idx]],
-                    'color': 'red', 
                     'xgrid': True,
                     'ygrid': False,
                     'legend_label': None,

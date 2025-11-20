@@ -129,7 +129,7 @@ class EpwPolStep(Step):
 
     @property
     def job_elph(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'elph.job_info')
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'pol.job_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
@@ -164,7 +164,7 @@ ln -sf ../dfpt/save ./save
 
     @property
     def job_elec(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'elph.job_info')
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'pol.job_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
@@ -194,7 +194,7 @@ ln -sf ../dfpt/save ./save
 
     @property
     def job_elec_pp(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'elph.job_info')
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'pol.job_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
@@ -237,7 +237,7 @@ mv psir_plrn.xsf elec_psir_plrn.xsf
 
     @property
     def job_hole(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'elph.job_info')
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'pol.job_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
@@ -267,7 +267,7 @@ mv psir_plrn.xsf elec_psir_plrn.xsf
 
     @property
     def job_hole_pp(self) -> str:
-        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'elph.job_info')
+        scheduler: Scheduler = Scheduler.from_jmespath(self.inputdict, 'pol.job_info')
 
         file_string = f'''#!/bin/bash
 {scheduler.get_script_header()}
